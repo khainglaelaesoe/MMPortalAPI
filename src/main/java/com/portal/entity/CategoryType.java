@@ -1,0 +1,6 @@
+package com.portal.entity;
+
+public enum CategoryType {
+	NEW, ANNOUNCEMENT, MEDIAVIDEO, NEWSPAPER, SERVICE, TENDER, FORM, JOBANDVACANCY, DOCUMENT, VOTE, SURVEY;
+
+}
