@@ -1,7 +1,9 @@
 package com.portal.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -10,17 +12,28 @@ import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.CategoryType;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.Views;
+import com.portal.entity.PollsChoice;
+import com.portal.entity.RequestVote;
 import com.portal.service.AssetEntryService;
 import com.portal.service.JournalArticleService;
 import com.portal.service.PollsChoiceService;
@@ -41,10 +54,15 @@ public class PollController extends AbstractController {
 
 	@Autowired
 	private PollsChoiceService pollsChoiceService;
+	
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(PollController.class);
 
-	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
+	private JournalArticle parseJournalArticlebyuserid(JournalArticle journalArticle,String userid,
+														String totalVoltcountMB,String choiceidMB) {
+		
 		if (journalArticle.getContent() == null)
 			return null;
 
@@ -68,19 +86,80 @@ public class PollController extends AbstractController {
 		newJournal.setDisplaydate(resultDateString);
 
 		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
+		newJournal.setUserstatus("V000");
+		List<PollsChoice> pollslist = new ArrayList<PollsChoice>();
+		pollslist= pollsChoiceService.getVoltResult(Long.parseLong(pollOrSurveyId));
+		long votecount = pollsChoiceService.getCountOfVote(Long.parseLong(pollOrSurveyId));
+		RequestVote req = getMobileVoltCount(userid, pollOrSurveyId,votecount, pollslist);
+		long totalvotecount = votecount + Long.parseLong(req.getTotalVoteCount());
+		newJournal.setPollOrSurveyCount(totalvotecount);
+		if(req.getUserstatus() == null) {
+			if(pollsVoteService.getCountOfVotebyuserid(Long.parseLong(pollOrSurveyId),Long.parseLong(req.getWebuserid()))) {
+				newJournal.setUserstatus("V001");
+			}
+		}else newJournal.setUserstatus("V001");
+		
+		List<Map<String, String>> engQuesmaps = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> myanmarQuesmaps = new ArrayList<Map<String, String>>();
+		for (PollsChoice poll : req.getPollsChoiceList()) {
+			Map<String, String> engQuesmap = new HashMap<String, String>();
+			Map<String, String> myanmarQuesmap = new HashMap<String, String>();
+			Document doc2 = Jsoup.parse(poll.getDescription(), "", Parser.xmlParser());
+			Elements element = doc2.getElementsByTag("Description");
+			String choiceid = poll.getChoiceid() + "";
+			engQuesmap.put("choicename",Jsoup.parse(element.get(0).toString()).text());
+			engQuesmap.put("choiceid",choiceid);
+			engQuesmap.put("choicecount",poll.getChoicecount() + "");
+			engQuesmaps.add(engQuesmap);
+			myanmarQuesmap.put("choicename",Jsoup.parse(element.get(1).toString()).text());
+			myanmarQuesmap.put("choiceid",choiceid);
+			myanmarQuesmap.put("choicecount",poll.getChoicecount() + "");
+			myanmarQuesmaps.add(myanmarQuesmap);
+			
+			//engQues.add(Jsoup.parse(element.get(0).toString()).text());
+			//myanmarQues.add(Jsoup.parse(element.get(1).toString()).text());
+		}
+		newJournal.setQuestionid(pollOrSurveyId);
+		newJournal.setShareLink(getShareLink(pollOrSurveyId));
+		newJournal.setEngQuestionsMap(engQuesmaps);
+		newJournal.setMyanmarQuestionsMap(myanmarQuesmaps);
+		return newJournal;
+	}
+	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
+		if (journalArticle.getContent() == null)
+			return null;
+
+		String categoryType = getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">");
+		CategoryType type = CategoryType.valueOf(categoryType.trim().toUpperCase());
+		if (type != CategoryType.VOTE)
+			return null;
+
+		/* title, department title, content detail */
+		JournalArticle newJournal = new JournalArticle();
+		Document doc = Jsoup.parse(journalArticle.getTitle());
+		replaceTag(doc.children());
+		List<String> titleList = removeInvalidString(Jsoup.parse(doc.toString()).text().split("/"));
+		newJournal.setEngTitle(titleList.get(0));
+		newJournal.setMynamrTitle(titleList.size() > 1 ? titleList.get(1) : titleList.get(0));
+		newJournal.setEngDepartmentTitle(getEngElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"en_US\">"));
+		newJournal.setMyanmarDepartmentTitle(getMyanmarElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"my_MM\">"));
+		String dateString = journalArticle.getDisplaydate().split(" ")[0];
+		String[] dateStr = dateString.split("-");
+		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
+		newJournal.setDisplaydate(resultDateString);
+		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
 		long count = pollsVoteService.getCountOfVote(Long.parseLong(pollOrSurveyId));
 		newJournal.setPollOrSurveyCount(count);
-
 		List<String> engQues = new ArrayList<String>();
 		List<String> myanmarQues = new ArrayList<String>();
-		List<String> descriptions = pollsChoiceService.getDescription(Long.parseLong(pollOrSurveyId));
-		for (String description : descriptions) {
-			Document doc2 = Jsoup.parse(description, "", Parser.xmlParser());
+		List<PollsChoice> polls = pollsChoiceService.getDescription(Long.parseLong(pollOrSurveyId));
+		for (PollsChoice poll : polls) {
+			Document doc2 = Jsoup.parse(poll.getDescription(), "", Parser.xmlParser());
 			Elements element = doc2.getElementsByTag("Description");
 			engQues.add(Jsoup.parse(element.get(0).toString()).text());
 			myanmarQues.add(Jsoup.parse(element.get(1).toString()).text());
 		}
-
+		newJournal.setQuestionid(pollOrSurveyId);
 		newJournal.setShareLink(getShareLink(pollOrSurveyId));
 		newJournal.setEngQuestions(engQues);
 		newJournal.setMyanmarQuestions(myanmarQues);
@@ -91,6 +170,17 @@ public class PollController extends AbstractController {
 		return "https://myanmar.gov.mm/poll?p_p_id=com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_mvcPath=%2Fpolls_display%2Fview.jsp&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_pollsQuestionId=" + questionId;
 	}
 
+	private List<JournalArticle> parseJournalArticleListByuserid(List<JournalArticle> journalArticleList,String userid,
+			String totalVoltcountMB,String choiceidMB) {
+		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
+		for (JournalArticle journalArticle : journalArticleList) {
+			JournalArticle journal = parseJournalArticlebyuserid(journalArticle,userid,totalVoltcountMB,choiceidMB);
+			if (journal != null)
+				newJournalList.add(journal);
+		}
+
+		return newJournalList;
+	}
 	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
@@ -115,11 +205,11 @@ public class PollController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getPolls(@RequestParam("input") String input, @RequestParam("userid") String userid) {
+	public JSONObject getPolls(@RequestParam("input") String input, @RequestParam("userid") String userid,String totalVoltcountMB,String choiceidMB) {
 		JSONObject resultJson = new JSONObject();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList));
+		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList),userid,totalVoltcountMB,choiceidMB);
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("poll", byPaganation(journalArticleList, input));
@@ -152,5 +242,17 @@ public class PollController extends AbstractController {
 		resultJson.put("poll", byPaganation(resultList, input));
 		resultJson.put("totalCount", resultList.size());
 		return resultJson;
+	}
+	public RequestVote getMobileVoltCount(String userid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
+		RequestVote reqVote= new RequestVote();
+		reqVote.setPollsChoiceList(pollslist);
+		reqVote.setUserid(userid);
+		reqVote.setTotalVoteCount(totalVoteCount+"");
+		reqVote.setPollOrSurveyId(pollOrSurveyId);
+		String uri = SERVICEURL + "/vote/getVote";
+		logger.info("URI____________" + uri);
+		RestTemplate restTemplate = new RestTemplate();
+		reqVote = restTemplate.postForObject( uri, reqVote, RequestVote.class);
+		return reqVote;
 	}
 }

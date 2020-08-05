@@ -41,5 +41,7 @@ public interface AbstractDao<E, I extends Serializable> {
 	public List<E> findDatabyQueryString(String queryString, long dataInput);
 	
 	public int findCountByQueryString(String queryString);
+	
+	public long findLong(String queryString);
 
 }

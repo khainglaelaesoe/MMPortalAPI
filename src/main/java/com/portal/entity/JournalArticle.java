@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -315,6 +316,22 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<String> EngQuestions;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String questionid;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String userstatus;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private List<Map<String, String>> myanmarQuestionsMap;
+
+	@Transient
+	@JsonView(Views.Thin.class)
+	private List<Map<String, String>> EngQuestionsMap;
 
 	public String getRatingAction() {
 		return ratingAction;
@@ -918,4 +935,37 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	public void setRating(double rating) {
 		this.rating = rating;
 	}
+
+	public String getQuestionid() {
+		return questionid;
+	}
+
+	public void setQuestionid(String questionid) {
+		this.questionid = questionid;
+	}
+
+	public String getUserstatus() {
+		return userstatus;
+	}
+
+	public void setUserstatus(String userstatus) {
+		this.userstatus = userstatus;
+	}
+
+	public List<Map<String, String>> getMyanmarQuestionsMap() {
+		return myanmarQuestionsMap;
+	}
+
+	public void setMyanmarQuestionsMap(List<Map<String, String>> myanmarQuestionsMap) {
+		this.myanmarQuestionsMap = myanmarQuestionsMap;
+	}
+
+	public List<Map<String, String>> getEngQuestionsMap() {
+		return EngQuestionsMap;
+	}
+
+	public void setEngQuestionsMap(List<Map<String, String>> engQuestionsMap) {
+		EngQuestionsMap = engQuestionsMap;
+	}
+	
 }

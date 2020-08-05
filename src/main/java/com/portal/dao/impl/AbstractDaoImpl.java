@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
@@ -187,5 +188,17 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 		Query query = entityManager.createQuery(queryString);
 		return query.getSingleResult() != null ? Integer.parseInt(query.getSingleResult().toString()) : 0;
 	}
-	
+	public long findLong(String queryString) {
+		long id = 0;
+		try {
+			Query query = entityManager.createQuery(queryString);
+			id = (long) query.getSingleResult();
+		}catch(NoResultException nre){
+			
+		}
+		if(id == 0){
+			
+		}
+		return id;
+	}
 }
