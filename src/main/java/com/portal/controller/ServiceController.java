@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -56,11 +57,8 @@ public class ServiceController {
 	@Autowired
 	private RatingsEntryService ratingsEntryService;
 
-	// private final static String SERVICEURL
-	// ="http://199.231.185.118:8080/national-portal-mobile";
-	// private final static String SERVICEURL =
-	// "http://103.89.48.13:8080/national-portal-mobile";
-	private final static String SERVICEURL = "http://localhost:8080/national-portal-mobile";
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 
@@ -152,7 +150,10 @@ public class ServiceController {
 			for (RatingsEntry entry : ratingsEntriesFromWeb) {
 				totalScore += entry.getScore();
 
-				if (Long.parseLong(userId) == entry.getUserid()) {
+				/* web user id */
+				String webUserId = getWebUserId(userId);
+				logger.info("webUserId!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + webUserId);
+				if (Long.parseLong(webUserId) == entry.getUserid()) {
 					userRating += entry.getScore();
 					ratingAction = "yes";
 				}
@@ -628,6 +629,34 @@ public class ServiceController {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return new ArrayList<String>();
+	}
+
+	public String getWebUserId(String userId) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("userid", userId);
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/user/webuserid";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<String> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, String.class);
+			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
+			return response.getBody();
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return null;
 	}
 
 	/* API to get rating form web Server */

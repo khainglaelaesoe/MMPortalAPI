@@ -17,7 +17,7 @@ public class MessageServiceImpl implements MessageService {
 
 	@Autowired
 	private MessageDao messageDao;
-	
+
 	@Autowired
 	private RatingsEntryDao ratingDao;
 
@@ -27,21 +27,21 @@ public class MessageServiceImpl implements MessageService {
 //		String query = "from Message message where classpk=" + classPK;
 //		return messageDao.byQuery(query);
 //	}
-	
+
 	public List<MBMessage> byClassPK(Long classPK) {
 		List<MBMessage> msgList = new ArrayList<MBMessage>();
 		String query = "from MBMessage message where classpk=" + classPK;
 		msgList = messageDao.byQuery(query);
-		for(MBMessage msg : msgList) {
+		for (MBMessage msg : msgList) {
 			String querycount = "Select count(*) from RatingsEntry where classPk=" + msg.getMessageid();
-			int count =messageDao.findCountByQueryString(querycount);
+			int count = messageDao.findCountByQueryString(querycount);
 			msg.setLikecount(count);
 		}
 		return msgList;
 	}
-	
-	public List<MBMessage> getReplyListByCommentId(Long messageId){
-		String query = "from MBMessage message where parentmessageId="+ messageId;
+
+	public List<MBMessage> getReplyListByCommentId(Long messageId) {
+		String query = "from MBMessage message where parentmessageId=" + messageId;
 		return messageDao.byQuery(query);
 	}
 }

@@ -138,7 +138,7 @@ public class JournalArticleController extends AbstractController {
 		int index = content.indexOf("location");
 		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
-		newArticle.setShareLink(getShareLinkForNews(journalArticle.getUrltitle()));	
+		newArticle.setShareLink(getShareLinkForNews(journalArticle.getUrltitle()));
 		return newArticle;
 	}
 
@@ -288,7 +288,15 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 		newArticle.setVideoLink(getVideoLink(journalArticle.getContent()));
 		newArticle.setEngDownloadLink(getDownloadLink(journalArticle.getContent()));
-		newArticle.setEngImageUrl(getImageUrl(journalArticle.getContent()));
+
+		String engImage = getEngElement(journalArticle.getContent(), "image", "en_US");
+		String myaImage = getEngElement(journalArticle.getContent(), "image", "my_MM").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "image", "my_MM") : getEngElement(journalArticle.getContent(), "image", "my_MM");
+		engImage = engImage.isEmpty() ? engImage : "https://myanmar.gov.mm" + engImage.substring(engImage.indexOf("/"), engImage.length());
+		myaImage = myaImage.isEmpty() ? myaImage : "https://myanmar.gov.mm" + myaImage.substring(myaImage.indexOf("/"), myaImage.length());
+
+		newArticle.setEngImageUrl(engImage);
+		newArticle.setMyanamrImageUrl(myaImage);
+		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}
 
@@ -337,8 +345,8 @@ public class JournalArticleController extends AbstractController {
 
 		Collections.sort(newArticles, new Comparator<JournalArticle>() {
 			public int compare(JournalArticle o1, JournalArticle o2) {
-				if(o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
-			    	return o2.getDisplaydate().compareTo(o1.getDisplaydate());
+				if (o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
+					return o2.getDisplaydate().compareTo(o1.getDisplaydate());
 				return 0;
 			}
 		});
@@ -367,8 +375,8 @@ public class JournalArticleController extends AbstractController {
 
 		Collections.sort(newArticles, new Comparator<JournalArticle>() {
 			public int compare(JournalArticle o1, JournalArticle o2) {
-				if(o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
-			    	return o2.getDisplaydate().compareTo(o1.getDisplaydate());
+				if (o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
+					return o2.getDisplaydate().compareTo(o1.getDisplaydate());
 				return 0;
 			}
 		});

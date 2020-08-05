@@ -70,6 +70,8 @@ public class DiscussionController extends AbstractController {
 		newJournal.setEngContent(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span style=\"color:#0000ff;\">", ""));
 		newJournal.setMyanmarContent(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span style=\"color:#0000ff;\">", ""));
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
+		newJournal.setpKString(journalArticle.getpKString());
+		newJournal.setMessageList(journalArticle.getMessageList());
 		return newJournal;
 	}
 
@@ -103,12 +105,16 @@ public class DiscussionController extends AbstractController {
 		for (Object object : objectList) {
 			Object[] arr = (Object[]) object;
 			List<MBMessage> messageList = messageService.byClassPK(Long.parseLong(arr[1].toString()));
-			for (MBMessage msg : messageList)
-				msg.setReplyList(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
+			List<MBMessage> mobileComments = getWebUserId(arr[1].toString());
+			messageList.addAll(mobileComments);			
+			
+//			for (MBMessage msg : messageList)
+//				msg.setReplyList(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {
 				journalArticle.setMessageList(messageList);
+				journalArticle.setpKString(arr[1].toString());
 				journalArticleList.add(journalArticle);
 			}
 		}

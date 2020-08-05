@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "MBMessage")
-public class MBMessage {
+public class MBMessage extends AbstractEntity{
 
 	@Transient
 	@JsonView(Views.Thin.class)

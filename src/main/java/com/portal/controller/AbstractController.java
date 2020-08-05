@@ -11,15 +11,26 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.portal.entity.AssetCategory;
 import com.portal.entity.JournalArticle;
+import com.portal.entity.MBMessage;
 
 @Service
 public class AbstractController {
 
 	private static Logger logger = Logger.getLogger(AbstractController.class);
+
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	public String getMyanmarElement(String content, String element, String remover) {
 		int begin = content.indexOf(element);
@@ -225,4 +236,35 @@ public class AbstractController {
 			objectList.add(entryList.get(i));
 		return objectList;
 	}
+
+	public List<MBMessage> getWebUserId(String classPK) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("classpk", classPK);
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/comment/mobile";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<List> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
+			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
+			List<MBMessage> userScores = response.getBody();
+			logger.info("LeaveBalance list size:" + userScores.size());
+			return userScores;
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return null;
+	}
+
 }

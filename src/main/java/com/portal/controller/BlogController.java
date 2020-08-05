@@ -8,12 +8,18 @@ import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.DateUtil;
@@ -70,6 +76,7 @@ public class BlogController extends AbstractController {
 
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
 		newJournal.setMessageList(journalArticle.getMessageList());
+		newJournal.setpKString(journalArticle.getpKString());
 		return newJournal;
 	}
 
@@ -105,12 +112,16 @@ public class BlogController extends AbstractController {
 		for (Object object : objectList) {
 			Object[] arr = (Object[]) object;
 			List<MBMessage> messageList = messageService.byClassPK(Long.parseLong(arr[1].toString()));
-			for (MBMessage msg : messageList)
-				msg.setReplyList(getReplyList(messageService.getReplyListByCommentId(msg.getMessageid())));
+			List<MBMessage> mobileComments = getWebUserId(arr[1].toString());
+			messageList.addAll(mobileComments);
+
+//			for (MBMessage msg : messageList)
+//				msg.setReplyList(getReplyList(messageService.getReplyListByCommentId(msg.getMessageid())));
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {
 				journalArticle.setMessageList(messageList);
+				journalArticle.setpKString(arr[1].toString());
 				journalArticleList.add(journalArticle);
 			}
 		}
