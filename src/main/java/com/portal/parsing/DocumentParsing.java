@@ -2,7 +2,9 @@ package com.portal.parsing;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base32;
 import org.apache.log4j.Logger;
@@ -262,7 +264,7 @@ public class DocumentParsing {
 	 */
 
 	public String SourceChange(String content) {
-		content = "<img src=" + "https://myanmar.gov.mm" + content + "\">";
+		content = "<img src=" + "\"https://myanmar.gov.mm" + content + "\">";
 		return content;
 	}
 
@@ -383,5 +385,86 @@ public class DocumentParsing {
 			}
 		}
 		return engMyan;
+	}
+	
+	public List<Map<String, String>> ParsingImageTextTextArea(String input) {
+		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+		String engimage= "",myanimage="";
+		String engtext= "",myantext= "";
+		String engtextarea= "",myantextarea= "";
+		Map<String, String> engmyanimage = new HashMap<String, String>();
+		Map<String, String> engmyantext = new HashMap<String, String>();
+		Map<String, String> engmyantextarea = new HashMap<String, String>();
+		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
+		Elements elements = doc.select("dynamic-element");
+		for (Element element : elements) {
+			if (element.attr("type").equals("image")) {
+				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+					engimage = SourceChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
+				}
+				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+					myanimage = SourceChange(element.getElementsByAttributeValueContaining("language-id", "my_MM").text());
+				}
+				 engimage = !engimage.isEmpty() ? engimage : myanimage;
+				 myanimage = !myanimage.isEmpty() ? myanimage : engimage;
+				 engmyanimage.put("engimage",engimage);
+				 engmyanimage.put("myanimage",myanimage);
+				 list.add(engmyanimage);
+			}
+			
+			if (element.attr("type").equals("text")) {
+				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+					engtext = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
+				}
+
+				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+					myantext = element.getElementsByAttributeValueContaining("language-id", "my_MM").text();
+				}
+				engtext = !engtext.isEmpty() ? engtext : myantext;
+				myantext = !myantext.isEmpty() ? myantext : engtext;
+				engmyantext.put("engtext",engtext);
+				engmyantext.put("myantext",myantext);
+				list.add(engmyantext);
+			}
+			if (element.attr("type").equals("text_area")) {
+				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+						engtextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
+				}
+
+				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+						myantextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "my_MM").text());
+				}
+				engtextarea = !engtextarea.isEmpty() ? engtextarea : myantextarea;
+				myantextarea = !myantextarea.isEmpty() ? myantextarea : engtextarea;
+				engmyantextarea.put("engtextarea",engtextarea);
+				engmyantextarea.put("myantextarea",myantextarea);
+				list.add(engmyantextarea);
+			}
+		}
+		return list;
+	}
+	
+	public String imageChange(String htmlinput) {
+		String resdata = "";
+		Document docimage = Jsoup.parse(htmlinput, "", Parser.xmlParser());
+		String imgreplace = "";
+		Elements images = docimage.getElementsByTag("img");
+		if (images.size() > 0) {
+			for (Element img : images) {
+				String imgsrc = img.attr("src");
+				System.out.println("Source Change Content........" + imgsrc);
+				if (imgsrc.startsWith("data:image/png;base64")) {
+					imgreplace = imgsrc;
+
+				}
+				else {
+					imgreplace = "https://myanmar.gov.mm" + imgsrc;
+					img.attr("src", imgreplace);
+				}
+			}
+			resdata = images.toString();
+		}else 
+			resdata = docimage.text().toString();
+		return resdata;
 	}
 }

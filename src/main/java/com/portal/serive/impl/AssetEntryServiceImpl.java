@@ -198,4 +198,9 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		String query = "Select ae.classuuid from AssetEntry ae where ae.visible=1 and ae.classtypeid= 46307";
 		return assetEntryDao.findByQuery(query);
 	}
+	
+	public long getClassPK(){
+		String query = "SELECT classpk from AssetEntry where visible=1 and entryid in (Select entryid from AssetEntries_AssetCategories where categoryId=126202) order by entryid desc";
+		return assetEntryDao.findLongByQueryString(query).get(0);
+	}
 }

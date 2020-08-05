@@ -51,10 +51,9 @@ public interface AssetEntryService {
 	
 	public List<String> getAssetEntryListForTendersByViewCount(long categoryId);
 	
-	
 	public List<Long> getClassName(String classUuid);	
 	
 	public List<Long> getClassPK(String classUuid) ;		
 
-
+	public long getClassPK();
 }
