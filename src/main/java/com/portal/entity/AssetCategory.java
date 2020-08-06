@@ -32,6 +32,11 @@ public class AssetCategory implements Serializable {
 	@JsonView(Views.Summary.class)
 	@Column(name = "title")
 	private String title;
+	
+	@JsonIgnore
+	@JsonView(Views.Summary.class)
+	@Column(name = "leftcategoryid")
+	private String leftcategoryid;
 
 	@JsonView(Views.Thin.class)
 	@Transient
@@ -98,6 +103,15 @@ public class AssetCategory implements Serializable {
 	
 	
 	
+	
+	public String getLeftcategoryid() {
+		return leftcategoryid;
+	}
+
+	public void setLeftcategoryid(String leftcategoryid) {
+		this.leftcategoryid = leftcategoryid;
+	}
+
 	public String getEngImageUrl() {
 		return engImageUrl;
 	}

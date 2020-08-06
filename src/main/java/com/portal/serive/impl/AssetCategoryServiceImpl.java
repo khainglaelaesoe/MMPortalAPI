@@ -35,13 +35,13 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
 
 	@Override
 	public List<AssetCategory> getAssetCategoryByParentCategoryId(long id) {
-		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and parentcategoryid=" + id;
+		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and parentcategoryid=" + id+" order by leftcategoryid";
 		return assetCategoryDao.byQuery(queryStr);
 	}
 
 	@Override
 	public List<AssetCategory> getAssetCategoryByParentCategoryIdMinistry(long id) {
-		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and" + " name!='No Longer In Use Minitries' and parentcategoryid=" + id;
+		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and" + " name!='No Longer In Use Minitries' and parentcategoryid=" + id+" order by leftcategoryid";
 		return assetCategoryDao.byQuery(queryStr);
 	}
 
