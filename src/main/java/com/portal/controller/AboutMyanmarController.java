@@ -210,8 +210,13 @@ public class AboutMyanmarController extends AbstractController {
 		newJournal.setImageUrl(getImage(jacontent));
 		ArrayList<String> contentList = new ArrayList<String>();
 		DocumentParsing dp = new DocumentParsing();
-		newJournal.setEngImageUrl(dp.ParsingEngImage(jacontent));
-		newJournal.setMyanamrImageUrl(dp.ParsingMyanImage(jacontent));
+		List<String> engimage=dp.ParsingEngImage(jacontent);
+		List<String> myanimage=dp.ParsingMyanImage(jacontent);
+		String engimages=""; String myanimages="";
+		for(String eng: engimage) engimages+=eng;
+		for(String myan: myanimage) myanimages += myan;
+		newJournal.setEngImageUrl(engimages);
+		newJournal.setMyanamrImageUrl(myanimages);
 		contentList = dp.ParsingAllContent(jacontent);
 
 		String engcontent = "";
@@ -421,8 +426,13 @@ public class AboutMyanmarController extends AbstractController {
 
 				ja = journalArticleService.getJournalArticleByAssteEntryClassUuId(ae.getClassuuid());
 				
-				category.setEngImageUrl(dp.ParsingEngImage(ja.getContent()));
-				category.setMyanImageUrl(dp.ParsingMyanImage(ja.getContent()));
+				List<String> engimage=dp.ParsingEngImage(ja.getContent());
+				List<String> myanimage=dp.ParsingMyanImage(ja.getContent());
+				String engimages=""; String myanimages="";
+				for(String eng: engimage) engimages+=eng;
+				for(String myan: myanimage) myanimages += myan;
+				category.setEngImageUrl(engimages);
+				category.setMyanImageUrl(myanimages);
 				ArrayList<String> contentList = new ArrayList<String>();
 				contentList = dp.ParsingAllContent(ja.getContent());
 				

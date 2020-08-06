@@ -102,8 +102,9 @@ public class DocumentParsing {
 	}
 	
 	
-	public String ParsingEngImage(String input) {
+	public List<String> ParsingEngImage(String input) {
 		String imagepath = "";
+		List images=new ArrayList<String>();
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
 		Elements elements = doc.select("dynamic-element");
 		for (Element element : elements) {
@@ -111,24 +112,29 @@ public class DocumentParsing {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
 					//System.out.println("English Image..."+element.getElementsByAttributeValueContaining("language-id", "en_US").text()+"\n");
 					imagepath = SourceChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
+					images.add(imagepath);
 				}
 			}
 		}
-		return imagepath;
+		return images;
 	}
-	public String ParsingMyanImage(String input) {
+	public List<String> ParsingMyanImage(String input) {
 		String imagepath = "";
+		List images=new ArrayList<String>();
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
 		Elements elements = doc.select("dynamic-element");
 		for (Element element : elements) {
 			if (element.attr("type").equals("image")) {
 				if (element.getElementsByAttributeValueContaining("language-id", " my_MM").size() > 0) {
 					imagepath = SourceChange(element.getElementsByAttributeValueContaining("language-id", " my_MM").text());
+					images.add(imagepath);
 				}
 			}
 		}
-		return imagepath;
+		return images;
 	}
+	
+	
 	
 	public String ParsingSpan(String input) {
 		//String removespan = "";
