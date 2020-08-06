@@ -126,9 +126,14 @@ public class FormController extends AbstractController {
 
 		/* department myanamr title, department english title */
 		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
-		newJournal.setEngDepartmentTitle(OrgEngName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_").replaceAll("'", "")).getValue());
-		newJournal.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_").replaceAll("'", "")).getValue());
+		if (name.equals("Topics")) {
+			newJournal.setEngDepartmentTitle("");
+			newJournal.setMyanmarDepartmentTitle("");
+		} else {
+			newJournal.setEngDepartmentTitle(OrgEngName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_").replaceAll("'", "")).getValue());
+			newJournal.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_").replaceAll("'", "")).getValue());
 
+		}
 		/* image url */
 		String content = journalArticle.getContent();
 		int end = 0;
@@ -186,7 +191,6 @@ public class FormController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getDocumentsBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = new ArrayList<String>();
 
 		long totalCount = 0;
