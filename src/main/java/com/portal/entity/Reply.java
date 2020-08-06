@@ -1,5 +1,6 @@
 package com.portal.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -81,6 +82,8 @@ public class Reply {
 	}
 
 	public List<MBMessage> getReplyList() {
+		if(replyList == null)
+			replyList = new ArrayList<MBMessage>();
 		return replyList;
 	}
 

@@ -128,20 +128,12 @@ public class JobAndVacancyController extends AbstractController {
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85090);
-			totalCount = journalArticleService.getJobBySearchterm(searchTerm, 85090);
-			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input);
-			journalArticleList.forEach(journalArticle -> {
-				StringBuilder searchTerms = new StringBuilder();
-				searchTerms.append(journalArticle.getContent());
-				searchTerms.append(journalArticle.getTitle());
-				if (searchTerms.toString().contains(searchTerm))
-					resultList.add(journalArticle);
-			});
+			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input, searchTerm); // by size // now all
 
-			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("jobs", parseJournalArticleList(resultList));
-			json.put("totalCount", totalCount);
+			json.put("jobs", byPaganation(parseJournalArticleList(journalArticleList), input));
+			json.put("totalCount", journalArticleList.size());
 			return json;
 		}
 
@@ -376,91 +368,91 @@ public class JobAndVacancyController extends AbstractController {
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80486);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80486);
 			break;
 		case Education_Research:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80484);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80484);
 			break;
 		case Social:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80485);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80485);
 			break;
 		case Economy:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96793);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96793);
 			break;
 		case Agriculture:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80491);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80491);
 			break;
 		case Labour_Employment:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80494);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80494);
 			break;
 		case Livestock:
 			entryList = assetEntryService.getAssetEntryListForLiveStockJobAndVacancy(87834);
 			break;
 		case Law_Justice:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96797);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96797);
 			break;
 		case Security:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96799);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96799);
 			break;
 		case Hotel_Tourism:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80488);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80488);
 			break;
 		case Citizen:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96801);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96801);
 			break;
 		case Natural_Resources_Environment:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80501);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80501);
 			break;
 		case Industries:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80495);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80495);
 			break;
 		case Construction:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96804);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96804);
 			break;
 		case Science:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80499);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80499);
 			break;
 		case Technology:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80496);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80496);
 			break;
 		case Transportation:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(97769);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(97769);
 			break;
 		case Communication:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96809);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96809);
 			break;
 		case Information_Media:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96815);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96815);
 			break;
 		case Religion_Art_Culture:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80493);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80493);
 			break;
 		case Finance_Tax:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80489);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80489);
 			break;
 		case SMEs:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80503);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80503);
 			break;
 		case Natural_Disaster:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96818);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96818);
 			break;
 		case Power_Energy:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(80490);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(80490);
 			break;
 		case Sports:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96820);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96820);
 			break;
 		case Statistics:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96822);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96822);
 			break;
 		case Insurances:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96824);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96824);
 			break;
 		case City_Development:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(96826);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(96826);
 			break;
 		case Visas_Passports:
-			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByViewCount(8243647);
+			entryList = assetEntryService.getAssetEntryListForJobAndVacancyByLatest(8243647);
 			break;
 		default:
 			new ArrayList<String>();

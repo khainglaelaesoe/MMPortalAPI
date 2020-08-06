@@ -146,19 +146,11 @@ public class DocumentController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(84948);
 			totalCount = journalArticleService.getJobBySearchterm(searchTerm, 84948);
-			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input);
-			journalArticleList.forEach(journalArticle -> {
-				StringBuilder searchTerms = new StringBuilder();
-				searchTerms.append(journalArticle.getContent());
-				searchTerms.append(journalArticle.getTitle());
-				if (searchTerms.toString().contains(searchTerm))
-					resultList.add(journalArticle);
-			});
-
-			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+			List<JournalArticle> journalArticleList =  getJournalArticles(entryList, input, searchTerm); // by size // now all
+			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("documents", parseJournalArticleList(resultList));
-			json.put("totalCount", totalCount);
+			json.put("documents",  byPaganation(parseJournalArticleList(journalArticleList), input));
+			json.put("totalCount", journalArticleList.size());
 			return json;
 		}
 

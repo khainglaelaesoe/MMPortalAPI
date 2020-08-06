@@ -41,7 +41,7 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	public List<MBMessage> getReplyListByCommentId(Long messageId) {
-		String query = "from MBMessage message where parentmessageId=" + messageId;
+		String query = "from MBMessage message where parentmessageid=" + messageId;
 		return messageDao.byQuery(query);
 	}
 }

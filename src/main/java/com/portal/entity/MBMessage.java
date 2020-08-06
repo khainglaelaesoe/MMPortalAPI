@@ -1,5 +1,6 @@
 package com.portal.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -12,15 +13,19 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "MBMessage")
-public class MBMessage extends AbstractEntity{
+public class MBMessage extends AbstractEntity {
 
 	@Transient
 	@JsonView(Views.Thin.class)
 	private long likecount;
 
 	@Id
+	@JsonView(Views.Thin.class)
 	@Column(name = "messageid", unique = true, nullable = false)
 	private long messageid;
+
+	@Column(name = "parentmessageid")
+	private long parentmessageid;
 
 	@JsonView(Views.Thin.class)
 	private String statusbyusername;
@@ -85,6 +90,8 @@ public class MBMessage extends AbstractEntity{
 	}
 
 	public List<Reply> getReplyList() {
+		if(replyList == null)
+			replyList = new ArrayList<Reply>();
 		return replyList;
 	}
 
@@ -116,4 +123,11 @@ public class MBMessage extends AbstractEntity{
 		this.classpk = classpk;
 	}
 
+	public long getParentmessageid() {
+		return parentmessageid;
+	}
+
+	public void setParentmessageid(long parentmessageid) {
+		this.parentmessageid = parentmessageid;
+	}
 }

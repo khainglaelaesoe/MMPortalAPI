@@ -32,7 +32,7 @@ import com.portal.service.JournalFolderService;
 
 @Controller
 @RequestMapping("tender")
-public class TenderController {
+public class TenderController extends AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
@@ -53,15 +53,6 @@ public class TenderController {
 			if (el.parentNode() != null)
 				el.replaceWith(new TextNode("/" + el.text().trim() + "/"));
 		}
-	}
-
-	private List<String> removeInvalidString(String[] titleArr) {
-		List<String> titleList = new ArrayList<String>();
-		for (String title : titleArr) {
-			if (title != null && !title.isEmpty() && title.length() > 1)
-				titleList.add(title);
-		}
-		return titleList;
 	}
 
 	private List<String> removeDelimeterFromContent(String content) {
@@ -99,21 +90,9 @@ public class TenderController {
 		return newJournal;
 	}
 
-	private String convertObjectListToString(List<String> entryList, String input) {
-		int index = Integer.parseInt(input);
-		int lastIndex = (entryList.size() - 1) - (index * 10 - 10);
-		int substract = lastIndex < 9 ? lastIndex : 9;
-		int startIndex = lastIndex - substract;
-
-		String info = "";
-		for (int i = startIndex; i <= lastIndex; i++)
-			info += entryList.get(i) + ",";
-		return info;
-	}
-
 	public List<JournalArticle> getJournalArticles(List<String> entryList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertObjectListToString(entryList, input);
+		String info = convertEntryListToString(entryList, input);
 		String[] classUuids = info.split(",");
 		for (String classUuid : classUuids) {
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
@@ -153,20 +132,12 @@ public class TenderController {
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85086);
-			totalCount = journalArticleService.getTenderBySearchterm(searchTerm, 85086);
-			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input);
-			journalArticleList.forEach(journalArticle -> {
-				StringBuilder searchTerms = new StringBuilder();
-				searchTerms.append(journalArticle.getContent());
-				searchTerms.append(journalArticle.getTitle());
-				if (searchTerms.toString().contains(searchTerm))
-					resultList.add(journalArticle);
-			});
+			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input, searchTerm); // by size // now all
 
-			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("tenders", parseJournalArticleList(resultList));
-			json.put("totalCount", totalCount);
+			json.put("tenders", byPaganation(parseJournalArticleList(journalArticleList), input));
+			json.put("totalCount", journalArticleList.size());
 			return json;
 		}
 
@@ -285,91 +256,91 @@ public class TenderController {
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80486);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80486);
 			break;
 		case Education_Research:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80484);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80484);
 			break;
 		case Social:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80485);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80485);
 			break;
 		case Economy:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96793);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96793);
 			break;
 		case Agriculture:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80491);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80491);
 			break;
 		case Labour_Employment:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80494);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80494);
 			break;
 		case Livestock:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(87834);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(87834);
 			break;
 		case Law_Justice:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96797);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96797);
 			break;
 		case Security:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96799);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96799);
 			break;
 		case Hotel_Tourism:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80488);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80488);
 			break;
 		case Citizen:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96801);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96801);
 			break;
 		case Natural_Resources_Environment:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80501);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80501);
 			break;
 		case Industries:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80495);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80495);
 			break;
 		case Construction:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96804);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96804);
 			break;
 		case Science:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80499);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80499);
 			break;
 		case Technology:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80496);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80496);
 			break;
 		case Transportation:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(97769);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(97769);
 			break;
 		case Communication:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96809);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96809);
 			break;
 		case Information_Media:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96815);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96815);
 			break;
 		case Religion_Art_Culture:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80493);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80493);
 			break;
 		case Finance_Tax:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80489);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80489);
 			break;
 		case SMEs:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80503);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80503);
 			break;
 		case Natural_Disaster:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96818);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96818);
 			break;
 		case Power_Energy:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(80490);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(80490);
 			break;
 		case Sports:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96820);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96820);
 			break;
 		case Statistics:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96822);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96822);
 			break;
 		case Insurances:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96824);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96824);
 			break;
 		case City_Development:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(96826);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(96826);
 			break;
 		case Visas_Passports:
-			entryList = assetEntryService.getAssetEntryListForTendersByViewCount(8243647);
+			entryList = assetEntryService.getAssetEntryListForTendersByLatest(8243647);
 			break;
 		default:
 			new ArrayList<String>();

@@ -22,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
@@ -91,7 +93,7 @@ public class BlogController extends AbstractController {
 		return newJournalList;
 	}
 
-	private List<Reply> getReplyList(List<MBMessage> messageList) {
+	private List<Reply> parse(List<MBMessage> messageList) {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
@@ -99,7 +101,6 @@ public class BlogController extends AbstractController {
 			reply.setBody(message.getBody());
 			reply.setSubject(message.getSubject());
 			reply.setLikecount(message.getLikecount());
-			reply.setSubject(message.getSubject());
 			reply.setCreatedate(message.getCreatedate());
 			replyList.add(reply);
 		});
@@ -109,14 +110,27 @@ public class BlogController extends AbstractController {
 	public List<JournalArticle> getJournalArticles(List<Object> entryList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = bySize(entryList, input);
+		ObjectMapper mapper = new ObjectMapper();
+
 		for (Object object : objectList) {
 			Object[] arr = (Object[]) object;
-			List<MBMessage> messageList = messageService.byClassPK(Long.parseLong(arr[1].toString()));
-			List<MBMessage> mobileComments = getWebUserId(arr[1].toString());
+			List<MBMessage> messageList = new ArrayList<MBMessage>();
+			List<MBMessage> webComments = messageService.byClassPK(Long.parseLong(arr[1].toString()));
+			List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(arr[1].toString()), new TypeReference<List<MBMessage>>() {
+			});
+			messageList.addAll(webComments);
 			messageList.addAll(mobileComments);
 
-//			for (MBMessage msg : messageList)
-//				msg.setReplyList(getReplyList(messageService.getReplyListByCommentId(msg.getMessageid())));
+			for (MBMessage msg : messageList) {
+				if (msg.getMessageid() < 0)
+					continue;
+
+				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
+
+				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
+				});
+				msg.getReplyList().addAll(parse(replyList));
+			}
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {

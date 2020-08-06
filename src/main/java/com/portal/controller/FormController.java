@@ -31,7 +31,7 @@ import com.portal.service.JournalFolderService;
 
 @Controller
 @RequestMapping("form")
-public class FormController {
+public class FormController extends AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
@@ -52,15 +52,6 @@ public class FormController {
 			if (el.parentNode() != null)
 				el.replaceWith(new TextNode("/" + el.text().trim() + "/"));
 		}
-	}
-
-	private List<String> removeInvalidString(String[] titleArr) {
-		List<String> titleList = new ArrayList<String>();
-		for (String title : titleArr) {
-			if (title != null && !title.isEmpty() && title.length() > 1)
-				titleList.add(title);
-		}
-		return titleList;
 	}
 
 	private String getLink(String content, String remover) {
@@ -159,21 +150,9 @@ public class FormController {
 		return newJournal;
 	}
 
-	private String convertObjectListToString(List<String> entryList, String input) {
-		int index = Integer.parseInt(input);
-		int lastIndex = (entryList.size() - 1) - (index * 10 - 10);
-		int substract = lastIndex < 9 ? lastIndex : 9;
-		int startIndex = lastIndex - substract;
-
-		String info = "";
-		for (int i = startIndex; i <= lastIndex; i++)
-			info += entryList.get(i) + ",";
-		return info;
-	}
-
 	public List<JournalArticle> getJournalArticles(List<String> entryList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertObjectListToString(entryList, input);
+		String info = convertEntryListToString(entryList, input);
 		String[] classUuids = info.split(",");
 		for (String classUuid : classUuids) {
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
@@ -213,20 +192,11 @@ public class FormController {
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85212);
-			totalCount = journalArticleService.getFormBySearchterm(searchTerm, 85212);
-			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input);
-			journalArticleList.forEach(journalArticle -> {
-				StringBuilder searchTerms = new StringBuilder();
-				searchTerms.append(journalArticle.getContent());
-				searchTerms.append(journalArticle.getTitle());
-				if (searchTerms.toString().contains(searchTerm) || searchTerms.toString().contains(searchTerm.substring(0,1).toUpperCase()))
-					resultList.add(journalArticle);
-			});
-
-			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input, searchTerm); // by size // now all
+			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("forms", parseJournalArticleList(resultList));
-			json.put("totalCount", totalCount);
+			json.put("forms", byPaganation(parseJournalArticleList(journalArticleList), input));
+			json.put("totalCount", journalArticleList.size());
 			return json;
 		}
 
@@ -437,8 +407,6 @@ public class FormController {
 		default:
 			new ArrayList<String>();
 		}
-
-		logger.info("entrylist!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: " + entryList.size());
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);

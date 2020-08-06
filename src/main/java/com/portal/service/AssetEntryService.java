@@ -8,8 +8,8 @@ import com.portal.entity.MBMessage;
 public interface AssetEntryService {
 
 	public AssetEntry getAssetEntryByClassTypeCategoryTitle(long cid, String engtitle, String myantitle);
-	
-	public AssetEntry getAssetEntryMNREC(String title) ;
+
+	public AssetEntry getAssetEntryMNREC(String title);
 
 	public AssetEntry getAssetEntryByClassTypeCategoryIdTitle(long cid, long ctid, String title);
 
@@ -40,20 +40,26 @@ public interface AssetEntryService {
 	public List<Long> getClassNameByClassUuid(String classUuid);
 
 	public List<String> getAssetEntryByTitle(String title);
-	
+
 	public List<String> getAssetEntryListByClassTypeIdAndViewCount(long classTypeId);
-	
+
 	public List<String> getAssetEntryListForServicesByViewCount(long categoryId);
-	
+
 	public List<Object> byClassTypeId(long classTypeId);
-	
+
 	public List<String> getAssetEntryListForJobAndVacancyByViewCount(long categoryId);
-	
+
 	public List<String> getAssetEntryListForTendersByViewCount(long categoryId);
-	
-	public List<Long> getClassName(String classUuid);	
-	
-	public List<Long> getClassPK(String classUuid) ;		
+
+	public List<Long> getClassName(String classUuid);
+
+	public List<Long> getClassPK(String classUuid);
+
+	public List<String> getAssetEntryListForTendersByLatest(long categoryId);
+
+	public List<String> getAssetEntryListForJobAndVacancyByLatest(long categoryId);
+
+	public List<String> getAssetEntryListForServicesByLatest(long categoryId);
 
 	public long getClassPK();
 }

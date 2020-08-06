@@ -74,5 +74,10 @@ public interface JournalArticleService {
 	public JournalArticle getJournalArticleByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
 
 	public JournalArticle getJournalArticleByClassPK(long classpk);
+	
+	public JournalArticle getServiceByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
+	
+	public int getCount(String searchTerm, long classTypeId);
+
 
 }

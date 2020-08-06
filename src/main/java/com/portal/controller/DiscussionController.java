@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
@@ -102,14 +104,27 @@ public class DiscussionController extends AbstractController {
 	public List<JournalArticle> getJournalArticles(List<Object> entryList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = bySize(entryList, input);
+		ObjectMapper mapper = new ObjectMapper();
+
 		for (Object object : objectList) {
 			Object[] arr = (Object[]) object;
-			List<MBMessage> messageList = messageService.byClassPK(Long.parseLong(arr[1].toString()));
-			List<MBMessage> mobileComments = getWebUserId(arr[1].toString());
-			messageList.addAll(mobileComments);			
-			
-//			for (MBMessage msg : messageList)
-//				msg.setReplyList(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
+			List<MBMessage> messageList = new ArrayList<MBMessage>();
+			List<MBMessage> webComments = messageService.byClassPK(Long.parseLong(arr[1].toString()));
+			List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(arr[1].toString()), new TypeReference<List<MBMessage>>() {
+			});
+			messageList.addAll(webComments);
+			messageList.addAll(mobileComments);
+
+			for (MBMessage msg : messageList) {
+				if (msg.getMessageid() < 0)
+					continue;
+
+				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
+
+				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
+				});
+				msg.getReplyList().addAll(parse(replyList));
+			}
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {
@@ -179,4 +194,5 @@ public class DiscussionController extends AbstractController {
 		resultJson.put("totalCount", journalArticleService.getCountBySearchterm(searchterm, 129739));
 		return resultJson;
 	}
+
 }

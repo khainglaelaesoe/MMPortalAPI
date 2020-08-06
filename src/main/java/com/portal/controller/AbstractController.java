@@ -11,11 +11,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -23,11 +25,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.portal.entity.AssetCategory;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
+import com.portal.entity.Reply;
+import com.portal.service.JournalArticleService;
 
 @Service
 public class AbstractController {
 
 	private static Logger logger = Logger.getLogger(AbstractController.class);
+
+	@Autowired
+	private JournalArticleService journalArticleService;
 
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
@@ -237,7 +244,7 @@ public class AbstractController {
 		return objectList;
 	}
 
-	public List<MBMessage> getWebUserId(String classPK) {
+	public List<MBMessage> getMobileComments(String classPK) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("classpk", classPK);
@@ -264,7 +271,116 @@ public class AbstractController {
 		} catch (Exception e) {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
+		return new ArrayList<MBMessage>();
+	}
+
+	public List<JournalArticle> getJournalArticles(List<String> entryList, String input, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		for (String classUuid : entryList) {
+			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuIdAndSearchTerm(classUuid, searchTerm);
+			if (journalArticle != null)
+				journalArticleList.add(journalArticle);
+		}
+		return journalArticleList;
+	}
+
+	public List<String> getRatingsEntry(String classNameId, String classPk) {
+
+		// Prepare the header
+		List<MediaType> acceptableMediaTypes = new ArrayList<MediaType>();
+		acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(acceptableMediaTypes);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("classnameid", classNameId);
+		headers.add("classpk", classPk);
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		// Prepare the URL
+		String url = SERVICEURL + "/user/getratingsentry";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		// RESTTemplate to call the service
+		RestTemplate restTemplate = new RestTemplate();
+
+		// Data type for response
+		HttpEntity<List> response = null;
+		try {
+
+			restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
+
+			List<String> userScores = response.getBody();
+			logger.info("LeaveBalance list size:" + userScores.size());
+
+			return userScores;
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return new ArrayList<String>();
+	}
+
+	public String getWebUserId(String userId) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("userid", userId);
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/user/webuserid";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<String> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, String.class);
+			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
+			return response.getBody();
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
 		return null;
 	}
 
+	public List<MBMessage> getMobileReplyList(String messageId) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("messageid", messageId);
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/comment/reply";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<List> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
+			logger.info("reply list size:" + response.getBody().size());
+			return response.getBody();
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return new ArrayList<MBMessage>();
+	}
+
+	
 }

@@ -43,7 +43,7 @@ import com.portal.service.RatingsEntryService;
 
 @Controller
 @RequestMapping("service")
-public class ServiceController {
+public class ServiceController extends AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
@@ -119,57 +119,95 @@ public class ServiceController {
 		return newJournal;
 	}
 
-	private String convertObjectListToString(List<String> entryList, String input) {
-		int index = Integer.parseInt(input);
-		int lastIndex = (entryList.size() - 1) - (index * 10 - 10);
-		int substract = lastIndex < 9 ? lastIndex : 9;
-		int startIndex = lastIndex - substract;
+	public List<JournalArticle> getJournalArticles(List<String> entryList, String input, String userId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		String info = convertEntryListToString(entryList, input);
+		String[] classUuids = info.split(",");
+		for (String classUuid : classUuids) {
+			JournalArticle journalArticle = journalArticleService.getServiceByAssteEntryClassUuIdAndSearchTerm(classUuid, searchTerm);
+			if (journalArticle != null) {
 
-		String info = "";
-		for (int i = startIndex; i <= lastIndex; i++)
-			info += entryList.get(i) + ",";
-		return info;
+				Long entryId = assetEntryService.getClassNameByClassUuid(classUuid).get(0);
+				Long classNameId = assetEntryService.getClassName(classUuid).get(0);
+				Long classPK = assetEntryService.getClassPK(classUuid).get(0);
+
+				List<RatingsEntry> ratingsEntriesFromWeb = ratingsEntryService.getScoresByClass(classNameId, classPK);
+				List<String> mobileRatingsEntries = getRatingsEntry(classNameId.toString(), classPK.toString());
+
+				double totalScore = 0;
+				String ratingAction = "no";
+				double userRating = 0.0;
+				for (RatingsEntry entry : ratingsEntriesFromWeb) {
+					totalScore += entry.getScore();
+
+					/* web user id */
+					String webUserId = getWebUserId(userId);
+					if (webUserId != null && !webUserId.isEmpty() && Long.parseLong(webUserId) == entry.getUserid()) {
+						userRating += entry.getScore();
+						ratingAction = "yes";
+					}
+				}
+
+				for (String entryStr : mobileRatingsEntries) {
+					String[] strArr = entryStr.split(",");
+					totalScore += Double.parseDouble(strArr[1]);
+					if (Long.parseLong(userId) == Long.parseLong(strArr[0])) {
+						userRating += Double.parseDouble(strArr[1]);
+						ratingAction = "yes";
+					}
+				}
+
+				journalArticle.setRating(CollectionUtils.isEmpty(ratingsEntriesFromWeb) && CollectionUtils.isEmpty(mobileRatingsEntries) ? 0 : totalScore / (ratingsEntriesFromWeb.size() + mobileRatingsEntries.size()));
+				journalArticle.setUserRating(userRating);
+				journalArticle.setShareLink(getShareLink(journalArticle.getUrltitle(), entryId.toString()));
+				journalArticle.setClassNameString(classNameId.toString());
+				journalArticle.setpKString(classPK.toString());
+				journalArticle.setRatingAction(ratingAction);
+				journalArticleList.add(journalArticle);
+			}
+
+		}
+		return journalArticleList;
 	}
 
 	public List<JournalArticle> getJournalArticles(List<String> entryList, String input, String userId) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertObjectListToString(entryList, input);
+		String info = convertEntryListToString(entryList, input);
 		String[] classUuids = info.split(",");
 		for (String classUuid : classUuids) {
-
-			Long entryId = assetEntryService.getClassNameByClassUuid(classUuid).get(0);
-			Long classNameId = assetEntryService.getClassName(classUuid).get(0);
-			Long classPK = assetEntryService.getClassPK(classUuid).get(0);
-
-			List<RatingsEntry> ratingsEntriesFromWeb = ratingsEntryService.getScoresByClass(classNameId, classPK);
-			List<String> mobileRatingsEntries = getRatingsEntry(classNameId.toString(), classPK.toString());
-
-			double totalScore = 0;
-			String ratingAction = "no";
-			double userRating = 0.0;
-			for (RatingsEntry entry : ratingsEntriesFromWeb) {
-				totalScore += entry.getScore();
-
-				/* web user id */
-				String webUserId = getWebUserId(userId);
-				logger.info("webUserId!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + webUserId);
-				if (Long.parseLong(webUserId) == entry.getUserid()) {
-					userRating += entry.getScore();
-					ratingAction = "yes";
-				}
-			}
-
-			for (String entryStr : mobileRatingsEntries) {
-				String[] strArr = entryStr.split(",");
-				totalScore += Double.parseDouble(strArr[1]);
-				if (Long.parseLong(userId) == Long.parseLong(strArr[0])) {
-					userRating += Double.parseDouble(strArr[1]);
-					ratingAction = "yes";
-				}
-			}
-
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
 			if (journalArticle != null) {
+
+				Long entryId = assetEntryService.getClassNameByClassUuid(classUuid).get(0);
+				Long classNameId = assetEntryService.getClassName(classUuid).get(0);
+				Long classPK = assetEntryService.getClassPK(classUuid).get(0);
+
+				List<RatingsEntry> ratingsEntriesFromWeb = ratingsEntryService.getScoresByClass(classNameId, classPK);
+				List<String> mobileRatingsEntries = getRatingsEntry(classNameId.toString(), classPK.toString());
+
+				double totalScore = 0;
+				String ratingAction = "no";
+				double userRating = 0.0;
+				for (RatingsEntry entry : ratingsEntriesFromWeb) {
+					totalScore += entry.getScore();
+
+					/* web user id */
+					String webUserId = getWebUserId(userId);
+					if (Long.parseLong(webUserId) == entry.getUserid()) {
+						userRating += entry.getScore();
+						ratingAction = "yes";
+					}
+				}
+
+				for (String entryStr : mobileRatingsEntries) {
+					String[] strArr = entryStr.split(",");
+					totalScore += Double.parseDouble(strArr[1]);
+					if (Long.parseLong(userId) == Long.parseLong(strArr[0])) {
+						userRating += Double.parseDouble(strArr[1]);
+						ratingAction = "yes";
+					}
+				}
+
 				journalArticle.setRating(CollectionUtils.isEmpty(ratingsEntriesFromWeb) && CollectionUtils.isEmpty(mobileRatingsEntries) ? 0 : totalScore / (ratingsEntriesFromWeb.size() + mobileRatingsEntries.size()));
 				journalArticle.setUserRating(userRating);
 				journalArticle.setShareLink(getShareLink(journalArticle.getUrltitle(), entryId.toString()));
@@ -226,22 +264,21 @@ public class ServiceController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getServicesBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic, @RequestParam("userid") String userId) {
 		JSONObject json = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = new ArrayList<String>();
 
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85099);
+			List<JournalArticle> resultList = getResultList(entryList, input, searchTerm, userId); // by size // now all
 			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-
 			while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
 				resultList.addAll(getResultList(entryList, input, searchTerm, userId));
 				input = (Integer.parseInt(input) + 1) + "";
 			}
 
 			json.put("lastPageNo", lastPageNo);
-			json.put("services", parseJournalArticleList(resultList));
-			json.put("totalCount", journalArticleService.getAllBySearchterm(searchTerm, 85099));
+			json.put("services", resultList);
+			json.put("totalCount", journalArticleService.getCount(searchTerm, 85099));
 			json.put("lastInput", input);
 			return json;
 		}
@@ -363,91 +400,91 @@ public class ServiceController {
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80486);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80486);
 			break;
 		case Education_Research:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80484);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80484);
 			break;
 		case Social:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80485);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80485);
 			break;
 		case Economy:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96793);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96793);
 			break;
 		case Agriculture:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80491);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80491);
 			break;
 		case Labour_Employment:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80494);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80494);
 			break;
 		case Livestock:
 			entryList = assetEntryService.getAssetEntryListForLiveStockService(87834);
 			break;
 		case Law_Justice:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96797);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96797);
 			break;
 		case Security:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96799);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96799);
 			break;
 		case Hotel_Tourism:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80488);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80488);
 			break;
 		case Citizen:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96801);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96801);
 			break;
 		case Natural_Resources_Environment:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80501);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80501);
 			break;
 		case Industries:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80495);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80495);
 			break;
 		case Construction:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96804);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96804);
 			break;
 		case Science:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80499);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80499);
 			break;
 		case Technology:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80496);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80496);
 			break;
 		case Transportation:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(97769);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(97769);
 			break;
 		case Communication:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96809);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96809);
 			break;
 		case Information_Media:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96815);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96815);
 			break;
 		case Religion_Art_Culture:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80493);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80493);
 			break;
 		case Finance_Tax:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80489);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80489);
 			break;
 		case SMEs:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80503);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80503);
 			break;
 		case Natural_Disaster:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96818);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96818);
 			break;
 		case Power_Energy:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(80490);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(80490);
 			break;
 		case Sports:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96820);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96820);
 			break;
 		case Statistics:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96822);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96822);
 			break;
 		case Insurances:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96824);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96824);
 			break;
 		case City_Development:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(96826);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(96826);
 			break;
 		case Visas_Passports:
-			entryList = assetEntryService.getAssetEntryListForServicesByViewCount(8243647);
+			entryList = assetEntryService.getAssetEntryListForServicesByLatest(8243647);
 			break;
 		default:
 			new ArrayList<String>();
@@ -570,7 +607,8 @@ public class ServiceController {
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);
 		json.put("services", parseJournalArticleList(getJournalArticles(entryList, input, userId)));
-		json.put("totalCount", entryList.size());
+		json.put("totalCount", entryList.size());	
+		json.put("lastInput", 0);
 		return json;
 	}
 
@@ -587,76 +625,6 @@ public class ServiceController {
 		default:
 			return new JSONObject();
 		}
-	}
-
-	public List<String> getRatingsEntry(String classNameId, String classPk) {
-
-		// Prepare the header
-		List<MediaType> acceptableMediaTypes = new ArrayList<MediaType>();
-		acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(acceptableMediaTypes);
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.add("classnameid", classNameId);
-		headers.add("classpk", classPk);
-
-		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
-		logger.info("Request is: " + entityHeader);
-
-		// Prepare the URL
-		String url = SERVICEURL + "/user/getratingsentry";
-		logger.info("service url is: " + url);
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		logger.info("calling webservice..." + builder);
-
-		// RESTTemplate to call the service
-		RestTemplate restTemplate = new RestTemplate();
-
-		// Data type for response
-		HttpEntity<List> response = null;
-		try {
-
-			restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
-			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
-
-			List<String> userScores = response.getBody();
-			logger.info("LeaveBalance list size:" + userScores.size());
-
-			return userScores;
-
-		} catch (Exception e) {
-			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
-		}
-		return new ArrayList<String>();
-	}
-
-	public String getWebUserId(String userId) {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.add("userid", userId);
-
-		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
-		logger.info("Request is: " + entityHeader);
-
-		String url = SERVICEURL + "/user/webuserid";
-		logger.info("service url is: " + url);
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		logger.info("calling webservice..." + builder);
-
-		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<String> response = null;
-		try {
-
-			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, String.class);
-			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
-			return response.getBody();
-
-		} catch (Exception e) {
-			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
-		}
-		return null;
 	}
 
 	/* API to get rating form web Server */

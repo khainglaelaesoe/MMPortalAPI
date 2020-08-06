@@ -121,7 +121,7 @@ public class JournalArticleController extends AbstractController {
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
-		newArticle.setContent(removeDelimeterFromContent(journalArticle.getContent()));
+		newArticle.setContent(removeDelimeterFromContent(journalArticle.getContent()).replaceAll("<span style=\"color:#0000ff;\">", "<span>"));
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];

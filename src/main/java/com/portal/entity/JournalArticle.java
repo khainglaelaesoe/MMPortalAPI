@@ -84,7 +84,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@JsonView(Views.Thin.class)
 	@Transient
 	private String classNameString;
-	
+
 	@JsonView(Views.Thin.class)
 	@Transient
 	private String pKString;
@@ -268,7 +268,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private HashMap<Integer, String> iOSeLinkList;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<String> mNameList;
@@ -284,6 +284,9 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<String> eLinkList;
+
+	@JsonView(Views.Thin.class)
+	private String lastpublishdate;
 
 	@Transient
 	@JsonView(Views.Thin.class)
@@ -316,15 +319,15 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<String> EngQuestions;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String questionid;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String userstatus;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<Map<String, String>> myanmarQuestionsMap;
@@ -907,7 +910,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	public void setClasspk(String classpk) {
 		this.classpk = classpk;
 	}
-	
+
 	public String getClassNameString() {
 		return classNameString;
 	}
@@ -966,6 +969,6 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 
 	public void setEngQuestionsMap(List<Map<String, String>> engQuestionsMap) {
 		EngQuestionsMap = engQuestionsMap;
-	}
 
+	}
 }
