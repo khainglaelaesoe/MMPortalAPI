@@ -97,7 +97,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<String> getAssetEntryListByClassTypeId(long classTypeId) {
-		String query = "SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by createdate desc";
+		String query = "SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
@@ -117,7 +117,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 	
 	public List<String> getAssetEntryListForServicesByLatest(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
@@ -128,7 +128,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 	
 	public List<String> getAssetEntryListForTendersByLatest(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85086 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85086 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
@@ -139,32 +139,32 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	
 
 	public List<String> getAssetEntryListForJobAndVacancyByLatest(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85090 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85090 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
 	public List<String> getAssetEntryListForServices(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
 	public List<String> getAssetEntryListForLiveStockService(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.layoutuuid='79c2b1f9-ce78-abb4-873d-90bc9d52f02f' and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.layoutuuid='79c2b1f9-ce78-abb4-873d-90bc9d52f02f' and ae.classtypeid= 85099 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
 	public List<String> getAssetEntryListForTender(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85086 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85086 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
 	public List<String> getAssetEntryListForForm(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85212 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85212 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
 	public List<String> getAssetEntryListForJobAndVacancy(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85090 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85090 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
@@ -174,7 +174,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<String> getAssetEntryListForDocument(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 84948 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 84948 and ae.entryid in((Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + "))) order by ae.createdate";
 		return assetEntryDao.findByQuery(query);
 	}
 
