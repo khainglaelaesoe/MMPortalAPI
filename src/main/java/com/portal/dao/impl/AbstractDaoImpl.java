@@ -56,7 +56,7 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 	public List<E> getAll(String queryString) {
 		List<E> entityList;
 		Query query = entityManager.createQuery(queryString);
-		entityList = query.getResultList();		
+		entityList = query.getResultList();
 		return entityList;
 	}
 
@@ -153,7 +153,7 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 		Query query = entityManager.createQuery(queryString);
 		return (String) query.getSingleResult();
 	}
-	
+
 	@Override
 	public boolean saveUpdate(E e) throws ServiceUnavailableException {
 		try {
@@ -167,6 +167,18 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 		return true;
 	}
 
+	@Override
+	public void delete(E e) throws ServiceUnavailableException {
+		try {
+			getSession().delete(e);
+		} catch (CannotCreateTransactionException exception) {
+			logger.error(exception);
+			throw new ServiceUnavailableException();
+		} catch (Exception exception) {
+			logger.error(exception);
+		}
+	}
+
 	public void saveOrUpdate(E e) throws ServiceUnavailableException {
 		try {
 			Session session = getSession();
@@ -177,28 +189,31 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 			throw new ServiceUnavailableException();
 		}
 	}
+
 	public List<E> findDatabyQueryString(String queryString, long dataInput) {
 		List<E> entityList;
 		Query query = entityManager.createQuery(queryString).setParameter("dataInput", dataInput);
 		entityList = query.getResultList();
 		return entityList;
 	}
-	
+
 	public int findCountByQueryString(String queryString) {
 		Query query = entityManager.createQuery(queryString);
 		return query.getSingleResult() != null ? Integer.parseInt(query.getSingleResult().toString()) : 0;
 	}
+
 	public long findLong(String queryString) {
 		long id = 0;
 		try {
 			Query query = entityManager.createQuery(queryString);
 			id = (long) query.getSingleResult();
-		}catch(NoResultException nre){
-			
+		} catch (NoResultException nre) {
+
 		}
-		if(id == 0){
-			
+		if (id == 0) {
+
 		}
 		return id;
 	}
+
 }

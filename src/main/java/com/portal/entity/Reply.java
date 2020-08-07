@@ -16,8 +16,13 @@ public class Reply {
 	private long likecount;
 
 	@Id
+	@JsonView(Views.Thin.class)
 	@Column(name = "messageid", unique = true, nullable = false)
 	private long messageid;
+
+	@JsonView(Views.Thin.class)
+	@Column(name = "userid", unique = true, nullable = false)
+	private long userid;
 
 	@JsonView(Views.Thin.class)
 	private String statusbyusername;
@@ -82,7 +87,7 @@ public class Reply {
 	}
 
 	public List<MBMessage> getReplyList() {
-		if(replyList == null)
+		if (replyList == null)
 			replyList = new ArrayList<MBMessage>();
 		return replyList;
 	}
@@ -113,6 +118,14 @@ public class Reply {
 
 	public void setClasspk(Long classpk) {
 		this.classpk = classpk;
+	}
+
+	public long getUserid() {
+		return userid;
+	}
+
+	public void setUserid(long userid) {
+		this.userid = userid;
 	}
 
 }

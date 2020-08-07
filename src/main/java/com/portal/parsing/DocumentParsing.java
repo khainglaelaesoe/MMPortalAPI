@@ -100,17 +100,18 @@ public class DocumentParsing {
 		}
 		return imagepath;
 	}
-	
-	
+
 	public List<String> ParsingEngImage(String input) {
 		String imagepath = "";
-		List images=new ArrayList<String>();
+		List images = new ArrayList<String>();
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
 		Elements elements = doc.select("dynamic-element");
 		for (Element element : elements) {
 			if (element.attr("type").equals("image")) {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
-					//System.out.println("English Image..."+element.getElementsByAttributeValueContaining("language-id", "en_US").text()+"\n");
+					// System.out.println("English
+					// Image..."+element.getElementsByAttributeValueContaining("language-id",
+					// "en_US").text()+"\n");
 					imagepath = SourceChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
 					images.add(imagepath);
 				}
@@ -118,9 +119,10 @@ public class DocumentParsing {
 		}
 		return images;
 	}
+
 	public List<String> ParsingMyanImage(String input) {
 		String imagepath = "";
-		List images=new ArrayList<String>();
+		List images = new ArrayList<String>();
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
 		Elements elements = doc.select("dynamic-element");
 		for (Element element : elements) {
@@ -133,11 +135,8 @@ public class DocumentParsing {
 		}
 		return images;
 	}
-	
-	
-	
+
 	public String ParsingSpan(String input) {
-		//String removespan = "";
 		Document doc = Jsoup.parse(input, "", Parser.htmlParser());
 		Elements elements = doc.select("span");
 		for (Element element : elements) {
@@ -153,7 +152,6 @@ public class DocumentParsing {
 		}
 		return doc.html();
 	}
-	
 
 	public ArrayList<String> ParsingAllContent(String input) {
 		ArrayList<String> engmyan = new ArrayList<String>();
@@ -295,8 +293,7 @@ public class DocumentParsing {
 				if (imgsrc.startsWith("data:image/png;base64")) {
 					imgreplace = imgsrc;
 
-				}
-				else {
+				} else {
 					imgreplace = "https://myanmar.gov.mm" + imgsrc;
 					img.attr("src", imgreplace);
 				}
@@ -395,12 +392,12 @@ public class DocumentParsing {
 		}
 		return engMyan;
 	}
-	
+
 	public List<Map<String, String>> ParsingImageTextTextArea(String input) {
 		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-		String engimage= "",myanimage="";
-		String engtext= "",myantext= "";
-		String engtextarea= "",myantextarea= "";
+		String engimage = "", myanimage = "";
+		String engtext = "", myantext = "";
+		String engtextarea = "", myantextarea = "";
 		Map<String, String> engmyanimage = new HashMap<String, String>();
 		Map<String, String> engmyantext = new HashMap<String, String>();
 		Map<String, String> engmyantextarea = new HashMap<String, String>();
@@ -414,13 +411,13 @@ public class DocumentParsing {
 				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
 					myanimage = SourceChange(element.getElementsByAttributeValueContaining("language-id", "my_MM").text());
 				}
-				 engimage = !engimage.isEmpty() ? engimage : myanimage;
-				 myanimage = !myanimage.isEmpty() ? myanimage : engimage;
-				 engmyanimage.put("engimage",engimage);
-				 engmyanimage.put("myanimage",myanimage);
-				 list.add(engmyanimage);
+				engimage = !engimage.isEmpty() ? engimage : myanimage;
+				myanimage = !myanimage.isEmpty() ? myanimage : engimage;
+				engmyanimage.put("engimage", engimage);
+				engmyanimage.put("myanimage", myanimage);
+				list.add(engmyanimage);
 			}
-			
+
 			if (element.attr("type").equals("text")) {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
 					engtext = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
@@ -431,28 +428,28 @@ public class DocumentParsing {
 				}
 				engtext = !engtext.isEmpty() ? engtext : myantext;
 				myantext = !myantext.isEmpty() ? myantext : engtext;
-				engmyantext.put("engtext",engtext);
-				engmyantext.put("myantext",myantext);
+				engmyantext.put("engtext", engtext);
+				engmyantext.put("myantext", myantext);
 				list.add(engmyantext);
 			}
 			if (element.attr("type").equals("text_area")) {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
-						engtextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
+					engtextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "en_US").text());
 				}
 
 				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
-						myantextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "my_MM").text());
+					myantextarea = imageChange(element.getElementsByAttributeValueContaining("language-id", "my_MM").text());
 				}
 				engtextarea = !engtextarea.isEmpty() ? engtextarea : myantextarea;
 				myantextarea = !myantextarea.isEmpty() ? myantextarea : engtextarea;
-				engmyantextarea.put("engtextarea",engtextarea);
-				engmyantextarea.put("myantextarea",myantextarea);
+				engmyantextarea.put("engtextarea", engtextarea);
+				engmyantextarea.put("myantextarea", myantextarea);
 				list.add(engmyantextarea);
 			}
 		}
 		return list;
 	}
-	
+
 	public String imageChange(String htmlinput) {
 		String resdata = "";
 		Document docimage = Jsoup.parse(htmlinput, "", Parser.xmlParser());
@@ -465,14 +462,13 @@ public class DocumentParsing {
 				if (imgsrc.startsWith("data:image/png;base64")) {
 					imgreplace = imgsrc;
 
-				}
-				else {
+				} else {
 					imgreplace = "https://myanmar.gov.mm" + imgsrc;
 					img.attr("src", imgreplace);
 				}
 			}
 			resdata = images.toString();
-		}else 
+		} else
 			resdata = docimage.text().toString();
 		return resdata;
 	}

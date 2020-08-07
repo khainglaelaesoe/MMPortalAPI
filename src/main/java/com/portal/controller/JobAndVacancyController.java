@@ -2,6 +2,7 @@ package com.portal.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -122,7 +123,6 @@ public class JobAndVacancyController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getJobsBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = new ArrayList<String>();
 
 		long totalCount = 0;
@@ -245,8 +245,20 @@ public class JobAndVacancyController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeIdAndViewCount(85090);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+			List<JournalArticle> jobs = parseJournalArticleList(getJournalArticles(entryList, input));
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			jobs.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < jobs.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("jobs", parseJournalArticleList(getJournalArticles(entryList, input)));
+			json.put("jobs", jobs);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -359,8 +371,20 @@ public class JobAndVacancyController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85090);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+			List<JournalArticle> jobs = parseJournalArticleList(getJournalArticles(entryList, input));
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			jobs.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < jobs.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("jobs", parseJournalArticleList(getJournalArticles(entryList, input)));
+			json.put("jobs", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -459,8 +483,18 @@ public class JobAndVacancyController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<JournalArticle> jobs = parseJournalArticleList(getJournalArticles(entryList, input));
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		jobs.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < jobs.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
 		json.put("lastPageNo", lastPageNo);
-		json.put("jobs", parseJournalArticleList(getJournalArticles(entryList, input)));
+		json.put("jobs", newArticles);
 		json.put("totalCount", entryList.size());
 		return json;
 	}

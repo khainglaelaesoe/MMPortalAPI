@@ -381,5 +381,4 @@ public class AbstractController {
 		return new ArrayList<MBMessage>();
 	}
 
-	
 }

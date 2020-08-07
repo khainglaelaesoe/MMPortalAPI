@@ -3,6 +3,7 @@ package com.portal.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -94,11 +95,13 @@ public class TenderController extends AbstractController {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		String info = convertEntryListToString(entryList, input);
 		String[] classUuids = info.split(",");
+		logger.info("classUuids: !!!!!!!!!!!!!!!!!!!!!!!!!" + classUuids.length);
 		for (String classUuid : classUuids) {
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
 			if (journalArticle != null)
 				journalArticleList.add(journalArticle);
 		}
+
 		return journalArticleList;
 	}
 
@@ -126,7 +129,6 @@ public class TenderController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getTendersBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = new ArrayList<String>();
 
 		long totalCount = 0;
@@ -248,8 +250,20 @@ public class TenderController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85086);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+			List<JournalArticle> tenders = parseJournalArticleList(getJournalArticles(entryList, input));
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			tenders.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < tenders.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("tenders", parseJournalArticleList(getJournalArticles(entryList, input)));
+			json.put("tenders", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -347,8 +361,18 @@ public class TenderController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<JournalArticle> tenders = parseJournalArticleList(getJournalArticles(entryList, input));
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		tenders.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < tenders.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
 		json.put("lastPageNo", lastPageNo);
-		json.put("tenders", parseJournalArticleList(getJournalArticles(entryList, input)));
+		json.put("tenders", newArticles);
 		json.put("totalCount", entryList.size());
 		return json;
 

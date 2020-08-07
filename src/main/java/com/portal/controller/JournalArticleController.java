@@ -1,10 +1,15 @@
 package com.portal.controller;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -123,6 +128,7 @@ public class JournalArticleController extends AbstractController {
 
 		String con = dp.ParsingSpan(removeDelimeterFromContent(journalArticle.getContent()));
 		newArticle.setContent(ImageSourceChange(con).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -179,6 +185,16 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
+		
+		try {
+			DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			logger.info("dateString!!!!!!!!!!!!!!!!!!!!!!!!!!" + dateString);
+			Date date = format.parse(dateString);
+			newArticle.setDate(date); //2017-12-19 
+
+		} catch (ParseException e) {
+			logger.error("Error: " + e);
+		}
 		return newArticle;
 	}
 
@@ -357,6 +373,31 @@ public class JournalArticleController extends AbstractController {
 		resultJson.put("totalCount", entryList.size());
 		return resultJson;
 	}
+	
+
+	private JSONObject getJournalArticleByClassTypeIdAndLatestAnnouncement(String input, long classTypeId, CategoryType type) {
+		JSONObject resultJson = new JSONObject();
+		List<String> entryList = assetEntryService.getAssetEntryListByClassTypeId(classTypeId);
+		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+		List<JournalArticle> articles = getJournalArticles(convertEntryListToString(entryList, input), type);
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		articles.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < articles.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
+		logger.info("announcement!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		resultJson.put("articles", newArticles);
+		resultJson.put("lastPageNo", lastPageNo);
+		resultJson.put("totalCount", entryList.size());
+		return resultJson;
+	}
+
 
 	private JSONObject getJournalArticleByClassTypeIdAndMostView(String input, long classTypeId, CategoryType type) {
 		JSONObject resultJson = new JSONObject();
@@ -412,7 +453,7 @@ public class JournalArticleController extends AbstractController {
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
 		case LATEST:
-			return getJournalArticleByClassTypeIdAndLatest(input, 36208, CategoryType.ANNOUNCEMENT);
+			return getJournalArticleByClassTypeIdAndLatestAnnouncement(input, 36208, CategoryType.ANNOUNCEMENT);
 		case MOSTVIEW:
 			return getJournalArticleByClassTypeIdAndMostView(input, 36208, CategoryType.ANNOUNCEMENT);
 		default:

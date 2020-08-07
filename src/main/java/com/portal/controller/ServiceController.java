@@ -3,6 +3,7 @@ package com.portal.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -93,13 +94,13 @@ public class ServiceController extends AbstractController {
 		int start = content.indexOf("<dynamic-content language-id=\"en_US\">");
 		int end = content.indexOf("</dynamic-content>");
 
-		engContent = Jsoup.parse(content.substring(start, end)).text().replaceAll("value 1", "").replaceAll("<span style=\"color:#000080;\">", "<span>").replaceAll("<span style=\"color:#0000ff;\">", "<span>");
+		engContent = dp.ParsingSpan(Jsoup.parse(content.substring(start, end)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", "");
 		String remainString = content.substring(end, content.length());
 
 		int mStart = remainString.indexOf("<dynamic-content language-id=\"my_MM\">");
 		if (mStart > 0) {
 			int mEnd = remainString.lastIndexOf("</dynamic-content>");
-			myanmarContent = Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "").replaceAll("<span style=\"color:#000080;\">", "<span>").replaceAll("<span style=\"color:#0000ff;\">", "<span>");
+			myanmarContent = dp.ParsingSpan(Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", "");
 		}
 
 		newJournal.setMyanmarContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
@@ -193,7 +194,7 @@ public class ServiceController extends AbstractController {
 
 					/* web user id */
 					String webUserId = getWebUserId(userId);
-					if (Long.parseLong(webUserId) == entry.getUserid()) {
+					if (webUserId != null && Long.parseLong(webUserId) == entry.getUserid()) {
 						userRating += entry.getScore();
 						ratingAction = "yes";
 					}
@@ -390,9 +391,20 @@ public class ServiceController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85099);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-			json.put("lastPageNo", lastPageNo);
 			List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input, userId));
-			json.put("services", journalArticleList);
+
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			journalArticleList.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < journalArticleList.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
+			json.put("lastPageNo", lastPageNo);
+			json.put("services", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -504,9 +516,21 @@ public class ServiceController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeIdAndViewCount(85099);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
 			List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input, userId));
+
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			journalArticleList.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < journalArticleList.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("services", journalArticleList);
+			json.put("services", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -605,9 +629,22 @@ public class ServiceController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input, userId));
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
 		json.put("lastPageNo", lastPageNo);
-		json.put("services", parseJournalArticleList(getJournalArticles(entryList, input, userId)));
-		json.put("totalCount", entryList.size());	
+		json.put("services", newArticles);
+		json.put("totalCount", entryList.size());
 		json.put("lastInput", 0);
 		return json;
 	}

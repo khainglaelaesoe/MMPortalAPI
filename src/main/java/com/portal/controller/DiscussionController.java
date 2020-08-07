@@ -88,17 +88,20 @@ public class DiscussionController extends AbstractController {
 		return newJournalList;
 	}
 
-	private List<Reply> parse(List<MBMessage> messages) {
-		List<Reply> replys = new ArrayList<>();
-		messages.forEach(message -> {
+	private List<Reply> parse(List<MBMessage> messageList) {
+		List<Reply> replyList = new ArrayList<Reply>();
+		messageList.forEach(message -> {
 			Reply reply = new Reply();
-			reply.setBody(message.getBody());
+			reply.setMessageid(message.getMessageid());
+			reply.setUserid(message.getUserid());
 			reply.setUsername(message.getUsername());
-			reply.setCreatedate(message.getCreatedate());
-			reply.setLikecount(message.getLikecount());
+			reply.setBody(message.getBody());
 			reply.setSubject(message.getSubject());
+			reply.setLikecount(message.getLikecount());
+			reply.setCreatedate(message.getCreatedate());
+			replyList.add(reply);
 		});
-		return replys;
+		return replyList;
 	}
 
 	public List<JournalArticle> getJournalArticles(List<Object> entryList, String input) {

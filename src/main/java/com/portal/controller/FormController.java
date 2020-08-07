@@ -3,6 +3,7 @@ package com.portal.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -314,8 +315,20 @@ public class FormController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85212);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+			List<JournalArticle> forms = parseJournalArticleList(getJournalArticles(entryList, input));
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			forms.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < forms.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("forms", parseJournalArticleList(getJournalArticles(entryList, input)));
+			json.put("forms", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -413,8 +426,19 @@ public class FormController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+		List<JournalArticle> forms = parseJournalArticleList(getJournalArticles(entryList, input));
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		forms.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newForms = new ArrayList<JournalArticle>();
+		for (int i = 0; i < forms.size(); i++) {
+			newForms.add(stackList.pop());
+		}
 		json.put("lastPageNo", lastPageNo);
-		json.put("forms", parseJournalArticleList(getJournalArticles(entryList, input)));
+		json.put("forms", newForms);
 		json.put("totalCount", entryList.size());
 		return json;
 	}

@@ -24,6 +24,10 @@ public class MBMessage extends AbstractEntity {
 	@Column(name = "messageid", unique = true, nullable = false)
 	private long messageid;
 
+	@JsonView(Views.Thin.class)
+	@Column(name = "userid", unique = true, nullable = false)
+	private long userid;
+
 	@Column(name = "parentmessageid")
 	private long parentmessageid;
 
@@ -48,6 +52,14 @@ public class MBMessage extends AbstractEntity {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<Reply> replyList;
+
+	public long getUserid() {
+		return userid;
+	}
+
+	public void setUserid(long userid) {
+		this.userid = userid;
+	}
 
 	public long getMessageid() {
 		return messageid;
@@ -90,7 +102,7 @@ public class MBMessage extends AbstractEntity {
 	}
 
 	public List<Reply> getReplyList() {
-		if(replyList == null)
+		if (replyList == null)
 			replyList = new ArrayList<Reply>();
 		return replyList;
 	}

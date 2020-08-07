@@ -88,6 +88,8 @@ public class BlogController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
+			reply.setMessageid(message.getMessageid());
+			reply.setUserid(message.getUserid());
 			reply.setUsername(message.getUsername());
 			reply.setBody(message.getBody());
 			reply.setSubject(message.getSubject());

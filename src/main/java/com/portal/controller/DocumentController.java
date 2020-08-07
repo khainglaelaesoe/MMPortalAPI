@@ -3,6 +3,7 @@ package com.portal.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -49,13 +50,6 @@ public class DocumentController extends AbstractController {
 		}
 	}
 
-	private List<String> removeDelimeter(String str) {
-		Document doc = Jsoup.parse(str);
-		replaceTag(doc.children());
-		String[] contentInfo = Jsoup.parse(doc.toString()).text().split("/");
-		return removeInvalidString(contentInfo);
-	}
-
 	private String getAttribute(String content, String delimeter) {
 		int start = content.indexOf(delimeter);
 		String remainString = content.substring(start, content.length());
@@ -95,7 +89,7 @@ public class DocumentController extends AbstractController {
 
 		newJournal.setEngPblisher(getEngElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"en_US\">"));
 		newJournal.setMyanmarPublisher(getMyanmarElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"my_MM\">"));
-		
+
 		/* image url and download link */
 		newJournal.setEngImageUrl(getAttribute(content, "SmallImage").contains("http") ? getAttribute(content, "SmallImage") : getImage(content));
 		newJournal.setEngDownloadLink(getLink(content).isEmpty() ? getAttribute(content, "externalURL") : getLink(content));
@@ -146,10 +140,10 @@ public class DocumentController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(84948);
 			totalCount = journalArticleService.getJobBySearchterm(searchTerm, 84948);
-			List<JournalArticle> journalArticleList =  getJournalArticles(entryList, input, searchTerm); // by size // now all
+			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input, searchTerm); // by size // now all
 			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("documents",  byPaganation(parseJournalArticleList(journalArticleList), input));
+			json.put("documents", byPaganation(parseJournalArticleList(journalArticleList), input));
 			json.put("totalCount", journalArticleList.size());
 			return json;
 		}
@@ -264,8 +258,20 @@ public class DocumentController extends AbstractController {
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(84948);
 			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+
+			List<JournalArticle> documents = parseJournalArticleList(getJournalArticles(entryList, input));
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			documents.forEach(article -> {
+				stackList.push(article);
+			});
+
+			List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+			for (int i = 0; i < documents.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
+
 			json.put("lastPageNo", lastPageNo);
-			json.put("documents", parseJournalArticleList(getJournalArticles(entryList, input)));
+			json.put("documents", newArticles);
 			json.put("totalCount", entryList.size());
 			return json;
 		}
@@ -363,8 +369,19 @@ public class DocumentController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<JournalArticle> documents = parseJournalArticleList(getJournalArticles(entryList, input));
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		documents.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < documents.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+		
 		json.put("lastPageNo", lastPageNo);
-		json.put("documents", parseJournalArticleList(getJournalArticles(entryList, input)));
+		json.put("documents", newArticles);
 		json.put("totalCount", entryList.size());
 		return json;
 	}

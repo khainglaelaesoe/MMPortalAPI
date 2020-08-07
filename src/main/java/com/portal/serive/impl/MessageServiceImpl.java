@@ -44,4 +44,5 @@ public class MessageServiceImpl implements MessageService {
 		String query = "from MBMessage message where parentmessageid=" + messageId;
 		return messageDao.byQuery(query);
 	}
+
 }

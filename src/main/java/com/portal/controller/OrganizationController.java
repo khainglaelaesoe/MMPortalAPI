@@ -97,16 +97,10 @@ public class OrganizationController extends AbstractController {
 
 	private List<Organization_> getOrganizationList(String articleInfo) {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
-		Stack<Organization_> stackList = new Stack<Organization_>();
-
 		for (String id : articleInfo.split(",")) {
 			if (!DateUtil.isEmpty(id)) {
-				stackList.add(parseOrganization(journalArticleService.getJournalArticle(Long.parseLong(id))));
+				organizationList.add(parseOrganization(journalArticleService.getJournalArticle(Long.parseLong(id))));
 			}
-		}
-
-		for (int i = 0; i < stackList.size(); i++) {
-			organizationList.add(stackList.pop());
 		}
 		return organizationList;
 	}
@@ -315,9 +309,21 @@ public class OrganizationController extends AbstractController {
 		}
 
 		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;
+
+		List<Organization_> orgs = getOrganizationList(convertToString(articles, index));
+		Stack<Organization_> stackList = new Stack<Organization_>();
+		orgs.forEach(org -> {
+			stackList.push(org);
+		});
+
+		List<Organization_> newArticles = new ArrayList<Organization_>();
+		for (int i = 0; i < orgs.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("totalCount", articles.size());
-		resultJson.put("orginations", getOrganizationList(convertToString(articles, index)));
+		resultJson.put("orginations", orgs);
 		return resultJson;
 	}
 
