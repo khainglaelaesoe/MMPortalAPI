@@ -7,6 +7,7 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonView;
 
 public class RequestVote {
+	
 	@JsonView(Views.Thin.class)
 	List<PollsChoice> pollsChoiceList;
 	
@@ -61,5 +62,4 @@ public class RequestVote {
 	public void setUserstatus(String userstatus) {
 		this.userstatus = userstatus;
 	}
-
 }

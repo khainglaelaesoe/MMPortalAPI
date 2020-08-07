@@ -16,4 +16,12 @@ public class DDLRecordServiceImpl implements DDLRecordService {
 		String query = "Select count(*) from DDLRecord where recordsetid=" + pollOrSurveyId;
 		return ddlRecordDao.findLongByQueryString(query).get(0);
 	}
+	
+	public boolean getCountOfSurveybyuserid(long pollOrSurveyId, long userid) {
+		String query = "Select count(*) from DDLRecord where recordsetid=" + pollOrSurveyId + " and userid=" + userid;
+		if(ddlRecordDao.findLong(query) > 0)
+			return true;
+		else
+			return false;
+	}
 }

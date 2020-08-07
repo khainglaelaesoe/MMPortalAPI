@@ -60,7 +60,7 @@ public class PollController extends AbstractController {
 
 	private static Logger logger = Logger.getLogger(PollController.class);
 
-	private JournalArticle parseJournalArticlebyuserid(JournalArticle journalArticle,String userid) {
+	private JournalArticle parseJournalArticlebyuserid(JournalArticle journalArticle,String mbuserid) {
 		
 		if (journalArticle.getContent() == null)
 			return null;
@@ -89,7 +89,9 @@ public class PollController extends AbstractController {
 		List<PollsChoice> pollslist = new ArrayList<PollsChoice>();
 		pollslist= pollsChoiceService.getVoltResult(Long.parseLong(pollOrSurveyId));
 		long votecount = pollsChoiceService.getCountOfVote(Long.parseLong(pollOrSurveyId));
-		RequestVote req = getMobileVoltCount(userid, pollOrSurveyId,votecount, pollslist);
+		//mobile data
+		RequestVote req = getMobileVoltCount(mbuserid, pollOrSurveyId,votecount, pollslist);
+		//vote count
 		long totalvotecount = votecount + Long.parseLong(req.getTotalVoteCount());
 		newJournal.setPollOrSurveyCount(totalvotecount);
 		if(req.getUserstatus() == null) {
@@ -170,10 +172,10 @@ public class PollController extends AbstractController {
 		return "https://myanmar.gov.mm/poll?p_p_id=com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_mvcPath=%2Fpolls_display%2Fview.jsp&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_pollsQuestionId=" + questionId;
 	}
 
-	private List<JournalArticle> parseJournalArticleListByuserid(List<JournalArticle> journalArticleList,String userid) {
+	private List<JournalArticle> parseJournalArticleListByuserid(List<JournalArticle> journalArticleList,String mbuserid) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
-			JournalArticle journal = parseJournalArticlebyuserid(journalArticle,userid);
+			JournalArticle journal = parseJournalArticlebyuserid(journalArticle,mbuserid);
 			if (journal != null)
 				newJournalList.add(journal);
 		}
@@ -205,11 +207,11 @@ public class PollController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getPolls(@RequestParam("input") String input, @RequestParam("userid") String userid) {
+	public JSONObject getPolls(@RequestParam("input") String input, @RequestParam("userid") String mbuserid) {
 		JSONObject resultJson = new JSONObject();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList),userid);
+		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList),mbuserid);
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("poll", byPaganation(journalArticleList, input));
@@ -253,10 +255,10 @@ public class PollController extends AbstractController {
 		return journalArticle;
 	}
 	
-	public RequestVote getMobileVoltCount(String userid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
+	public RequestVote getMobileVoltCount(String mbuserid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
 		RequestVote reqVote= new RequestVote();
 		reqVote.setPollsChoiceList(pollslist);
-		reqVote.setUserid(userid);
+		reqVote.setUserid(mbuserid);
 		reqVote.setTotalVoteCount(totalVoteCount+"");
 		reqVote.setPollOrSurveyId(pollOrSurveyId);
 		String uri = SERVICEURL + "/vote/getVote";

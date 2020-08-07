@@ -11,18 +11,25 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.parser.Parser;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.CategoryType;
+import com.portal.entity.DDMStructure;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
+import com.portal.entity.PollsChoice;
+import com.portal.entity.RequestVote;
 import com.portal.entity.Views;
 import com.portal.service.AssetEntryService;
 import com.portal.service.DDLRecordService;
@@ -44,11 +51,14 @@ public class SurveyController extends AbstractController {
 
 	@Autowired
 	private DDMStructureService ddmStructureService;
+	
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(SurveyController.class);
 	private static JSONParser jsonParser = new JSONParser();
 
-	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
+	private JournalArticle parseJournalArticle(JournalArticle journalArticle,String userid) {
 
 		String categoryType = getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">");
 		CategoryType type = CategoryType.valueOf(categoryType.trim().toUpperCase());
@@ -69,8 +79,8 @@ public class SurveyController extends AbstractController {
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
 		newJournal.setDisplaydate(resultDateString);
 		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
+		RequestVote res = getMobileSurveyCount(userid,pollOrSurveyId);
 		long count = ddlRecordService.getCountOfVoteOrSurvey(Long.parseLong(pollOrSurveyId));
-
 		String definition = ddmStructureService.getDefinition(Long.parseLong(pollOrSurveyId));
 		int start = definition.indexOf("option");
 		String str = definition.substring(start, definition.length());
@@ -96,11 +106,21 @@ public class SurveyController extends AbstractController {
 				myanmarQues.add(arr[7]);
 			}
 		}
-
+		//user status
+		newJournal.setUserstatus("V000");
+		if(res.getUserstatus() == "V000") {
+			if(ddlRecordService.getCountOfSurveybyuserid(Long.parseLong(pollOrSurveyId),Long.parseLong(res.getWebuserid()))) {
+				newJournal.setUserstatus("V001");
+			}
+		}else newJournal.setUserstatus(res.getUserstatus());
+		
+		long totalcount = count + Long.parseLong(res.getTotalVoteCount());
+		newJournal.setQuestionid(pollOrSurveyId);
 		newJournal.setMyanmarQuestions(myanmarQues);
 		newJournal.setEngQuestions(engQues);
-		newJournal.setPollOrSurveyCount(count);
+		newJournal.setPollOrSurveyCount(totalcount);
 		newJournal.setShareLink(getShareLink(pollOrSurveyId));
+		newJournal.setId_(journalArticle.getId_());
 		return newJournal;
 	}
 
@@ -131,10 +151,10 @@ public class SurveyController extends AbstractController {
 		return newJournalList;
 	}
 
-	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
+	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList,String userid) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
-			JournalArticle journal = parseJournalArticle(journalArticle);
+			JournalArticle journal = parseJournalArticle(journalArticle,userid);
 			if (journal != null)
 				newJournalList.add(journal);
 		}
@@ -159,7 +179,7 @@ public class SurveyController extends AbstractController {
 		JSONObject resultJson = new JSONObject();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("survey", byPaganation(journalArticleList, input));
@@ -175,7 +195,7 @@ public class SurveyController extends AbstractController {
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);
 		for (JournalArticle journalArticle : journalArticleList) {
 			StringBuilder searchterms = new StringBuilder();
 			searchterms.append(journalArticle.getMyanmarDepartmentTitle());
@@ -192,5 +212,24 @@ public class SurveyController extends AbstractController {
 		resultJson.put("survey", byPaganation(resultList, input));
 		resultJson.put("totalCount", resultList.size());
 		return resultJson;
+	}
+	@RequestMapping(value = "surveyDetail", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	public JournalArticle getPollDetails(@RequestParam("id") String id, @RequestParam("userid") String userid) {
+		JournalArticle journalArticle = journalArticleService.getJournalArticle(Long.parseLong(id));
+		journalArticle = parseJournalArticle(journalArticle,userid);
+		return journalArticle;
+	}
+	
+	public RequestVote getMobileSurveyCount(String mbuserid,String pollOrSurveyId) {
+		RequestVote reqVote= new RequestVote();
+		reqVote.setUserid(mbuserid);
+		reqVote.setPollOrSurveyId(pollOrSurveyId);
+		String uri = SERVICEURL + "/survey/getSurvey";
+		logger.info("URI____________" + uri);
+		RestTemplate restTemplate = new RestTemplate();
+		reqVote = restTemplate.postForObject( uri, reqVote, RequestVote.class);
+		return reqVote;
 	}
 }
