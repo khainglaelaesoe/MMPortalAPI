@@ -147,6 +147,9 @@ public class DocumentParsing {
 			if (element.attr("style").startsWith("font-size")) {
 				element.removeAttr("style");
 			}
+			if (element.attr("style").startsWith("background-color")) {
+				element.removeAttr("style");
+			}
 		}
 		return doc.html();
 	}

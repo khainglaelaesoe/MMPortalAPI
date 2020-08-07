@@ -1,17 +1,14 @@
 package com.portal.service;
 
 import java.util.List;
-import java.util.Map;
 
-import com.portal.entity.AssetEntry;
-import com.portal.entity.CalendarBooking;
 import com.portal.entity.JournalArticle;
 
 public interface JournalArticleService {
 
 	public List<JournalArticle> getJournalArticles();
 
-	public List<Long> getIdByFolderId(int folderId);
+	public List<Long> getIdByFolderIdByName(String input, String classuuid);
 
 	public JournalArticle getJournalArticleByFolderId(long folderId);
 
@@ -27,8 +24,6 @@ public interface JournalArticleService {
 
 	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid);
 
-	public List<Long> getIdByFolderIdByName(int folderId, String input);
-
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version);
 
 	public JournalArticle getJournalArticleforGov();
@@ -40,8 +35,6 @@ public interface JournalArticleService {
 	public JournalArticle getTermsbyVersion();
 
 	public List<Long> getAllArticleId();
-
-	public Map<Long, String> getIdbySearchTerm(List<String> classUuidList);
 
 	public JournalArticle getJournalArticleBySearchTerms(long Id, String searchTerm);
 
@@ -74,10 +67,11 @@ public interface JournalArticleService {
 	public JournalArticle getJournalArticleByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
 
 	public JournalArticle getJournalArticleByClassPK(long classpk);
-	
+
 	public JournalArticle getServiceByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
-	
+
 	public int getCount(String searchTerm, long classTypeId);
 
+	public List<Long> getIdByFolderId(String classuuid);
 
 }

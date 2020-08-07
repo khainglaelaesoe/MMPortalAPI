@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -15,6 +16,7 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +30,7 @@ import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.Organization_;
 import com.portal.entity.Views;
 import com.portal.parsing.DocumentParsing;
+import com.portal.service.AssetEntryService;
 import com.portal.service.JournalArticleService;
 
 @Controller
@@ -36,6 +39,9 @@ public class OrganizationController extends AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
+
+	@Autowired
+	private AssetEntryService assetEntryService;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 
@@ -91,10 +97,16 @@ public class OrganizationController extends AbstractController {
 
 	private List<Organization_> getOrganizationList(String articleInfo) {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
+		Stack<Organization_> stackList = new Stack<Organization_>();
+
 		for (String id : articleInfo.split(",")) {
 			if (!DateUtil.isEmpty(id)) {
-				organizationList.add(parseOrganization(journalArticleService.getJournalArticle(Long.parseLong(id))));
+				stackList.add(parseOrganization(journalArticleService.getJournalArticle(Long.parseLong(id))));
 			}
+		}
+
+		for (int i = 0; i < stackList.size(); i++) {
+			organizationList.add(stackList.pop());
 		}
 		return organizationList;
 	}
@@ -199,24 +211,25 @@ public class OrganizationController extends AbstractController {
 		Elements engpara = engdoc.getElementsByTag("p");
 		Document myandoc = Jsoup.parse(myanContent, "", Parser.htmlParser());
 		Elements myanpara = myandoc.getElementsByTag("p");
-		String engAddress = "",engPhoneNo="",email="";
-		String myanAddress = "",myanmarPhoneNo="",myanEmail="";
-		for(Element e : engpara) {
-				if (e.text().toString().contains("phone")) {
-					engPhoneNo = e.text().toString();
-				}
-				if (e.text().toString().contains("email")) {
-					 email = e.text().toString();
-				}
-				if (!e.text().toString().contains("email") && !e.text().toString().contains("phone")) {
-					String ele =e.text().toString();
-					if(!ele.equals(""))
-						if(!engAddress.equals(""))
-							engAddress =engAddress +"\n" + e.text().toString();
-						else engAddress = e.text().toString();
-				}
+		String engAddress = "", engPhoneNo = "", email = "";
+		String myanAddress = "", myanmarPhoneNo = "", myanEmail = "";
+		for (Element e : engpara) {
+			if (e.text().toString().contains("phone")) {
+				engPhoneNo = e.text().toString();
+			}
+			if (e.text().toString().contains("email")) {
+				email = e.text().toString();
+			}
+			if (!e.text().toString().contains("email") && !e.text().toString().contains("phone")) {
+				String ele = e.text().toString();
+				if (!ele.equals(""))
+					if (!engAddress.equals(""))
+						engAddress = engAddress + "\n" + e.text().toString();
+					else
+						engAddress = e.text().toString();
+			}
 		}
-		for(Element e : myanpara) {
+		for (Element e : myanpara) {
 			if (e.text().toString().contains("၀")) {
 				myanmarPhoneNo = e.text().toString();
 			}
@@ -224,14 +237,15 @@ public class OrganizationController extends AbstractController {
 				myanEmail = e.text().toString();
 			}
 			if (!e.text().toString().contains("@") && !e.text().toString().contains("၀")) {
-				String ele =e.text().toString();
-				if(!ele.equals(""))
-					if(!myanAddress.equals(""))
-						myanAddress =myanAddress +"\n" + e.text().toString();
-					else myanAddress = e.text().toString();
+				String ele = e.text().toString();
+				if (!ele.equals(""))
+					if (!myanAddress.equals(""))
+						myanAddress = myanAddress + "\n" + e.text().toString();
+					else
+						myanAddress = e.text().toString();
 			}
-	}
-		
+		}
+
 		organization.setEngPhoneNo(engPhoneNo);
 		organization.setEmail(email);
 		organization.setMyanmarPhoneNo(myanmarPhoneNo);
@@ -289,15 +303,15 @@ public class OrganizationController extends AbstractController {
 	public JSONObject getOrganizationByName(@RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
 		List<Long> articles = new ArrayList<Long>();
-		if (input.equals("all"))
-			articles = journalArticleService.getIdByFolderId(91278);
-		else {
-			String value = "";
-			if (OrgMyanmarName.valueOf(input) == OrgMyanmarName.Chin_State_Government)
-				value = "ချင်း";
-			else
-				value = OrgMyanmarName.valueOf(input).getValue().substring(0, 7);
-			articles = journalArticleService.getIdByFolderIdByName(91278, value);
+		if (input.equals("all")) {
+			List<String> entryList = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
+			for (String classuuid : entryList)
+				articles.addAll(journalArticleService.getIdByFolderId(classuuid)); // desc -> reverse
+		} else {
+			String value = OrgEngName.valueOf(input).getValue();
+			List<String> entryList = assetEntryService.getAssetEntryListByName(91234, value);
+			for (String classuuid : entryList)
+				articles.addAll(journalArticleService.getIdByFolderId(classuuid)); // desc -> reverse
 		}
 
 		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;

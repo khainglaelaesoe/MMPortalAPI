@@ -76,7 +76,6 @@ public class AbstractController {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
 
-				// System.out.println("source image...." + imgsrc);
 				String imgreplace = "https://myanmar.gov.mm" + imgsrc;
 				img.attr("src", imgreplace);
 			}

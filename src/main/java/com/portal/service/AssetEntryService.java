@@ -62,4 +62,9 @@ public interface AssetEntryService {
 	public List<String> getAssetEntryListForServicesByLatest(long categoryId);
 
 	public long getClassPK();
+
+	public List<String> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
+
+	public List<String> getAssetEntryListByName(long classTypeId, String searchTerm);
+
 }
