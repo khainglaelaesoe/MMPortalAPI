@@ -17,11 +17,11 @@ public class PollsChoiceServiceImpl implements PollsChoiceService {
 	@Autowired
 	private PollsChoiceDao pollsChoiceDao;
 
-//	public List<String> getDescription(long pollOrSurveyId) {
-//		String query = "Select description from PollsChoice where choiceid in (select choiceid from PollsVote where questionid=" + pollOrSurveyId + ")";
-//		return pollsChoiceDao.findByQuery(query);
-//	}
-	public List<PollsChoice> getDescription(long pollOrSurveyId) {
+	public List<String> getDescription(long pollOrSurveyId) {
+		String query = "Select description from PollsChoice where choiceid in (select choiceid from PollsVote where questionid=" + pollOrSurveyId + ")";
+		return pollsChoiceDao.findByQuery(query);
+	}
+	public List<PollsChoice> getDescription1(long pollOrSurveyId) {
 		String query = "Select pollschoice from PollsChoice pollschoice where choiceid in (select choiceid from PollsVote where questionid=" + pollOrSurveyId + ")";
 		return pollsChoiceDao.byQuery(query);
 	}

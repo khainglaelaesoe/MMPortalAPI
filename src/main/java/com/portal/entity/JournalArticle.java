@@ -268,7 +268,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private HashMap<Integer, String> iOSeLinkList;
-
+	
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<String> mNameList;
