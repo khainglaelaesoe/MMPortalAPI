@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -256,11 +257,12 @@ public class BlogController extends AbstractController {
 		    for (Map.Entry<String, String> entry : params.entrySet()) {
 		        builder.queryParam(entry.getKey(), entry.getValue());
 		    }
-		    
 		    HttpHeaders headers = new HttpHeaders();
-		    headers.set("Accept", "application/json");
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+			HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		    RestTemplate restTemplate = new RestTemplate();
-		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity(headers), MobileResult.class);
+		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entityHeader, MobileResult.class);
 		    System.out.println(response);
 		return response.getBody();
 	}
