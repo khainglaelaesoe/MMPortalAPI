@@ -53,6 +53,10 @@ public class MBMessage extends AbstractEntity {
 	@JsonView(Views.Thin.class)
 	private List<Reply> replyList;
 
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String editPermission;
+
 	public long getUserid() {
 		return userid;
 	}
@@ -141,5 +145,13 @@ public class MBMessage extends AbstractEntity {
 
 	public void setParentmessageid(long parentmessageid) {
 		this.parentmessageid = parentmessageid;
+	}
+
+	public String getEditPermission() {
+		return editPermission;
+	}
+
+	public void setEditPermission(String editPermission) {
+		this.editPermission = editPermission;
 	}
 }

@@ -46,6 +46,10 @@ public class Reply {
 	@JsonView(Views.Thin.class)
 	private List<MBMessage> replyList;
 
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String editPermission;
+
 	public long getMessageid() {
 		return messageid;
 	}
@@ -128,4 +132,11 @@ public class Reply {
 		this.userid = userid;
 	}
 
+	public String getEditPermission() {
+		return editPermission;
+	}
+
+	public void setEditPermission(String editPermission) {
+		this.editPermission = editPermission;
+	}
 }
