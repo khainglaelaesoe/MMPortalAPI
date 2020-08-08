@@ -1,16 +1,25 @@
 package com.portal.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
+import com.portal.entity.MobileResult;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.Reply;
 import com.portal.entity.Views;
@@ -42,6 +52,9 @@ public class BlogController extends AbstractController {
 
 	@Autowired
 	private MessageService messageService;
+	
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(BlogController.class);
 
@@ -88,12 +101,20 @@ public class BlogController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
+			MobileResult json = getMbData(message.getMessageid(),userId); 
+			String checklikemb = json.getChecklike();
+			long likecount=json.getLikecount();
+			long totallikecount = message.getLikecount() + likecount;
+			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid());
+			
+			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
 			reply.setUserid(message.getUserid());
 			reply.setUsername(message.getUsername());
 			reply.setBody(message.getBody());
 			reply.setSubject(message.getSubject());
-			reply.setLikecount(message.getLikecount());
+			reply.setLikecount(totallikecount);
+			reply.setDislikecount(json.getDislikecount());
 			reply.setCreatedate(message.getCreatedate());
 
 			if (reply.getUserid() == Long.parseLong(userId))
@@ -133,7 +154,18 @@ public class BlogController extends AbstractController {
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
 				});
 				msg.getReplyList().addAll(parse(replyList, userId));
+				
+				MobileResult json = getMbData(msg.getMessageid(),userId); 
+				String checklikemb = json.getChecklike();
+				long likecount=json.getLikecount();
+				long totallikecount = msg.getLikecount() + likecount;
+				msg.setLikecount(totallikecount);
+				msg.setDislikecount(json.getDislikecount());
+				msg.setChecklike(checklikemb);
+				long checklikeweb = messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
+				logger.info(json);
 			}
+			
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {
@@ -153,7 +185,8 @@ public class BlogController extends AbstractController {
 		// classTypeId=129731;
 		List<Object> entryList = assetEntryService.byClassTypeId(129731);
 		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input,userId));
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("blog", journalArticleList);
 		resultJson.put("totalCount", entryList.size());
@@ -163,6 +196,7 @@ public class BlogController extends AbstractController {
 	private List<JournalArticle> getResultList(List<Object> entryList, String input, String searchterm, String userId) {
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+
 		for (JournalArticle journalArticle : journalArticleList) {
 			StringBuilder searchterms = new StringBuilder();
 			if (journalArticle.getMyanmarDepartmentTitle() != null)
@@ -184,7 +218,7 @@ public class BlogController extends AbstractController {
 		}
 		return resultList;
 	}
-
+	
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
@@ -202,5 +236,32 @@ public class BlogController extends AbstractController {
 		resultJson.put("blog", resultList);
 		resultJson.put("totalCount", journalArticleService.getAllBySearchterm(searchterm, 129731));
 		return resultJson;
+	}
+
+	
+	@RequestMapping(value = "likecount", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	public String getlikecount(@RequestParam("messageid") String messageid) {
+		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "" ;
+		return likecount;
+	}
+	
+	public MobileResult getMbData(long classpk,String userid) {
+		 Map<String, String> params = new HashMap<String, String>();
+		    params.put("messageid", classpk +"");
+		    params.put("userid", userid);
+		    String uri = SERVICEURL + "/likeDislike/getMbData";
+		    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
+		    for (Map.Entry<String, String> entry : params.entrySet()) {
+		        builder.queryParam(entry.getKey(), entry.getValue());
+		    }
+		    
+		    HttpHeaders headers = new HttpHeaders();
+		    headers.set("Accept", "application/json");
+		    RestTemplate restTemplate = new RestTemplate();
+		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, new HttpEntity(headers), MobileResult.class);
+		    System.out.println(response);
+		return response.getBody();
 	}
 }

@@ -17,6 +17,10 @@ public class MBMessage extends AbstractEntity {
 	
 	@Transient
 	@JsonView(Views.Thin.class)
+	private String checklike;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
 	private long dislikecount;
 
 	@Transient
@@ -166,5 +170,12 @@ public class MBMessage extends AbstractEntity {
 	public void setDislikecount(long dislikecount) {
 		this.dislikecount = dislikecount;
 	}
-	
+
+	public String getChecklike() {
+		return checklike;
+	}
+
+	public void setChecklike(String checklike) {
+		this.checklike = checklike;
+	}
 }

@@ -51,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
 	}
 	
 	public int likebyuserid(Long messageid,Long webuserid) {
-		String querycount = "Select count(*) from RatingsEntry where classPk=" + webuserid + " And userid=" + webuserid;
+		String querycount = "Select count(*) from RatingsEntry where classPk=" + webuserid + " And userid=" + webuserid ;
 		return messageDao.findCountByQueryString(querycount);
 	}
 

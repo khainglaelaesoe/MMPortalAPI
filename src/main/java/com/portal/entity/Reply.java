@@ -13,6 +13,14 @@ public class Reply {
 
 	@Transient
 	@JsonView(Views.Thin.class)
+	private String checklike;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private long dislikecount;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
 	private long likecount;
 
 	@Id
@@ -139,4 +147,21 @@ public class Reply {
 	public void setEditPermission(String editPermission) {
 		this.editPermission = editPermission;
 	}
+
+	public String getChecklike() {
+		return checklike;
+	}
+
+	public void setChecklike(String checklike) {
+		this.checklike = checklike;
+	}
+
+	public long getDislikecount() {
+		return dislikecount;
+	}
+
+	public void setDislikecount(long dislikecount) {
+		this.dislikecount = dislikecount;
+	}
+	
 }
