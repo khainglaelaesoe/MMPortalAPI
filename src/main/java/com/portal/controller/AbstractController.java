@@ -29,6 +29,8 @@ import com.portal.entity.AssetCategory;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
 import com.portal.entity.MobileResult;
+import com.portal.entity.PollsChoice;
+import com.portal.entity.RequestVote;
 import com.portal.service.JournalArticleService;
 
 @Service
@@ -449,5 +451,51 @@ public class AbstractController {
 		    System.out.println(response);
 		return response.getBody();
 	}
+	
+	public RequestVote getMobileVoltCount(String mbuserid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
+		RequestVote reqVote= new RequestVote();
+		reqVote.setPollsChoiceList(pollslist);
+		reqVote.setUserid(mbuserid);
+		reqVote.setTotalVoteCount(totalVoteCount+"");
+		reqVote.setPollOrSurveyId(pollOrSurveyId);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 
+		HttpEntity<RequestVote> entityHeader = new HttpEntity<>(reqVote, headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url =  SERVICEURL + "/vote/getVote";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+			reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
+		return reqVote;
+	}
+	
+	public RequestVote getMobileSurveyCount(String mbuserid,String pollOrSurveyId) {
+		RequestVote reqVote= new RequestVote();
+		reqVote.setUserid(mbuserid);
+		reqVote.setPollOrSurveyId(pollOrSurveyId);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<RequestVote> entityHeader = new HttpEntity<>(reqVote, headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url =  SERVICEURL + "/survey/getSurvey";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+			reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
+		return reqVote;
+	}
+	
 }

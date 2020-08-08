@@ -98,7 +98,7 @@ public class DiscussionController extends AbstractController {
 			String checklikemb = json.getChecklike();
 			long likecount=json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
-			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid());
+			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid(), 1);
 			
 			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());

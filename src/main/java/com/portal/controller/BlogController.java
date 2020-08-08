@@ -104,9 +104,13 @@ public class BlogController extends AbstractController {
 			String checklikemb = json.getChecklike();
 			long likecount=json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
-			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid());
-			
-			reply.setChecklike(checklikemb);
+			if(checklikemb.equals("0.0")) {
+				long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1);
+				if(checklikeweb > 0)
+					reply.setChecklike("1.0");
+				else reply.setChecklike("0.0");
+			}else 
+				reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
 			reply.setUserid(message.getUserid());
 			reply.setUsername(message.getUsername());

@@ -254,17 +254,4 @@ public class PollController extends AbstractController {
 		journalArticle = parseJournalArticlebyuserid(journalArticle,userid);
 		return journalArticle;
 	}
-	
-	public RequestVote getMobileVoltCount(String mbuserid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
-		RequestVote reqVote= new RequestVote();
-		reqVote.setPollsChoiceList(pollslist);
-		reqVote.setUserid(mbuserid);
-		reqVote.setTotalVoteCount(totalVoteCount+"");
-		reqVote.setPollOrSurveyId(pollOrSurveyId);
-		String uri = SERVICEURL + "/vote/getVote";
-		logger.info("URI____________" + uri);
-		RestTemplate restTemplate = new RestTemplate();
-		reqVote = restTemplate.postForObject( uri, reqVote, RequestVote.class);
-		return reqVote;
-	}
 }

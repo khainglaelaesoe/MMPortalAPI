@@ -222,14 +222,4 @@ public class SurveyController extends AbstractController {
 		return journalArticle;
 	}
 	
-	public RequestVote getMobileSurveyCount(String mbuserid,String pollOrSurveyId) {
-		RequestVote reqVote= new RequestVote();
-		reqVote.setUserid(mbuserid);
-		reqVote.setPollOrSurveyId(pollOrSurveyId);
-		String uri = SERVICEURL + "/survey/getSurvey";
-		logger.info("URI____________" + uri);
-		RestTemplate restTemplate = new RestTemplate();
-		reqVote = restTemplate.postForObject( uri, reqVote, RequestVote.class);
-		return reqVote;
-	}
 }
