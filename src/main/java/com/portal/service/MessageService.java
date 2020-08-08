@@ -9,4 +9,8 @@ public interface MessageService {
 	public List<MBMessage> byClassPK(Long classPK);
 	
 	public List<MBMessage> getReplyListByCommentId(Long messageId);
+	
+	public int likeCount(Long messageid);
+	
+	public int likebyuserid(Long messageid,Long webuserid);
 }

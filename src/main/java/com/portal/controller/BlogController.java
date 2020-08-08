@@ -203,4 +203,13 @@ public class BlogController extends AbstractController {
 		resultJson.put("totalCount", journalArticleService.getAllBySearchterm(searchterm, 129731));
 		return resultJson;
 	}
+	
+	@RequestMapping(value = "likecount", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	public String getlikecount(@RequestParam("messageid") String messageid) {
+		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "" ;
+		return likecount;
+	}
+	
 }

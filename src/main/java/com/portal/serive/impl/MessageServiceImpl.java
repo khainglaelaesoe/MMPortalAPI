@@ -44,5 +44,15 @@ public class MessageServiceImpl implements MessageService {
 		String query = "from MBMessage message where parentmessageid=" + messageId;
 		return messageDao.byQuery(query);
 	}
+	
+	public int likeCount(Long messageid) {
+		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid;
+		return messageDao.findCountByQueryString(querycount);
+	}
+	
+	public int likebyuserid(Long messageid,Long webuserid) {
+		String querycount = "Select count(*) from RatingsEntry where classPk=" + webuserid + " And userid=" + webuserid;
+		return messageDao.findCountByQueryString(querycount);
+	}
 
 }
