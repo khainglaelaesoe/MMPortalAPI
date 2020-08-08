@@ -25,7 +25,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.portal.entity.AssetCategory;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
-import com.portal.entity.Reply;
 import com.portal.service.JournalArticleService;
 
 @Service
@@ -247,6 +246,7 @@ public class AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("classpk", classPK);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 
 		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		logger.info("Request is: " + entityHeader);
@@ -293,6 +293,7 @@ public class AbstractController {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("classnameid", classNameId);
 		headers.add("classpk", classPk);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 
 		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		logger.info("Request is: " + entityHeader);
@@ -329,6 +330,7 @@ public class AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("userid", userId);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 
 		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		logger.info("Request is: " + entityHeader);
@@ -391,6 +393,7 @@ public class AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("messageid", messageId);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 
 		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		logger.info("Request is: " + entityHeader);

@@ -108,9 +108,26 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
 		newArticle.setShareLink(getShareLinkForNews(journalArticle.getUrltitle()));
 
-		List<String> contentList = dp.ParsingAllContent(journalArticle.getContent());
-		newArticle.setEngContent(dp.ParsingSpan(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "")));
-		newArticle.setMyanmarContent(dp.ParsingSpan(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "")));
+		String engContent = "", myanmarContent = "";
+		int begin = content.indexOf("\"text_area\"");
+		content = content.substring(begin, content.length());
+
+		int start = content.indexOf("<dynamic-content language-id=\"en_US\">");
+		int end = content.indexOf("</dynamic-content>");
+
+		engContent = ImageSourceChange(dp.ParsingSpan(Jsoup.parse(content.substring(start, end)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
+		String remainString = content.substring(end, content.length());
+
+		int mStart = remainString.indexOf("<dynamic-content language-id=\"my_MM\">");
+		if (mStart > 0) {
+			int mEnd = remainString.lastIndexOf("</dynamic-content>");
+			myanmarContent = ImageSourceChange(dp.ParsingSpan(Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
+		}
+
+		newArticle.setMyanmarContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
+		newArticle.setEngContent(!engContent.isEmpty() ? engContent : myanmarContent);
+		
+		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}
 
