@@ -14,6 +14,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Entity
 @Table(name = "MBMessage")
 public class MBMessage extends AbstractEntity {
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private long dislikecount;
 
 	@Transient
 	@JsonView(Views.Thin.class)
@@ -154,4 +158,13 @@ public class MBMessage extends AbstractEntity {
 	public void setEditPermission(String editPermission) {
 		this.editPermission = editPermission;
 	}
+
+	public long getDislikecount() {
+		return dislikecount;
+	}
+
+	public void setDislikecount(long dislikecount) {
+		this.dislikecount = dislikecount;
+	}
+	
 }

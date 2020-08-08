@@ -84,7 +84,7 @@ public class BlogController extends AbstractController {
 		return newJournalList;
 	}
 
-	private List<Reply> parse(List<MBMessage> messageList, String userId) {
+	private List<Reply> parse(List<MBMessage> messageList) {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
@@ -95,17 +95,12 @@ public class BlogController extends AbstractController {
 			reply.setSubject(message.getSubject());
 			reply.setLikecount(message.getLikecount());
 			reply.setCreatedate(message.getCreatedate());
-
-			if (reply.getUserid() == Long.parseLong(userId))
-				reply.setEditPermission("Yes");
-			else
-				reply.setEditPermission("No");
 			replyList.add(reply);
 		});
 		return replyList;
 	}
 
-	public List<JournalArticle> getArticles(List<Object> entryList, String input, String userId) {
+	public List<JournalArticle> getJournalArticles(List<Object> entryList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = bySize(entryList, input);
 		ObjectMapper mapper = new ObjectMapper();
@@ -123,16 +118,11 @@ public class BlogController extends AbstractController {
 				if (msg.getMessageid() < 0)
 					continue;
 
-				if (msg.getUserid() == Long.parseLong(userId))
-					msg.setEditPermission("Yes");
-				else
-					msg.setEditPermission("No");
-
-				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
+				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid())));
 
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
 				});
-				msg.getReplyList().addAll(parse(replyList, userId));
+				msg.getReplyList().addAll(parse(replyList));
 			}
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
@@ -153,16 +143,16 @@ public class BlogController extends AbstractController {
 		// classTypeId=129731;
 		List<Object> entryList = assetEntryService.byClassTypeId(129731);
 		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input));
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("blog", journalArticleList);
 		resultJson.put("totalCount", entryList.size());
 		return resultJson;
 	}
 
-	private List<JournalArticle> getResultList(List<Object> entryList, String input, String searchterm, String userId) {
+	private List<JournalArticle> getResultList(List<Object> entryList, String input, String searchterm) {
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input));
 		for (JournalArticle journalArticle : journalArticleList) {
 			StringBuilder searchterms = new StringBuilder();
 			if (journalArticle.getMyanmarDepartmentTitle() != null)
@@ -195,7 +185,7 @@ public class BlogController extends AbstractController {
 		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 
 		while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
-			resultList.addAll(getResultList(entryList, input, searchterm, userId));
+			resultList.addAll(getResultList(entryList, input, searchterm));
 			input = (Integer.parseInt(input) + 1) + "";
 		}
 		resultJson.put("lastPageNo", lastPageNo);
@@ -211,5 +201,4 @@ public class BlogController extends AbstractController {
 		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "" ;
 		return likecount;
 	}
-	
 }
