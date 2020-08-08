@@ -87,8 +87,8 @@ public class JournalArticleController extends AbstractController {
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
-		String con = dp.ParsingSpan(removeDelimeterFromContent(journalArticle.getContent()));
-		newArticle.setContent(ImageSourceChange(con).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
+//		String con = dp.ParsingSpan(removeDelimeterFromContent(journalArticle.getContent()));
+//		newArticle.setContent(ImageSourceChange(con).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
@@ -107,6 +107,10 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
 		newArticle.setShareLink(getShareLinkForNews(journalArticle.getUrltitle()));
+
+		List<String> contentList = dp.ParsingAllContent(journalArticle.getContent());
+		newArticle.setEngContent(dp.ParsingSpan(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "")));
+		newArticle.setMyanmarContent(dp.ParsingSpan(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "")));
 		return newArticle;
 	}
 
@@ -142,16 +146,6 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
-
-		try {
-			DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			logger.info("dateString!!!!!!!!!!!!!!!!!!!!!!!!!!" + dateString);
-			Date date = format.parse(dateString);
-			newArticle.setDate(date); // 2017-12-19
-
-		} catch (ParseException e) {
-			logger.error("Error: " + e);
-		}
 		return newArticle;
 	}
 

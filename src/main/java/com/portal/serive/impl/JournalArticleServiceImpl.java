@@ -379,4 +379,21 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return articleList;
 	}
 
+	public List<JournalArticle> getJournalsByDate(String dateStr, Long classTypeId) {
+		String query = "Select journalArticle from JournalArticle journalArticle  where journalArticle.displaydate like '%" + dateStr + "%' and journalArticle.resourceprimkey in (select ae.classpk from AssetEntry ae where ae.classtypeid=" + classTypeId + " )";
+		return journalDao.getAll(query);
+	}
+	
+	public JournalArticle getJournalArticleByDate(String classuuid, String dateStr) {
+		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where  displaydate like '%" + dateStr + "%'" + " and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
+		List<Object> objectList = journalDao.byQueryString(queryStr);
+		Object[] obj = (Object[]) objectList.get(0);
+		if (obj[0] == null || obj[1] == null)
+			return null;
+
+		Long articleId = Long.parseLong(obj[0].toString());
+		String version = obj[1].toString();
+		return getJournalArticleByArticleIdAndVersion(articleId, version);
+	}
+
 }

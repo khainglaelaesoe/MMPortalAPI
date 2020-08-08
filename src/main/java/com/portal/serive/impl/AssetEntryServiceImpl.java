@@ -233,7 +233,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<String> getClassUuidByDate(Long classTypeId, String dateStr) {
-		String query = "select classuuid from AssetEntry ae where classtypeid=" + classTypeId + "and createdate like '%" + dateStr + "%' ";
+		String query = "select classuuid from AssetEntry ae where  createdate like '%" + dateStr + "%'" + " and classtypeid=" + classTypeId;
 		return assetEntryDao.findByQuery(query);
 	}
 }

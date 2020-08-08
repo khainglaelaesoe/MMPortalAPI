@@ -323,7 +323,7 @@ public class OrganizationController extends AbstractController {
 
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("totalCount", articles.size());
-		resultJson.put("orginations", orgs);
+		resultJson.put("orginations", newArticles);
 		return resultJson;
 	}
 

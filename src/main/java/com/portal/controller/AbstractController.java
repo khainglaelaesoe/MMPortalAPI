@@ -416,7 +416,7 @@ public class AbstractController {
 	}
 
 	public String removeDelimeterFromContent(String articleContent) {
-		int startIndex = articleContent.lastIndexOf("[CDATA[") + 7;
+		int startIndex = articleContent.indexOf("[CDATA[") + 7;
 		String first = articleContent.substring(startIndex, articleContent.length() - 1);
 		int end = first.lastIndexOf("</p>");
 		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
