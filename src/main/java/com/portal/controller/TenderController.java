@@ -56,13 +56,6 @@ public class TenderController extends AbstractController {
 		}
 	}
 
-	private List<String> removeDelimeterFromContent(String content) {
-		Document contentDoc = Jsoup.parse(content);
-		replaceTag(contentDoc.children());
-		String[] contentInfo = Jsoup.parse(contentDoc.toString()).text().split("/");
-		return removeInvalidString(contentInfo);
-	}
-
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
 		/* title, agency, date, image url */
 
@@ -80,7 +73,7 @@ public class TenderController extends AbstractController {
 
 		/* date */
 		String content = journalArticle.getContent();
-		List<String> conentList = removeDelimeterFromContent(content);
+		List<String> conentList = removeDelimeterFrom(content);
 		newJournal.setDisplaydate(!CollectionUtils.isEmpty(conentList) ? conentList.get(conentList.size() - 1) : "");
 
 		/* image url */
@@ -95,7 +88,6 @@ public class TenderController extends AbstractController {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		String info = convertEntryListToString(entryList, input);
 		String[] classUuids = info.split(",");
-		logger.info("classUuids: !!!!!!!!!!!!!!!!!!!!!!!!!" + classUuids.length);
 		for (String classUuid : classUuids) {
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
 			if (journalArticle != null)

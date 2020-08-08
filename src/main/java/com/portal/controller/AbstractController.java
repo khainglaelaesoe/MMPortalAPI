@@ -353,6 +353,40 @@ public class AbstractController {
 		return null;
 	}
 
+	public String getShareLinkForAnnouncements(String urlTitle) {
+		return "https://myanmar.gov.mm/news-media/announcements/-/asset_publisher/idasset291/content/" + urlTitle.replaceAll("%", "%25");
+	}
+
+	public String getAttribute(int index, String content, String remover) {
+		if (index < 0)
+			return "";
+
+		String remainString = content.substring(index, content.length());
+		int start = remainString.indexOf(remover);
+		if (start < 0)
+			return "";
+
+		String remainString2 = remainString.substring(start, remainString.length());
+		int startIndex = remainString2.indexOf("CDATA[") + 6;
+		int endIndex = remainString2.indexOf("]]");
+		String result = remainString2.substring(startIndex, endIndex);
+
+		if (result.isEmpty()) {
+			String remainString3 = content.substring(endIndex, remainString2.length());
+			int start2 = remainString3.indexOf(remover);
+			String remainString4 = remainString3.substring(start2, remainString3.length());
+			int startIndex2 = remainString4.indexOf("CDATA[") + 6;
+			int endIndex2 = remainString4.indexOf("]]");
+
+			if (start2 < 0 || startIndex2 < 0 || endIndex2 < 0)
+				return "";
+
+			result = remainString4.substring(startIndex2, endIndex2);
+		}
+
+		return result.startsWith("/") ? "https://myanmar.gov.mm" + result : result;
+	}
+
 	public List<MBMessage> getMobileReplyList(String messageId) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -379,6 +413,14 @@ public class AbstractController {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return new ArrayList<MBMessage>();
+	}
+
+	public String removeDelimeterFromContent(String articleContent) {
+		int startIndex = articleContent.lastIndexOf("[CDATA[") + 7;
+		String first = articleContent.substring(startIndex, articleContent.length() - 1);
+		int end = first.lastIndexOf("</p>");
+		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
+		return first.substring(0, endIndex);
 	}
 
 }
