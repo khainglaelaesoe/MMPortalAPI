@@ -57,6 +57,10 @@ public class Reply {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String editPermission;
+	
+	@JsonView(Views.Thin.class)
+	@Column(name = "parentmessageid")
+	private long parentmessageid;
 
 	public long getMessageid() {
 		return messageid;
@@ -163,5 +167,15 @@ public class Reply {
 	public void setDislikecount(long dislikecount) {
 		this.dislikecount = dislikecount;
 	}
+
+	public long getParentmessageid() {
+		return parentmessageid;
+	}
+
+	public void setParentmessageid(long parentmessageid) {
+		this.parentmessageid = parentmessageid;
+	}
+	
+	
 	
 }

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
+import com.portal.entity.MobileResult;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.Reply;
 import com.portal.entity.Views;
@@ -92,13 +93,23 @@ public class DiscussionController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
+			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			logger.info("Reply____________________" + message.getParentmessageid());
+			String checklikemb = json.getChecklike();
+			long likecount=json.getLikecount();
+			long totallikecount = message.getLikecount() + likecount;
+			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid());
+			
+			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
 			reply.setUserid(message.getUserid());
 			reply.setUsername(message.getUsername());
 			reply.setBody(message.getBody());
 			reply.setSubject(message.getSubject());
-			reply.setLikecount(message.getLikecount());
+			reply.setLikecount(totallikecount);
+			reply.setDislikecount(json.getDislikecount());
 			reply.setCreatedate(message.getCreatedate());
+			reply.setParentmessageid(message.getParentmessageid());
 
 			if (reply.getUserid() == Long.parseLong(userId))
 				reply.setEditPermission("Yes");
@@ -137,6 +148,17 @@ public class DiscussionController extends AbstractController {
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
 				});
 				msg.getReplyList().addAll(parse(replyList, userId));
+				
+				MobileResult json = getMbData(msg.getMessageid(),userId,0); 
+				logger.info("Comment_________"   + msg.getParentmessageid());
+				String checklikemb = json.getChecklike();
+				long likecount=json.getLikecount();
+				long totallikecount = msg.getLikecount() + likecount;
+				msg.setLikecount(totallikecount);
+				msg.setDislikecount(json.getDislikecount());
+				msg.setChecklike(checklikemb);
+				//long checklikeweb = messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
+				logger.info(json);
 			}
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());

@@ -1,8 +1,10 @@
 package com.portal.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.portal.entity.AssetCategory;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
+import com.portal.entity.MobileResult;
 import com.portal.service.JournalArticleService;
 
 @Service
@@ -424,6 +428,26 @@ public class AbstractController {
 		int end = first.lastIndexOf("</p>");
 		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
 		return first.substring(0, endIndex);
+	}
+	
+	public MobileResult getMbData(long classpk,String userid,long parentmessageid) {
+		 Map<String, String> params = new HashMap<String, String>();
+		    params.put("messageid", classpk +"");
+		    params.put("userid", userid);
+		    params.put("parentmessageid", parentmessageid +"");
+		    String uri = SERVICEURL + "/likeDislike/getMbData";
+		    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
+		    for (Map.Entry<String, String> entry : params.entrySet()) {
+		        builder.queryParam(entry.getKey(), entry.getValue());
+		    }
+		    HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+			HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		    RestTemplate restTemplate = new RestTemplate();
+		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entityHeader, MobileResult.class);
+		    System.out.println(response);
+		return response.getBody();
 	}
 
 }

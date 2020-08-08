@@ -54,9 +54,6 @@ public class BlogController extends AbstractController {
 	@Autowired
 	private MessageService messageService;
 	
-	@Value("${SERVICEURL}")
-	private String SERVICEURL;
-
 	private static Logger logger = Logger.getLogger(BlogController.class);
 
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
@@ -102,7 +99,8 @@ public class BlogController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
-			MobileResult json = getMbData(message.getMessageid(),userId); 
+			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			logger.info("Reply____________________" + message.getParentmessageid());
 			String checklikemb = json.getChecklike();
 			long likecount=json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
@@ -117,6 +115,7 @@ public class BlogController extends AbstractController {
 			reply.setLikecount(totallikecount);
 			reply.setDislikecount(json.getDislikecount());
 			reply.setCreatedate(message.getCreatedate());
+			reply.setParentmessageid(message.getParentmessageid());
 
 			if (reply.getUserid() == Long.parseLong(userId))
 				reply.setEditPermission("Yes");
@@ -156,14 +155,15 @@ public class BlogController extends AbstractController {
 				});
 				msg.getReplyList().addAll(parse(replyList, userId));
 				
-				MobileResult json = getMbData(msg.getMessageid(),userId); 
+				MobileResult json = getMbData(msg.getMessageid(),userId,0); 
+				logger.info("Comment_________"   + msg.getParentmessageid());
 				String checklikemb = json.getChecklike();
 				long likecount=json.getLikecount();
 				long totallikecount = msg.getLikecount() + likecount;
 				msg.setLikecount(totallikecount);
 				msg.setDislikecount(json.getDislikecount());
 				msg.setChecklike(checklikemb);
-				long checklikeweb = messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
+				//long checklikeweb = messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
 				logger.info(json);
 			}
 			
@@ -246,24 +246,5 @@ public class BlogController extends AbstractController {
 	public String getlikecount(@RequestParam("messageid") String messageid) {
 		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "" ;
 		return likecount;
-	}
-	
-	public MobileResult getMbData(long classpk,String userid) {
-		 Map<String, String> params = new HashMap<String, String>();
-		    params.put("messageid", classpk +"");
-		    params.put("userid", userid);
-		    String uri = SERVICEURL + "/likeDislike/getMbData";
-		    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
-		    for (Map.Entry<String, String> entry : params.entrySet()) {
-		        builder.queryParam(entry.getKey(), entry.getValue());
-		    }
-		    HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
-			HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
-		    RestTemplate restTemplate = new RestTemplate();
-		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entityHeader, MobileResult.class);
-		    System.out.println(response);
-		return response.getBody();
 	}
 }
