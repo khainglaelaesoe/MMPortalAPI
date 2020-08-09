@@ -12,5 +12,5 @@ public interface MessageService {
 	
 	public int likeCount(Long messageid);
 	
-	public int likebyuserid(Long messageid,Long webuserid,long score);
+	public boolean likebyuserid(Long messageid,Long webuserid,long score);
 }

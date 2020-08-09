@@ -96,10 +96,15 @@ public class DiscussionController extends AbstractController {
 			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
 			logger.info("Reply____________________" + message.getParentmessageid());
 			String checklikemb = json.getChecklike();
+			if(checklikemb == "0.0") {
+				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+					checklikemb = "1.0";
+				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+					checklikemb = "2.0";
+				}
+			}
 			long likecount=json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
-			long checklikeweb = messageService.likebyuserid(message.getMessageid(),json.getWebuserid(), 1);
-			
 			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
 			reply.setUserid(message.getUserid());
@@ -150,8 +155,14 @@ public class DiscussionController extends AbstractController {
 				msg.getReplyList().addAll(parse(replyList, userId));
 				
 				MobileResult json = getMbData(msg.getMessageid(),userId,0); 
-				logger.info("Comment_________"   + msg.getParentmessageid());
 				String checklikemb = json.getChecklike();
+				if(checklikemb.equals("0.0")) {
+					if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),1)) {//check web like
+						checklikemb = "1.0";
+					}else if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+						checklikemb = "2.0";
+					}
+				}
 				long likecount=json.getLikecount();
 				long totallikecount = msg.getLikecount() + likecount;
 				msg.setLikecount(totallikecount);
