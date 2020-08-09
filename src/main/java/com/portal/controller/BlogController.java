@@ -248,7 +248,7 @@ public class BlogController extends AbstractController {
 		resultJson.put("blog", resultList);
 		resultJson.put("totalCount", journalArticleService.getAllBySearchterm(searchterm, 129731));
 		return resultJson;
-	}
+	    }
 
 	
 	@RequestMapping(value = "likecount", method = RequestMethod.GET)
