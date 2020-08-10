@@ -225,7 +225,8 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setPage(stringList.get(4));
 
 		newArticle.setEngDownloadLink(getEngDownLoadLink(journalArticle.getContent()));
-		newArticle.setMyanmarDownloadLink("https://myanmar.gov.mm" + removeDelimeterFromContent(journalArticle.getContent()));
+		newArticle.setMyanmarDownloadLink(newArticle.getEngDownloadLink());
+		//newArticle.setMyanmarDownloadLink("https://myanmar.gov.mm" + removeDelimeterFromContent(journalArticle.getContent()));
 		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}

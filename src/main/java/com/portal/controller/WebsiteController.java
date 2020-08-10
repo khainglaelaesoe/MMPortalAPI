@@ -46,7 +46,6 @@ public class WebsiteController {
 		Organization_ org = new Organization_();
 		JournalArticle jarticle = new JournalArticle();
 		jarticle = journalArticleService.getJournalArticleforGov();
-		// organizationList.add(parseGovsite(jarticle));
 		org = parseGovsite(jarticle,"");
 		resultJson.put("govsite", org);
 		return resultJson;
@@ -92,7 +91,6 @@ public class WebsiteController {
 
 		Document doc1 = Jsoup.parse(str1.toString(), "", Parser.xmlParser());
 		Elements element1 = doc1.getElementsByTag("tr");
-		int i = 0;
 		ArrayList<String> deptNoArr = new ArrayList<String>();// deptNo
 		ArrayList<String> deptArr = new ArrayList<String>();// dept
 		ArrayList<String> websiteArr = new ArrayList<String>();// website
@@ -101,6 +99,7 @@ public class WebsiteController {
 		int j = 0;
 		TableData tblData = new TableData();
 		for (Element e : element1) {
+			j++;
 			Document doc2 = Jsoup.parse(e.toString(), "", Parser.xmlParser());
 			Elements element2 = doc2.getElementsByTag("td");
 			String mno = Jsoup.parse(element2.get(0).toString()).text();// MNo
@@ -108,8 +107,8 @@ public class WebsiteController {
 			String deptNo = Jsoup.parse(element2.get(2).toString()).text();//dept no
 			String dept = Jsoup.parse(element2.get(3).toString()).text();//dept
 			String website = Jsoup.parse(element2.get(4).toString()).text();//website
+			System.out.println("J___________" + j + "Element1________________" + element1.size() + "Ministry No__________" + mno);
 			if (mno.equals("") && ministryName.equals("") && deptNo.equals("") && dept.equals("") && website.equals("")) {
-
 				tblData.setDeptNo(deptNoArr);
 				tblData.setDepartment(deptArr);
 				tblData.setWebsite(websiteArr);
@@ -118,8 +117,7 @@ public class WebsiteController {
 				deptNoArr = new ArrayList<String>();
 				deptArr = new ArrayList<String>();
 				websiteArr = new ArrayList<String>();
-
-			} else if (mno.equals("") && ministryName.equals("")) {
+			}else if (mno.equals("") && ministryName.equals("")) {
 				deptNoArr.add(deptNo.trim());// deptNo
 				deptArr.add(dept.trim());// dept
 				websiteArr.add(website.trim());// website
@@ -129,6 +127,16 @@ public class WebsiteController {
 				deptNoArr.add(deptNo.trim());// deptNo
 				deptArr.add(dept.trim());// dept
 				websiteArr.add(website.trim());// website
+				if(j == element1.size()) {
+					tblData.setDeptNo(deptNoArr);
+					tblData.setDepartment(deptArr);
+					tblData.setWebsite(websiteArr);
+					tblDataArr.add(tblData);
+					tblData = new TableData();
+					deptNoArr = new ArrayList<String>();
+					deptArr = new ArrayList<String>();
+					websiteArr = new ArrayList<String>();
+				}
 			}
 
 		} // for
@@ -139,12 +147,12 @@ public class WebsiteController {
 		ArrayList<TableData> tblDataArr = new ArrayList<TableData>();
 		Document doc1 = Jsoup.parse(str1.toString(), "", Parser.xmlParser());
 		Elements element1 = doc1.getElementsByTag("tr");
-		int i = 0;
 		element1.remove(0);// to remove th
 		int j = 0;
 		TableData tblData = new TableData();
 		ArrayList<govdata> dataArr = new ArrayList<govdata>();
 		for (Element e : element1) {
+			j++;
 			govdata govdata = new govdata();
 			Document doc2 = Jsoup.parse(e.toString(), "", Parser.xmlParser());
 			Elements element2 = doc2.getElementsByTag("td");
@@ -166,6 +174,10 @@ public class WebsiteController {
 				tblData.setMiniStryNo(mno);
 				tblData.setMinistry(ministryName);
 				dataArr.add(govdata);// deptNo
+				if(j == element1.size()) {
+					tblData.setDataArrList(dataArr);
+					tblDataArr.add(tblData);
+				}
 			}
 
 		} // for
