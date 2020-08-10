@@ -87,9 +87,6 @@ public class JournalArticleController extends AbstractController {
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
-//		String con = dp.ParsingSpan(removeDelimeterFromContent(journalArticle.getContent()));
-//		newArticle.setContent(ImageSourceChange(con).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
-
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -126,7 +123,7 @@ public class JournalArticleController extends AbstractController {
 
 		newArticle.setMyanmarContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
 		newArticle.setEngContent(!engContent.isEmpty() ? engContent : myanmarContent);
-		
+
 		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}
@@ -134,7 +131,6 @@ public class JournalArticleController extends AbstractController {
 	private JournalArticle getJournalArticleForAnnouncement(JournalArticle journalArticle) {
 
 		/* title, imageurl, location, department, date, content */
-
 		JournalArticle newArticle = new JournalArticle();
 		DocumentParsing dp = new DocumentParsing();
 		String title[] = dp.ParsingTitle(journalArticle.getTitle());
@@ -142,11 +138,15 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMynamrTitle(title[1]);
 
 		String imageUrl = "";
-		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
-		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage2(journalArticle.getContent()) : imageUrl);
+		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
+		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
-		String contentInfo = removeDelimeterFromContent(journalArticle.getContent());
-		newArticle.setContent(ImageSourceChangeforanouncement(contentInfo.replaceAll("<span style=\"color:#0000ff;\">", "<span>").replaceAll("<span style=\"color:#050505\">", "<span>").replaceAll("<span style=\"font-size:11.5pt\">", "<span>>")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
+
+		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
+		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -158,10 +158,10 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngDepartmentTitle(name);
 		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 
-		String content = journalArticle.getContent();
-		int index = content.indexOf("location");
-		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
-		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
+		String con = journalArticle.getContent();
+		int index = con.indexOf("location");
+		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
+		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
 		return newArticle;
 	}
@@ -538,5 +538,14 @@ public class JournalArticleController extends AbstractController {
 		default:
 			return resultJson;
 		}
+	}
+
+	@RequestMapping(value = "applink", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	public JSONObject getAppLink() {
+		JSONObject resultJson = new JSONObject();
+		resultJson.put("applink", "https://drive.google.com/file/d/1jI3Li8RHzl87DyeXjdEhNKLUOnXAtJJH/view?usp=sharing");
+		return resultJson;
 	}
 }

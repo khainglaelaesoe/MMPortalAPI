@@ -125,10 +125,14 @@ public class NotiController extends AbstractController {
 
 		String imageUrl = "";
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
-		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage2(journalArticle.getContent()) : imageUrl);
+		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
-		String contentInfo = removeDelimeterFromContent(journalArticle.getContent());
-		newArticle.setContent(ImageSourceChangeforanouncement(contentInfo.replaceAll("<span style=\"color:#0000ff;\">", "<span>").replaceAll("<span style=\"color:#050505\">", "<span>").replaceAll("<span style=\"font-size:11.5pt\">", "<span>>")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
+
+		newArticle.setEngContent(ImageSourceChange(dp.ParsingSpan(engContent)));
+		newArticle.setMyanmarContent(ImageSourceChange(dp.ParsingSpan(myaContent)));
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -140,11 +144,12 @@ public class NotiController extends AbstractController {
 		newArticle.setEngDepartmentTitle(name);
 		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 
-		String content = journalArticle.getContent();
-		int index = content.indexOf("location");
-		newArticle.setEngLocation(getAttribute(index, content, "en_US"));
-		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
+		String con = journalArticle.getContent();
+		int index = con.indexOf("location");
+		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
+		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
+		newArticle.setPdfLink(getPDFLink(newArticle.getEngContent()).isEmpty() ? getPDFLink(newArticle.getMyanmarContent()) : getPDFLink(newArticle.getEngContent()));
 		return newArticle;
 	}
 
@@ -152,10 +157,9 @@ public class NotiController extends AbstractController {
 
 		Date date = new Date();
 		String todayDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-		logger.info("todayDate !!!!!!!!!!!!!!!!!!!!!!!!!!" + todayDate);
 
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
-		List<JournalArticle> journals = journalArticleService.getJournalsByDate(egdate, calssTypeId);
+		List<JournalArticle> journals = journalArticleService.getJournalsByDate(todayDate, calssTypeId);
 		for (JournalArticle journal : journals) {
 			if (journal != null) {
 

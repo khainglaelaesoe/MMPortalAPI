@@ -139,32 +139,32 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	@Override
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version) {
 		List<Long> objectList;
-		String queryStr = "select id_ from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
-		objectList = journalDao.findLongByQueryString(queryStr);
-		Long obj = objectList.get(0);
-		if (obj == null)
-			return null;
-		return getJournalArticle(obj);
+		String queryStr = "from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
+
+		return journalDao.getAll(queryStr).get(0);
+		// objectList = journalDao.findLongByQueryString(queryStr);
+//		Long obj = objectList.get(0);
+//		if (obj == null)
+//			return null;
+//		return getJournalArticle(obj);
 	}
 
-	public Long getJournalArticleIdByArticleIdAndVersion(long articleId, String version) {
-		List<Long> idList;
-		String queryStr = "select id_ from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
-		idList = journalDao.findLongByQueryString(queryStr);
-		Long id = idList.get(0);
-		if (id == null)
+	public JournalArticle getJournalArticleIdByArticleIdAndVersion(long articleId, String version) {
+		String queryStr = "from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
+		List<JournalArticle> journalArticles = journalDao.getAll(queryStr);
+		if (CollectionUtils.isEmpty(journalArticles))
 			return null;
-		return id;
+		return journalArticles.get(0);
 	}
 
-	public List<Long> getIdByFolderIdByName(String input, String classuuid) {
-		List<Long> journalArticleIdList = new ArrayList<Long>();
+	public List<JournalArticle> getIdByFolderIdByName(String input, String classuuid) {
+		List<JournalArticle> journalArticleIdList = new ArrayList<JournalArticle>();
 		String query = "select articleid, max(version) from JournalArticle journalArticle  where  (title LIKE " + "'%" + input + "%'" + " or content LIKE " + "'%" + input + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
 		List<Object> objectList = journalDao.findByQueryString(query);
 		for (Object object : objectList) {
 			Object[] obj = (Object[]) object;
 			if (obj[0] == null || obj[1] == null)
-				return new ArrayList<Long>();
+				return new ArrayList<JournalArticle>();
 
 			Long articleId = Long.parseLong(obj[0].toString());
 			String version = obj[1].toString();
@@ -173,8 +173,8 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journalArticleIdList;
 	}
 
-	public List<Long> getIdByFolderIdAndSearchTerms(int folderId, String searchTerm) {
-		List<Long> journalArticleIdList = new ArrayList<Long>();
+	public List<JournalArticle> getIdByFolderIdAndSearchTerms(int folderId, String searchTerm) {
+		List<JournalArticle> journalArticleIdList = new ArrayList<JournalArticle>();
 		String query = "SELECT articleid, max(version) FROM JournalArticle journal where (title LIKE " + "'%\"" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and folderid=" + folderId + " group by articleid";
 		List<Object> objectList = journalDao.findByQueryString(query);
 		for (Object object : objectList) {
@@ -189,20 +189,9 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journalArticleIdList;
 	}
 
-	public List<Long> getIdByFolderId(String classuuid) {
-		List<Long> journalArticleIdList = new ArrayList<Long>();
-		String query = "select articleid, max(version) from JournalArticle journalArticle  where  journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
-		List<Object> objectList = journalDao.findByQueryString(query);
-		for (Object object : objectList) {
-			Object[] obj = (Object[]) object;
-			if (obj[0] == null || obj[1] == null)
-				return null;
-
-			Long articleId = Long.parseLong(obj[0].toString());
-			String version = obj[1].toString();
-			journalArticleIdList.add(getJournalArticleIdByArticleIdAndVersion(articleId, version));
-		}
-		return journalArticleIdList;
+	public JournalArticle getIdByFolderId(Long classpk) {
+		String query = "from JournalArticle j where j.resourceprimkey=" + classpk + "order by version desc";
+		return journalDao.getAll(query).get(0);
 	}
 
 	public JournalArticle getContactUsbyArticleAndVersion() {
@@ -383,7 +372,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		String query = "Select journalArticle from JournalArticle journalArticle  where journalArticle.displaydate like '%" + dateStr + "%' and journalArticle.resourceprimkey in (select ae.classpk from AssetEntry ae where ae.classtypeid=" + classTypeId + " )";
 		return journalDao.getAll(query);
 	}
-	
+
 	public JournalArticle getJournalArticleByDate(String classuuid, String dateStr) {
 		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where  displaydate like '%" + dateStr + "%'" + " and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
 		List<Object> objectList = journalDao.byQueryString(queryStr);

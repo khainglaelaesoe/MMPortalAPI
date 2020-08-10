@@ -8,7 +8,7 @@ public interface JournalArticleService {
 
 	public List<JournalArticle> getJournalArticles();
 
-	public List<Long> getIdByFolderIdByName(String input, String classuuid);
+	public List<JournalArticle> getIdByFolderIdByName(String input, String classuuid);
 
 	public JournalArticle getJournalArticleByFolderId(long folderId);
 
@@ -56,7 +56,7 @@ public interface JournalArticleService {
 
 	JournalArticle getImage(long Id);
 
-	public List<Long> getIdByFolderIdAndSearchTerms(int folderId, String searchTerm);
+	public List<JournalArticle> getIdByFolderIdAndSearchTerms(int folderId, String searchTerm);
 
 	public long getFormBySearchterm(String searchTerm, long classTypeId);
 
@@ -72,7 +72,7 @@ public interface JournalArticleService {
 
 	public int getCount(String searchTerm, long classTypeId);
 
-	public List<Long> getIdByFolderId(String classuuid);
+	public JournalArticle getIdByFolderId(Long classpk);
 	
 	public JournalArticle getJournalArticleByDate(String classuuid, String dateStr);
 	

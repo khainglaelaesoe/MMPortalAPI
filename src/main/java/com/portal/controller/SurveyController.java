@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -179,10 +180,21 @@ public class SurveyController extends AbstractController {
 		JSONObject resultJson = new JSONObject();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);		
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("survey", byPaganation(journalArticleList, input));
+		resultJson.put("survey", byPaganation(newArticles, input));
 		resultJson.put("totalCount", journalArticleList.size());
 		return resultJson;
 	}

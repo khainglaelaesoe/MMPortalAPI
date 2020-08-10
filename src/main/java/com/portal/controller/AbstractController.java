@@ -81,7 +81,23 @@ public class AbstractController {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
 
-				String imgreplace = "https://myanmar.gov.mm" + imgsrc;
+				if (!imgsrc.startsWith("http")) {
+					String imgreplace = imgsrc.startsWith("http") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+					img.attr("src", imgreplace);
+				}
+			}
+		}
+		return docimage.html();
+	}
+
+	public String ImageSourceChange2(String htmlinput) {
+
+		Document docimage = Jsoup.parse(htmlinput, "", Parser.htmlParser());
+		Elements images = docimage.getElementsByTag("img");
+		if (images.size() > 0) {
+			for (Element img : images) {
+				String imgsrc = img.attr("src");
+				String imgreplace = imgsrc.startsWith("http") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
 				img.attr("src", imgreplace);
 			}
 		}
@@ -151,6 +167,15 @@ public class AbstractController {
 			return "";
 		String remainString = content.substring(start, content.length());
 		int end = remainString.indexOf("]]");
+		return remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
+	}
+
+	public String getDocumentImage2(String content) {
+		int start = content.indexOf("/document");
+		if (start < 0)
+			return "";
+		String remainString = content.substring(start, content.length());
+		int end = remainString.indexOf("\"");
 		return remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
 	}
 
@@ -431,32 +456,32 @@ public class AbstractController {
 		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
 		return first.substring(0, endIndex);
 	}
-	
-	public MobileResult getMbData(long classpk,String userid,long parentmessageid) {
-		 Map<String, String> params = new HashMap<String, String>();
-		    params.put("messageid", classpk +"");
-		    params.put("userid", userid);
-		    params.put("parentmessageid", parentmessageid +"");
-		    String uri = SERVICEURL + "/likeDislike/getMbData";
-		    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
-		    for (Map.Entry<String, String> entry : params.entrySet()) {
-		        builder.queryParam(entry.getKey(), entry.getValue());
-		    }
-		    HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
-			HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
-		    RestTemplate restTemplate = new RestTemplate();
-		    ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entityHeader, MobileResult.class);
-		    System.out.println(response);
+
+	public MobileResult getMbData(long classpk, String userid, long parentmessageid) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("messageid", classpk + "");
+		params.put("userid", userid);
+		params.put("parentmessageid", parentmessageid + "");
+		String uri = SERVICEURL + "/likeDislike/getMbData";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
+		for (Map.Entry<String, String> entry : params.entrySet()) {
+			builder.queryParam(entry.getKey(), entry.getValue());
+		}
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<MobileResult> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entityHeader, MobileResult.class);
+		System.out.println(response);
 		return response.getBody();
 	}
-	
-	public RequestVote getMobileVoltCount(String mbuserid,String pollOrSurveyId,long totalVoteCount,List<PollsChoice> pollslist) {
-		RequestVote reqVote= new RequestVote();
+
+	public RequestVote getMobileVoltCount(String mbuserid, String pollOrSurveyId, long totalVoteCount, List<PollsChoice> pollslist) {
+		RequestVote reqVote = new RequestVote();
 		reqVote.setPollsChoiceList(pollslist);
 		reqVote.setUserid(mbuserid);
-		reqVote.setTotalVoteCount(totalVoteCount+"");
+		reqVote.setTotalVoteCount(totalVoteCount + "");
 		reqVote.setPollOrSurveyId(pollOrSurveyId);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -465,19 +490,19 @@ public class AbstractController {
 		HttpEntity<RequestVote> entityHeader = new HttpEntity<>(reqVote, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url =  SERVICEURL + "/vote/getVote";
+		String url = SERVICEURL + "/vote/getVote";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 
 		RestTemplate restTemplate = new RestTemplate();
-			reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
+		reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
 		return reqVote;
 	}
-	
-	public RequestVote getMobileSurveyCount(String mbuserid,String pollOrSurveyId) {
-		RequestVote reqVote= new RequestVote();
+
+	public RequestVote getMobileSurveyCount(String mbuserid, String pollOrSurveyId) {
+		RequestVote reqVote = new RequestVote();
 		reqVote.setUserid(mbuserid);
 		reqVote.setPollOrSurveyId(pollOrSurveyId);
 		HttpHeaders headers = new HttpHeaders();
@@ -487,15 +512,26 @@ public class AbstractController {
 		HttpEntity<RequestVote> entityHeader = new HttpEntity<>(reqVote, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url =  SERVICEURL + "/survey/getSurvey";
+		String url = SERVICEURL + "/survey/getSurvey";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 
 		RestTemplate restTemplate = new RestTemplate();
-			reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
+		reqVote = restTemplate.postForObject(url, entityHeader, RequestVote.class);
 		return reqVote;
 	}
-	
+
+	public String getPDFLink(String content) {
+		int start = content.indexOf("href=");
+		if (start < 0)
+			return "";
+		String remainString = content.substring(start, content.length());
+		int end = remainString.indexOf(".pdf");
+		if (end < 0)
+			return "";
+		return remainString.substring(6, end + 4);
+	}
+
 }

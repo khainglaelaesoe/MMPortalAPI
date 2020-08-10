@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -53,7 +54,7 @@ public class BlogController extends AbstractController {
 
 	@Autowired
 	private MessageService messageService;
-	
+
 	private static Logger logger = Logger.getLogger(BlogController.class);
 
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
@@ -66,7 +67,8 @@ public class BlogController extends AbstractController {
 		newJournal.setMynamrTitle(title[1]);
 
 		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
-		//String name = journalFolderService.getNameByFolderId(journalArticle.getFolderid());
+		// String name =
+		// journalFolderService.getNameByFolderId(journalArticle.getFolderid());
 		newJournal.setEngDepartmentTitle(name);
 		newJournal.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 
@@ -100,18 +102,18 @@ public class BlogController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
-			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			MobileResult json = getMbData(message.getMessageid(), userId, message.getParentmessageid());
 			logger.info("Reply____________________" + message.getParentmessageid());
-			String checklikemb =json.getChecklike();
-			if(checklikemb == "0.0") {
-				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+			String checklikemb = json.getChecklike();
+			if (checklikemb == "0.0") {
+				if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 1)) {// check web like
 					checklikemb = "1.0";
-				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+				} else if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
 					checklikemb = "2.0";
 				}
 			}
-			logger.info("CheckLike____________" + checklikemb);
-			long likecount=json.getLikecount();
+
+			long likecount = json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
 			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
@@ -161,24 +163,23 @@ public class BlogController extends AbstractController {
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
 				});
 				msg.getReplyList().addAll(parse(replyList, userId));
-				
-				MobileResult json = getMbData(msg.getMessageid(),userId,0); 
+
+				MobileResult json = getMbData(msg.getMessageid(), userId, 0);
 				String checklikemb = json.getChecklike();
-				if(checklikemb == "0.0") {
-					if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),1)) {//check web like
+				if (checklikemb == "0.0") {
+					if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
 						checklikemb = "1.0";
-					}else if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+					} else if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
 						checklikemb = "2.0";
 					}
 				}
-				long likecount=json.getLikecount();
+				long likecount = json.getLikecount();
 				long totallikecount = msg.getLikecount() + likecount;
 				msg.setLikecount(totallikecount);
 				msg.setDislikecount(json.getDislikecount());
 				msg.setChecklike(checklikemb);
 				logger.info(json);
 			}
-			
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
 			if (journalArticle != null) {
@@ -199,9 +200,20 @@ public class BlogController extends AbstractController {
 		List<Object> entryList = assetEntryService.byClassTypeId(129731);
 		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input,userId));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("blog", journalArticleList);
+		resultJson.put("blog", newArticles);
 		resultJson.put("totalCount", entryList.size());
 		return resultJson;
 	}
@@ -231,7 +243,7 @@ public class BlogController extends AbstractController {
 		}
 		return resultList;
 	}
-	
+
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
@@ -249,14 +261,13 @@ public class BlogController extends AbstractController {
 		resultJson.put("blog", resultList);
 		resultJson.put("totalCount", journalArticleService.getAllBySearchterm(searchterm, 129731));
 		return resultJson;
-	    }
+	}
 
-	
 	@RequestMapping(value = "likecount", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public String getlikecount(@RequestParam("messageid") String messageid) {
-		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "" ;
+		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "";
 		return likecount;
 	}
 }

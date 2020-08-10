@@ -101,18 +101,18 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		return assetEntryDao.findByQuery(query);
 	}
 
-	public List<String> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId) {
-		String query = "SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
-		return assetEntryDao.findByQuery(query);
+	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId) {
+		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
+		return assetEntryDao.findLongByQueryString(query);
 	}
 
-	public List<String> getAssetEntryListByName(long classTypeId, String searchTerm) {
-		String query = "SELECT classuuid from AssetEntry where title LIKE " + "'%" + searchTerm + "%'" + " and classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
-		return assetEntryDao.findByQuery(query);
+	public List<Long> getAssetEntryListByName(long classTypeId, String searchTerm) {
+		String query = "SELECT classpk from AssetEntry where title LIKE " + "'%" + searchTerm + "%'" + " and classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
+		return assetEntryDao.findLongByQueryString(query);
 	}
 
 	public List<Object> byClassTypeId(long classTypeId) {
-		String query = "SELECT classuuid, classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1";// order by publishDate desc
+		String query = "SELECT classuuid, classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by publishdate";
 		return assetEntryDao.findByQueryString(query);
 	}
 
@@ -192,7 +192,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<String> getClassuuidListForPollAndSurvey(long categoryId) {
-		String query = "Select ae.classuuid from AssetEntry ae where ae.visible=1 and ae.classtypeid= 107607 and ae.entryid in ( Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + ") order by ae.entryid desc";
+		String query = "Select ae.classuuid from AssetEntry ae where ae.visible=1 and ae.classtypeid= 107607 and ae.entryid in ( Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + ") order by ae.publishdate";
 		return assetEntryDao.findByQuery(query);
 	}
 

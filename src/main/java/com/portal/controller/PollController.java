@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -54,14 +55,14 @@ public class PollController extends AbstractController {
 
 	@Autowired
 	private PollsChoiceService pollsChoiceService;
-	
+
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(PollController.class);
 
-	private JournalArticle parseJournalArticlebyuserid(JournalArticle journalArticle,String mbuserid) {
-		
+	private JournalArticle parseJournalArticlebyuserid(JournalArticle journalArticle, String mbuserid) {
+
 		if (journalArticle.getContent() == null)
 			return null;
 
@@ -87,19 +88,20 @@ public class PollController extends AbstractController {
 		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
 		newJournal.setUserstatus("V000");
 		List<PollsChoice> pollslist = new ArrayList<PollsChoice>();
-		pollslist= pollsChoiceService.getVoltResult(Long.parseLong(pollOrSurveyId));
+		pollslist = pollsChoiceService.getVoltResult(Long.parseLong(pollOrSurveyId));
 		long votecount = pollsChoiceService.getCountOfVote(Long.parseLong(pollOrSurveyId));
-		//mobile data
-		RequestVote req = getMobileVoltCount(mbuserid, pollOrSurveyId,votecount, pollslist);
-		//vote count
+		// mobile data
+		RequestVote req = getMobileVoltCount(mbuserid, pollOrSurveyId, votecount, pollslist);
+		// vote count
 		long totalvotecount = votecount + Long.parseLong(req.getTotalVoteCount());
 		newJournal.setPollOrSurveyCount(totalvotecount);
-		if(req.getUserstatus() == null) {
-			if(pollsVoteService.getCountOfVotebyuserid(Long.parseLong(pollOrSurveyId),Long.parseLong(req.getWebuserid()))) {
+		if (req.getUserstatus() == null) {
+			if (pollsVoteService.getCountOfVotebyuserid(Long.parseLong(pollOrSurveyId), Long.parseLong(req.getWebuserid()))) {
 				newJournal.setUserstatus("V001");
 			}
-		}else newJournal.setUserstatus("V001");
-		
+		} else
+			newJournal.setUserstatus("V001");
+
 		List<Map<String, String>> engQuesmaps = new ArrayList<Map<String, String>>();
 		List<Map<String, String>> myanmarQuesmaps = new ArrayList<Map<String, String>>();
 		for (PollsChoice poll : req.getPollsChoiceList()) {
@@ -108,17 +110,17 @@ public class PollController extends AbstractController {
 			Document doc2 = Jsoup.parse(poll.getDescription(), "", Parser.xmlParser());
 			Elements element = doc2.getElementsByTag("Description");
 			String choiceid = poll.getChoiceid() + "";
-			engQuesmap.put("choicename",Jsoup.parse(element.get(0).toString()).text());
-			engQuesmap.put("choiceid",choiceid);
-			engQuesmap.put("choicecount",poll.getChoicecount() + "");
+			engQuesmap.put("choicename", Jsoup.parse(element.get(0).toString()).text());
+			engQuesmap.put("choiceid", choiceid);
+			engQuesmap.put("choicecount", poll.getChoicecount() + "");
 			engQuesmaps.add(engQuesmap);
-			myanmarQuesmap.put("choicename",Jsoup.parse(element.get(1).toString()).text());
-			myanmarQuesmap.put("choiceid",choiceid);
-			myanmarQuesmap.put("choicecount",poll.getChoicecount() + "");
+			myanmarQuesmap.put("choicename", Jsoup.parse(element.get(1).toString()).text());
+			myanmarQuesmap.put("choiceid", choiceid);
+			myanmarQuesmap.put("choicecount", poll.getChoicecount() + "");
 			myanmarQuesmaps.add(myanmarQuesmap);
-			
-			//engQues.add(Jsoup.parse(element.get(0).toString()).text());
-			//myanmarQues.add(Jsoup.parse(element.get(1).toString()).text());
+
+			// engQues.add(Jsoup.parse(element.get(0).toString()).text());
+			// myanmarQues.add(Jsoup.parse(element.get(1).toString()).text());
 		}
 		newJournal.setQuestionid(pollOrSurveyId);
 		newJournal.setShareLink(getShareLink(pollOrSurveyId));
@@ -127,6 +129,7 @@ public class PollController extends AbstractController {
 		newJournal.setId_(journalArticle.getId_());
 		return newJournal;
 	}
+
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
 		if (journalArticle.getContent() == null)
 			return null;
@@ -172,17 +175,17 @@ public class PollController extends AbstractController {
 		return "https://myanmar.gov.mm/poll?p_p_id=com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_mvcPath=%2Fpolls_display%2Fview.jsp&_com_liferay_polls_web_portlet_PollsDisplayPortlet_INSTANCE_Mr4wSm0Fo13J_pollsQuestionId=" + questionId;
 	}
 
-	private List<JournalArticle> parseJournalArticleListByuserid(List<JournalArticle> journalArticleList,String mbuserid) {
+	private List<JournalArticle> parseJournalArticleListByuserid(List<JournalArticle> journalArticleList, String mbuserid) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
-			JournalArticle journal = parseJournalArticlebyuserid(journalArticle,mbuserid);
+			JournalArticle journal = parseJournalArticlebyuserid(journalArticle, mbuserid);
 			if (journal != null)
 				newJournalList.add(journal);
 		}
 
 		return newJournalList;
 	}
-	
+
 	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
@@ -211,10 +214,21 @@ public class PollController extends AbstractController {
 		JSONObject resultJson = new JSONObject();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList),mbuserid);
+		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList), mbuserid);
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("poll", byPaganation(journalArticleList, input));
+		resultJson.put("poll", byPaganation(newArticles, input));
 		resultJson.put("totalCount", journalArticleList.size());
 		return resultJson;
 	}
@@ -227,7 +241,7 @@ public class PollController extends AbstractController {
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList),userid);
+		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getJournalArticles(entryList), userid);
 		for (JournalArticle journalArticle : journalArticleList) {
 			StringBuilder searchterms = new StringBuilder();
 			searchterms.append(journalArticle.getMyanmarDepartmentTitle());
@@ -245,13 +259,13 @@ public class PollController extends AbstractController {
 		resultJson.put("totalCount", resultList.size());
 		return resultJson;
 	}
-	
+
 	@RequestMapping(value = "pollDetail", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public JournalArticle getPollDetails(@RequestParam("id") String id, @RequestParam("userid") String userid) {
 		JournalArticle journalArticle = journalArticleService.getJournalArticle(Long.parseLong(id));
-		journalArticle = parseJournalArticlebyuserid(journalArticle,userid);
+		journalArticle = parseJournalArticlebyuserid(journalArticle, userid);
 		return journalArticle;
 	}
 }

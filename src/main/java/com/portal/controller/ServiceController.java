@@ -79,6 +79,7 @@ public class ServiceController extends AbstractController {
 		JournalArticle newJournal = new JournalArticle();
 		DocumentParsing dp = new DocumentParsing();
 		String title[] = dp.ParsingTitle(journalArticle.getTitle());
+
 		newJournal.setEngTitle(title[0]);
 		newJournal.setMynamrTitle(title[1]);
 
@@ -270,10 +271,10 @@ public class ServiceController extends AbstractController {
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			entryList = assetEntryService.getAssetEntryListByClassTypeId(85099);
-			List<JournalArticle> resultList = getResultList(entryList, input, searchTerm, userId); // by size // now all
+			List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 			int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 			while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
-				resultList.addAll(getResultList(entryList, input, searchTerm, userId));
+				resultList.addAll(parseJournalArticleList(getResultList(entryList, input, searchTerm, userId)));
 				input = (Integer.parseInt(input) + 1) + "";
 			}
 
@@ -629,7 +630,7 @@ public class ServiceController extends AbstractController {
 		}
 
 		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-		
+
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList, input, userId));
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();

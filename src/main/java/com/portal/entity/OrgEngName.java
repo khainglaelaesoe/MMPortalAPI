@@ -50,7 +50,7 @@ public enum OrgEngName {
 	Rakhine_State_Government("Rakhine State Government"), Sagaing_Region_Government("Sagaing Region Government"),
 	Shan_State_Government("Shan State Government"), Tanintaryi_Region_Government("Tanintaryi Region Government"),
 	
-	Union_Attonery_Generals_Office("Union Attorney General?s Office"),
+	Union_Attonery_Generals_Office("Union Attorney General's Office"),
 	Union_Civil_Service_Board("Union Civil Service Board"),
 	
 	Yangon_City_Development_Committee("Yangon City Development Committee"),

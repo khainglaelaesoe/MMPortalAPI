@@ -333,6 +333,10 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@JsonView(Views.Thin.class)
 	private String userstatus;
 
+	@JsonView(Views.Summary.class)
+	@Transient
+	private String pdfLink;
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<Map<String, String>> myanmarQuestionsMap;
@@ -983,6 +987,14 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+
+	public String getPdfLink() {
+		return pdfLink;
+	}
+
+	public void setPdfLink(String pdfLink) {
+		this.pdfLink = pdfLink;
 	}
 
 }

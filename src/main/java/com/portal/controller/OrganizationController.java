@@ -97,10 +97,9 @@ public class OrganizationController extends AbstractController {
 
 	private List<Organization_> getOrganizationList(String articleInfo) {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
-		for (String id : articleInfo.split(",")) {
-			if (!DateUtil.isEmpty(id)) {
-				organizationList.add(parseOrganization(journalArticleService.getJournalArticle(Long.parseLong(id))));
-			}
+		for (String classpk : articleInfo.split(",")) {
+			if (!classpk.isEmpty())
+				organizationList.add(parseOrganization(journalArticleService.getIdByFolderId(Long.parseLong(classpk.toString()))));
 		}
 		return organizationList;
 	}
@@ -128,16 +127,6 @@ public class OrganizationController extends AbstractController {
 		return resultJson;
 	}
 
-//	@RequestMapping(value = "getEmergencyContacts", method = RequestMethod.GET)
-//	@ResponseBody
-//	@JsonView(Views.Summary.class)
-//	public JSONObject getEmergencyContact() {
-//		JSONObject resultJson = new JSONObject();
-//		List<Organization> organizationList = new ArrayList<Organization>();
-//		organizationList = parseEmergencyContact(journalArticleService.getEmergenyContact());
-//		resultJson.put("emergencyContent", organizationList);
-//		return resultJson;
-//	}
 	@RequestMapping(value = "getEmergencyContacts", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -291,26 +280,42 @@ public class OrganizationController extends AbstractController {
 		return organization;
 	}
 
+	private List<Organization_> parseOrganizationList(List<JournalArticle> journals) {
+		List<Organization_> organizationList = new ArrayList<Organization_>();
+		journals.forEach(journal -> {
+			organizationList.add(parseOrganization(journal));
+		});
+		return organizationList;
+	}
+
+	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String input, @RequestParam("index") String index) {
+		JSONObject resultJson = new JSONObject();
+		List<JournalArticle> articles = journalArticleService.getIdByFolderIdAndSearchTerms(91278, input);
+		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;
+		resultJson.put("lastPageNo", lastPageNo);
+		resultJson.put("orginations", parseOrganizationList(articles));
+		resultJson.put("totalCount", articles.size());
+		return resultJson;
+	}
+
 	@RequestMapping(value = "byname", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject getOrganizationByName(@RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
-		List<Long> articles = new ArrayList<Long>();
-		if (input.equals("all")) {
-			List<String> entryList = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
-			for (String classuuid : entryList)
-				articles.addAll(journalArticleService.getIdByFolderId(classuuid)); // desc -> reverse
-		} else {
+		List<Long> classpks = new ArrayList<Long>();
+		if (input.equals("all"))
+			classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
+		else {
 			String value = OrgEngName.valueOf(input).getValue();
-			List<String> entryList = assetEntryService.getAssetEntryListByName(91234, value);
-			for (String classuuid : entryList)
-				articles.addAll(journalArticleService.getIdByFolderId(classuuid)); // desc -> reverse
+			classpks = assetEntryService.getAssetEntryListByName(91234, value);
 		}
 
-		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;
-
-		List<Organization_> orgs = getOrganizationList(convertToString(articles, index));
+		int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
+		List<Organization_> orgs = getOrganizationList(convertToString(classpks, index));
 		Stack<Organization_> stackList = new Stack<Organization_>();
 		orgs.forEach(org -> {
 			stackList.push(org);
@@ -322,7 +327,7 @@ public class OrganizationController extends AbstractController {
 		}
 
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("totalCount", articles.size());
+		resultJson.put("totalCount", classpks.size());
 		resultJson.put("orginations", newArticles);
 		return resultJson;
 	}
@@ -342,17 +347,5 @@ public class OrganizationController extends AbstractController {
 		}
 		json.put("organizationList", organizationList);
 		return json;
-	}
-
-	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
-	@ResponseBody
-	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String input, @RequestParam("index") String index) {
-		JSONObject resultJson = new JSONObject();
-		List<Long> articles = journalArticleService.getIdByFolderIdAndSearchTerms(91278, input);
-		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;
-		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("orginations", getOrganizationListBySearchTerm(convertToString(articles, index), input));
-		return resultJson;
 	}
 }

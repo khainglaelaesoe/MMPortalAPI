@@ -2,6 +2,7 @@ package com.portal.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -93,17 +94,17 @@ public class DiscussionController extends AbstractController {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
-			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			MobileResult json = getMbData(message.getMessageid(), userId, message.getParentmessageid());
 			logger.info("Reply____________________" + message.getParentmessageid());
 			String checklikemb = json.getChecklike();
-			if(checklikemb == "0.0") {
-				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+			if (checklikemb == "0.0") {
+				if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 1)) {// check web like
 					checklikemb = "1.0";
-				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+				} else if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
 					checklikemb = "2.0";
 				}
 			}
-			long likecount=json.getLikecount();
+			long likecount = json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
 			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
@@ -153,22 +154,23 @@ public class DiscussionController extends AbstractController {
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
 				});
 				msg.getReplyList().addAll(parse(replyList, userId));
-				
-				MobileResult json = getMbData(msg.getMessageid(),userId,0); 
+
+				MobileResult json = getMbData(msg.getMessageid(), userId, 0);
 				String checklikemb = json.getChecklike();
-				if(checklikemb.equals("0.0")) {
-					if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),1)) {//check web like
+				if (checklikemb.equals("0.0")) {
+					if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
 						checklikemb = "1.0";
-					}else if(messageService.likebyuserid(msg.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+					} else if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
 						checklikemb = "2.0";
 					}
 				}
-				long likecount=json.getLikecount();
+				long likecount = json.getLikecount();
 				long totallikecount = msg.getLikecount() + likecount;
 				msg.setLikecount(totallikecount);
 				msg.setDislikecount(json.getDislikecount());
 				msg.setChecklike(checklikemb);
-				//long checklikeweb = messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
+				// long checklikeweb =
+				// messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
 				logger.info(json);
 			}
 
@@ -191,8 +193,18 @@ public class DiscussionController extends AbstractController {
 		List<Object> entryList = assetEntryService.byClassTypeId(129739);
 		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("discussion", journalArticleList);
+		resultJson.put("discussion", newArticles);
 		resultJson.put("totalCount", entryList.size());
 		return resultJson;
 	}

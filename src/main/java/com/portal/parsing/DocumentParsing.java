@@ -150,7 +150,19 @@ public class DocumentParsing {
 				element.removeAttr("style");
 			}
 		}
+
+		Elements elements2 = doc.select("img");
+		for (Element element : elements2) {
+			element.removeAttr("alt");
+			if (element.attr("style").startsWith("width")) {
+				element.removeAttr("style");
+			}
+			if (element.attr("style").startsWith("height")) {
+				element.removeAttr("style");
+			}
+		}
 		return doc.html();
+
 	}
 
 	public ArrayList<String> ParsingAllContent(String input) {
@@ -364,9 +376,7 @@ public class DocumentParsing {
 	public String[] ParsingTitle(String input) {
 		String[] engmyan = new String[2];
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
-
 		Elements elements = doc.select("root");
-
 		for (Element element : elements) {
 			engmyan[0] = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
 			engmyan[1] = element.getElementsByAttributeValueContaining("language-id", "my_MM").text();
@@ -472,7 +482,7 @@ public class DocumentParsing {
 			resdata = docimage.text().toString();
 		return resdata;
 	}
-	
+
 	public String[] Parsingdocument_library(String input) {
 		String[] engmyan = new String[2];
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
@@ -482,12 +492,12 @@ public class DocumentParsing {
 			if (element.attr("type").equals("document_library")) {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
 					String enginput = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
-					engmyan[0] = "https://myanmar.gov.mm" +enginput;
+					engmyan[0] = "https://myanmar.gov.mm" + enginput;
 				}
 
 				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
 					String myaninput = element.getElementsByAttributeValueContaining("language-id", "my_MM").text();
-					engmyan[1] = "https://myanmar.gov.mm" +myaninput;
+					engmyan[1] = "https://myanmar.gov.mm" + myaninput;
 
 				}
 			}
