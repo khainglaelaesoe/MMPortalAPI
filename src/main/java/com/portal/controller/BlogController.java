@@ -66,6 +66,7 @@ public class BlogController extends AbstractController {
 		newJournal.setMynamrTitle(title[1]);
 
 		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
+		//String name = journalFolderService.getNameByFolderId(journalArticle.getFolderid());
 		newJournal.setEngDepartmentTitle(name);
 		newJournal.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 

@@ -112,7 +112,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<Object> byClassTypeId(long classTypeId) {
-		String query = "SELECT classuuid, classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1";
+		String query = "SELECT classuuid, classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1";// order by publishDate desc
 		return assetEntryDao.findByQueryString(query);
 	}
 

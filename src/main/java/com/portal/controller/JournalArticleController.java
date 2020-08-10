@@ -223,10 +223,9 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMyanmarPublisher(stringList.get(1));
 		newArticle.setPublicationDate(stringList.get(2));
 		newArticle.setPage(stringList.get(4));
-
-		newArticle.setEngDownloadLink(getEngDownLoadLink(journalArticle.getContent()));
-		newArticle.setMyanmarDownloadLink(newArticle.getEngDownloadLink());
-		//newArticle.setMyanmarDownloadLink("https://myanmar.gov.mm" + removeDelimeterFromContent(journalArticle.getContent()));
+		String[] engmyanDownloadLink = new DocumentParsing().Parsingdocument_library(journalArticle.getContent());
+		newArticle.setEngDownloadLink(engmyanDownloadLink[0]);
+		newArticle.setMyanmarDownloadLink(engmyanDownloadLink[1]);
 		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}
