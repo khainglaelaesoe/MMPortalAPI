@@ -90,7 +90,6 @@ public class DiscussionController extends AbstractController {
 		return newJournalList;
 	}
 
-
 	public List<JournalArticle> getArticles(List<Object> entryList, String input, String userId) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = bySize(entryList, input);

@@ -593,6 +593,45 @@ public class AbstractController {
 		return newArticle;
 	}
 
+	
+	
+	public List<Reply> parse(List<MBMessage> messageList, String userId) {
+		List<Reply> replyList = new ArrayList<Reply>();
+		messageList.forEach(message -> {
+			Reply reply = new Reply();
+			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			logger.info("Reply____________________" + message.getParentmessageid());
+			String checklikemb =json.getChecklike();
+			if(checklikemb == "0.0") {
+				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+					checklikemb = "1.0";
+				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+					checklikemb = "2.0";
+				}
+			}
+			logger.info("CheckLike____________" + checklikemb);
+			long likecount=json.getLikecount();
+			long totallikecount = message.getLikecount() + likecount;
+			reply.setChecklike(checklikemb);
+			reply.setMessageid(message.getMessageid());
+			reply.setUserid(message.getUserid());
+			reply.setUsername(message.getUsername());
+			reply.setBody(message.getBody());
+			reply.setSubject(message.getSubject());
+			reply.setLikecount(totallikecount);
+			reply.setDislikecount(json.getDislikecount());
+			reply.setCreatedate(message.getCreatedate());
+			reply.setParentmessageid(message.getParentmessageid());
+
+			if (reply.getUserid() == Long.parseLong(userId))
+				reply.setEditPermission("Yes");
+			else
+				reply.setEditPermission("No");
+			replyList.add(reply);
+		});
+		return replyList;
+	}
+	
 	public List<MBMessage> getMobileCommentsbymessageid(List<Long> messageid) {
 		RequestVote requestvote = new RequestVote();
 		requestvote.setMessageid(messageid);
@@ -652,41 +691,6 @@ public class AbstractController {
 		return new RequestVote();
 	}
 	
-	public List<Reply> parse(List<MBMessage> messageList, String userId) {
-		List<Reply> replyList = new ArrayList<Reply>();
-		messageList.forEach(message -> {
-			Reply reply = new Reply();
-			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
-			logger.info("Reply____________________" + message.getParentmessageid());
-			String checklikemb =json.getChecklike();
-			if(checklikemb == "0.0") {
-				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
-					checklikemb = "1.0";
-				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
-					checklikemb = "2.0";
-				}
-			}
-			logger.info("CheckLike____________" + checklikemb);
-			long likecount=json.getLikecount();
-			long totallikecount = message.getLikecount() + likecount;
-			reply.setChecklike(checklikemb);
-			reply.setMessageid(message.getMessageid());
-			reply.setUserid(message.getUserid());
-			reply.setUsername(message.getUsername());
-			reply.setBody(message.getBody());
-			reply.setSubject(message.getSubject());
-			reply.setLikecount(totallikecount);
-			reply.setDislikecount(json.getDislikecount());
-			reply.setCreatedate(message.getCreatedate());
-			reply.setParentmessageid(message.getParentmessageid());
 
-			if (reply.getUserid() == Long.parseLong(userId))
-				reply.setEditPermission("Yes");
-			else
-				reply.setEditPermission("No");
-			replyList.add(reply);
-		});
-		return replyList;
-	}
 	
 }
