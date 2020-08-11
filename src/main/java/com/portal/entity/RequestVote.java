@@ -26,6 +26,14 @@ public class RequestVote {
 	@JsonView(Views.Thin.class)
 	private String userstatus;
 	
+	private List<Long> messageid;
+	
+	@JsonView(Views.Thin.class)
+	List<MBMessage> mbmessagelist;
+	
+	@JsonView(Views.Thin.class)
+	String totalNotiCount;
+	
 	public List<PollsChoice> getPollsChoiceList() {
 		return pollsChoiceList;
 	}
@@ -62,4 +70,23 @@ public class RequestVote {
 	public void setUserstatus(String userstatus) {
 		this.userstatus = userstatus;
 	}
+	public List<Long> getMessageid() {
+		return messageid;
+	}
+	public void setMessageid(List<Long> messageid) {
+		this.messageid = messageid;
+	}
+	public List<MBMessage> getMbmessagelist() {
+		return mbmessagelist;
+	}
+	public void setMbmessagelist(List<MBMessage> mbmessagelist) {
+		this.mbmessagelist = mbmessagelist;
+	}
+	public String getTotalNotiCount() {
+		return totalNotiCount;
+	}
+	public void setTotalNotiCount(String totalNotiCount) {
+		this.totalNotiCount = totalNotiCount;
+	}
+	
 }

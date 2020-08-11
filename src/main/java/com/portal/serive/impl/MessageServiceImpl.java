@@ -57,5 +57,19 @@ public class MessageServiceImpl implements MessageService {
 		}else return false;
 		
 	}
+	
+	public List<MBMessage> byClassPKbymessageid(List<Long> messageidList) {
+		List<MBMessage> msg = new ArrayList<MBMessage>();
+		for(Long messageid : messageidList) { 
+			MBMessage mbmessage = new MBMessage();
+			String query = "from MBMessage message where messageId=" + messageid;
+			mbmessage = messageDao.byQuery(query).get(0);
+			String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid;
+			int count = messageDao.findCountByQueryString(querycount);
+			mbmessage.setLikecount(count);
+			msg.add(mbmessage);
+		}
+		return msg;
+	}
 
 }

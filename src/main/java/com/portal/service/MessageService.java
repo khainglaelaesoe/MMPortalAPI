@@ -13,4 +13,6 @@ public interface MessageService {
 	public int likeCount(Long messageid);
 	
 	public boolean likebyuserid(Long messageid,Long webuserid,long score);
+	
+	public List<MBMessage> byClassPKbymessageid(List<Long> messageidList);
 }

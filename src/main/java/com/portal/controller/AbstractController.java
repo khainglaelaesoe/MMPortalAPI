@@ -32,10 +32,12 @@ import com.portal.entity.MBMessage;
 import com.portal.entity.MobileResult;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.PollsChoice;
+import com.portal.entity.Reply;
 import com.portal.entity.RequestVote;
 import com.portal.parsing.DocumentParsing;
 import com.portal.service.JournalArticleService;
 import com.portal.service.JournalFolderService;
+import com.portal.service.MessageService;
 
 @Service
 public class AbstractController {
@@ -47,6 +49,9 @@ public class AbstractController {
 	
 	@Autowired
 	private JournalFolderService journalFolderService;
+	
+	@Autowired
+	private MessageService messageService;
 
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
@@ -588,4 +593,100 @@ public class AbstractController {
 		return newArticle;
 	}
 
+	public List<MBMessage> getMobileCommentsbymessageid(List<Long> messageid) {
+		RequestVote requestvote = new RequestVote();
+		requestvote.setMessageid(messageid);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+		HttpEntity<RequestVote> entityHeader = new HttpEntity<>(requestvote, headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/comment/commentbymessageid";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<List> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
+			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
+			List<MBMessage> userScores = response.getBody();
+			logger.info("LeaveBalance list size:" + userScores.size());
+			return userScores;
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return new ArrayList<MBMessage>();
+	}
+	
+	public RequestVote getNotificationList(String userid) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("userid", userid);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/user/getNoti";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<RequestVote> response = null;
+		try {
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, RequestVote.class);
+			RequestVote userScores = response.getBody();
+			return userScores;
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return new RequestVote();
+	}
+	
+	public List<Reply> parse(List<MBMessage> messageList, String userId) {
+		List<Reply> replyList = new ArrayList<Reply>();
+		messageList.forEach(message -> {
+			Reply reply = new Reply();
+			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			logger.info("Reply____________________" + message.getParentmessageid());
+			String checklikemb =json.getChecklike();
+			if(checklikemb == "0.0") {
+				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+					checklikemb = "1.0";
+				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+					checklikemb = "2.0";
+				}
+			}
+			logger.info("CheckLike____________" + checklikemb);
+			long likecount=json.getLikecount();
+			long totallikecount = message.getLikecount() + likecount;
+			reply.setChecklike(checklikemb);
+			reply.setMessageid(message.getMessageid());
+			reply.setUserid(message.getUserid());
+			reply.setUsername(message.getUsername());
+			reply.setBody(message.getBody());
+			reply.setSubject(message.getSubject());
+			reply.setLikecount(totallikecount);
+			reply.setDislikecount(json.getDislikecount());
+			reply.setCreatedate(message.getCreatedate());
+			reply.setParentmessageid(message.getParentmessageid());
+
+			if (reply.getUserid() == Long.parseLong(userId))
+				reply.setEditPermission("Yes");
+			else
+				reply.setEditPermission("No");
+			replyList.add(reply);
+		});
+		return replyList;
+	}
+	
 }
