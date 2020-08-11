@@ -351,31 +351,23 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	}
 
 	public List<JournalArticle> getImagebyClassuuid() {
-		List<Object> objectList;
 		List<JournalArticle> articleList = new ArrayList<JournalArticle>();
-		// List<String> entryList =new
-		// AssetEntryServiceImpl().getAssetEntryListByClassTypeId1(46307);
-		// for(String classuuid : entryList) {
 		String queryStr = "Select journalArticle from JournalArticle journalArticle  where journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (Select classuuid from AssetEntry  where visible=1 and classtypeid= 46307))";
 		articleList = journalDao.byQuery(queryStr);
-//			int i = 0;
-//			while (i < objectList.size()) {
-//				Long articleid = (Long) objectList.get(i);
-//				i++;
-//				articleList.add(getImage(articleid));
-//			}
-		// }
 		return articleList;
 	}
 
-	public List<JournalArticle> getJournalsByDate(String dateStr, Long classTypeId) {
-		String query = "Select journalArticle from JournalArticle journalArticle  where journalArticle.displaydate like '%" + dateStr + "%' and journalArticle.resourceprimkey in (select ae.classpk from AssetEntry ae where ae.classtypeid=" + classTypeId + " )";
-		return journalDao.getAll(query);
+	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId) {
+		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1";
+		return journalDao.findLongByQueryString(query);
 	}
 
-	public JournalArticle getJournalArticleByDate(String classuuid, String dateStr) {
-		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where  displaydate like '%" + dateStr + "%'" + " and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
-		List<Object> objectList = journalDao.byQueryString(queryStr);
+	public JournalArticle getJournalArticleByDate(String dateStr, Long classpk) {
+		String query = "Select articleid, max(version) from JournalArticle journalArticle  where journalArticle.displaydate like '%" + dateStr + "%' and journalArticle.resourceprimkey=" + classpk;
+		List<Object> objectList = journalDao.byQueryString(query);
+		if (CollectionUtils.isEmpty(objectList))
+			return null;
+
 		Object[] obj = (Object[]) objectList.get(0);
 		if (obj[0] == null || obj[1] == null)
 			return null;
@@ -384,5 +376,4 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		String version = obj[1].toString();
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
-
 }

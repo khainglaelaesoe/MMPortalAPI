@@ -26,12 +26,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.portal.entity.AssetCategory;
+import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
 import com.portal.entity.MobileResult;
+import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.PollsChoice;
 import com.portal.entity.RequestVote;
+import com.portal.parsing.DocumentParsing;
 import com.portal.service.JournalArticleService;
+import com.portal.service.JournalFolderService;
 
 @Service
 public class AbstractController {
@@ -40,6 +44,9 @@ public class AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
+	
+	@Autowired
+	private JournalFolderService journalFolderService;
 
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
@@ -97,8 +104,17 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-				String imgreplace = imgsrc.startsWith("http") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+				String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
 				img.attr("src", imgreplace);
+			}
+		}
+
+		Elements links = docimage.getElementsByTag("a");
+		if (links.size() > 0) {
+			for (Element link : links) {
+				String imgsrc = link.attr("href");
+				String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+				link.attr("href", imgreplace);
 			}
 		}
 		return docimage.html();
@@ -119,7 +135,6 @@ public class AbstractController {
 				} else {
 					imgreplace = "https://myanmar.gov.mm" + imgsrc;
 				}
-				// System.out.println("source image...." + imgsrc);
 				img.attr("src", imgreplace);
 			}
 		}
@@ -532,6 +547,45 @@ public class AbstractController {
 		if (end < 0)
 			return "";
 		return remainString.substring(6, end + 4);
+	}
+	
+
+	public JournalArticle getJournalArticleForAnnouncement(JournalArticle journalArticle) {
+
+		/* title, imageurl, location, department, date, content */
+		JournalArticle newArticle = new JournalArticle();
+		DocumentParsing dp = new DocumentParsing();
+		String title[] = dp.ParsingTitle(journalArticle.getTitle());
+		newArticle.setEngTitle(title[0]);
+		newArticle.setMynamrTitle(title[1]);
+
+		String imageUrl = "";
+		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
+		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
+
+		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
+
+		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
+		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
+
+		String dateString = journalArticle.getDisplaydate().split(" ")[0];
+		String[] dateStr = dateString.split("-");
+		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
+		newArticle.setDisplaydate(resultDateString);
+
+		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
+		if (name.equals("News and Media"))
+			name = "Ministry of Information";
+		newArticle.setEngDepartmentTitle(name);
+		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
+
+		String con = journalArticle.getContent();
+		int index = con.indexOf("location");
+		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
+		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
+		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
+		return newArticle;
 	}
 
 }

@@ -73,10 +73,9 @@ public interface JournalArticleService {
 	public int getCount(String searchTerm, long classTypeId);
 
 	public JournalArticle getIdByFolderId(Long classpk);
-	
-	public JournalArticle getJournalArticleByDate(String classuuid, String dateStr);
-	
-	public List<JournalArticle> getJournalsByDate(String dateStr, Long classTypeId);
 
+	public JournalArticle getJournalArticleByDate(String classuuid, Long dateStr);
+
+	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
 
 }

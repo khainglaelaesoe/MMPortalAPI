@@ -66,8 +66,7 @@ public interface AssetEntryService {
 	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
 
 	public List<Long> getAssetEntryListByName(long classTypeId, String searchTerm);
-	
-	public List<String> getClassUuidByDate(Long classTypeId, String dateStr);
 
+	public List<String> getClassUuidByDate(Long classTypeId, String dateStr);
 
 }

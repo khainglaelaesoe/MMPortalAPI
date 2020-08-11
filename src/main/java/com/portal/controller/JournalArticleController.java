@@ -128,44 +128,6 @@ public class JournalArticleController extends AbstractController {
 		return newArticle;
 	}
 
-	private JournalArticle getJournalArticleForAnnouncement(JournalArticle journalArticle) {
-
-		/* title, imageurl, location, department, date, content */
-		JournalArticle newArticle = new JournalArticle();
-		DocumentParsing dp = new DocumentParsing();
-		String title[] = dp.ParsingTitle(journalArticle.getTitle());
-		newArticle.setEngTitle(title[0]);
-		newArticle.setMynamrTitle(title[1]);
-
-		String imageUrl = "";
-		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
-		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
-
-		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
-		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
-
-		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
-		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
-
-		String dateString = journalArticle.getDisplaydate().split(" ")[0];
-		String[] dateStr = dateString.split("-");
-		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
-		newArticle.setDisplaydate(resultDateString);
-
-		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
-		if (name.equals("News and Media"))
-			name = "Ministry of Information";
-		newArticle.setEngDepartmentTitle(name);
-		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
-
-		String con = journalArticle.getContent();
-		int index = con.indexOf("location");
-		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
-		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
-		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
-		return newArticle;
-	}
-
 	public void replaceTag(Elements els) {
 		ListIterator<Element> iter = els.listIterator();
 		while (iter.hasNext()) {

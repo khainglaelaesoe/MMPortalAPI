@@ -14,16 +14,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.CategoryType;
-import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.Views;
 import com.portal.parsing.DocumentParsing;
+import com.portal.service.AssetEntryService;
 import com.portal.service.JournalArticleService;
 import com.portal.service.JournalFolderService;
 
@@ -36,6 +35,9 @@ public class NotiController extends AbstractController {
 
 	@Autowired
 	private JournalFolderService journalFolderService;
+
+	@Autowired
+	private AssetEntryService assetEntryService;
 
 	private static Logger logger = Logger.getLogger(NotiController.class);
 
@@ -113,59 +115,28 @@ public class NotiController extends AbstractController {
 		return newJournal;
 	}
 
-	private JournalArticle parseAnnouncement(JournalArticle journalArticle) {
-
-		/* title, imageurl, location, department, date, content */
-
-		JournalArticle newArticle = new JournalArticle();
-		DocumentParsing dp = new DocumentParsing();
-		String title[] = dp.ParsingTitle(journalArticle.getTitle());
-		newArticle.setEngTitle(title[0]);
-		newArticle.setMynamrTitle(title[1]);
-
-		String imageUrl = "";
-		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
-		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
-
-		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
-		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
-
-		newArticle.setEngContent(ImageSourceChange(dp.ParsingSpan(engContent)));
-		newArticle.setMyanmarContent(ImageSourceChange(dp.ParsingSpan(myaContent)));
-
-		String dateString = journalArticle.getDisplaydate().split(" ")[0];
-		String[] dateStr = dateString.split("-");
-		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
-		newArticle.setDisplaydate(resultDateString);
-
-		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
-		if (name.equals("News and Media"))
-			name = "Ministry of Information";
-		newArticle.setEngDepartmentTitle(name);
-		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
-
-		String con = journalArticle.getContent();
-		int index = con.indexOf("location");
-		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
-		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
-		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
-		newArticle.setPdfLink(getPDFLink(newArticle.getEngContent()).isEmpty() ? getPDFLink(newArticle.getMyanmarContent()) : getPDFLink(newArticle.getEngContent()));
-		return newArticle;
-	}
-
-	private List<JournalArticle> getEntities(JSONObject resultJson, Long calssTypeId, CategoryType categoryType, String egdate) {
-
+	private List<JournalArticle> getJournalObjects(Long calssTypeId) {
 		Date date = new Date();
 		String todayDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
 
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
-		List<JournalArticle> journals = journalArticleService.getJournalsByDate(todayDate, calssTypeId);
-		for (JournalArticle journal : journals) {
-			if (journal != null) {
+		List<Long> classpks = journalArticleService.getAssetEntryListByClassTypeIdAndOrderByPriority(calssTypeId);
+		for (Long classpk : classpks) {
+			JournalArticle journal = journalArticleService.getJournalArticleByDate(todayDate, classpk);
+			if (journal != null)
+				entities.add(journal);
+		}
+		return entities;
+	}
 
+	private List<JournalArticle> getEntities(JSONObject resultJson, Long calssTypeId, CategoryType categoryType, String egdate) {
+
+		List<JournalArticle> entities = new ArrayList<JournalArticle>();
+		for (JournalArticle journal : getJournalObjects(calssTypeId)) {
+			if (journal != null) {
 				switch (categoryType) {
 				case ANNOUNCEMENT:
-					entities.add(parseAnnouncement(journal));
+					entities.add(getJournalArticleForAnnouncement(journal));
 					break;
 				case TENDER:
 					entities.add(parseTender(journal));

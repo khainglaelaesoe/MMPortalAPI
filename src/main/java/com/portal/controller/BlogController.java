@@ -178,7 +178,6 @@ public class BlogController extends AbstractController {
 				msg.setLikecount(totallikecount);
 				msg.setDislikecount(json.getDislikecount());
 				msg.setChecklike(checklikemb);
-				logger.info(json);
 			}
 
 			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
