@@ -58,8 +58,8 @@ public class ServiceController extends AbstractController {
 	@Autowired
 	private RatingsEntryService ratingsEntryService;
 
-	@Value("${SERVICEURL}")
-	private String SERVICEURL;
+	//@Value("${SERVICEURL}")
+	//private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 

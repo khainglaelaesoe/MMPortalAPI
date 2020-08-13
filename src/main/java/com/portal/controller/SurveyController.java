@@ -53,8 +53,8 @@ public class SurveyController extends AbstractController {
 	@Autowired
 	private DDMStructureService ddmStructureService;
 	
-	@Value("${SERVICEURL}")
-	private String SERVICEURL;
+	//@Value("${SERVICEURL}")
+	//private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(SurveyController.class);
 	private static JSONParser jsonParser = new JSONParser();

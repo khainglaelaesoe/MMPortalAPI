@@ -56,8 +56,8 @@ public class PollController extends AbstractController {
 	@Autowired
 	private PollsChoiceService pollsChoiceService;
 
-	@Value("${SERVICEURL}")
-	private String SERVICEURL;
+	//@Value("${SERVICEURL}")
+	//private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(PollController.class);
 
