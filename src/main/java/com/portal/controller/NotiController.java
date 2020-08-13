@@ -237,7 +237,7 @@ public class NotiController extends AbstractController {
 				logger.info(json);
 			}
 			notidata.setMbmessagelist(mbmessageList);
-			notidata.setTotalNotiCount(mbmessageList.size() + "");
+			//notidata.setTotalNotiCount(mbmessageList.size() + "");
 			return notidata;
 		}
 }
