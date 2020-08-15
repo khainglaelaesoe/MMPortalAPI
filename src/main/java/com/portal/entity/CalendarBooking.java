@@ -42,14 +42,6 @@ public class CalendarBooking extends AbstractEntity implements Serializable {
 	@Transient
 	private String enddaymonth;
 	
-	@JsonView(Views.Thin.class)
-	@Transient
-	private String mmDescription;
-	
-	@JsonView(Views.Thin.class)
-	@Transient
-	private String engDescription;
-	
 //	@JsonIgnore
 //	@Column(name = "uuid_")
 //	private String uuid_;
@@ -431,22 +423,6 @@ public class CalendarBooking extends AbstractEntity implements Serializable {
 
 	public void setEnddaymonth(String enddaymonth) {
 		this.enddaymonth = enddaymonth;
-	}
-
-	public String getMmDescription() {
-		return mmDescription;
-	}
-
-	public void setMmDescription(String mmDescription) {
-		this.mmDescription = mmDescription;
-	}
-
-	public String getEngDescription() {
-		return engDescription;
-	}
-
-	public void setEngDescription(String engDescription) {
-		this.engDescription = engDescription;
 	}
 
 }

@@ -5,6 +5,6 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <property name="context-root" value="national-portal-application"/>
-        <property name="java-output-path" value="/NationalPortalAPI/target/classes"/>
+        <property name="java-output-path" value="/MMPortalAPI/target/classes"/>
     </wb-module>
 </project-modules>

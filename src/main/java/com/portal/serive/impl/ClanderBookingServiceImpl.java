@@ -39,7 +39,7 @@ public class ClanderBookingServiceImpl implements CalenderBookingService {
 	public List<CalendarBooking> getCalendarbookingforEvent() {
 		List<Object> objectList;
 		List<CalendarBooking> arrlist = new ArrayList<CalendarBooking>();
-		String queryStr = "Select title,starttime,endtime,description from CalendarBooking where calendarId=48843 and FROM_UNIXTIME(startTime/1000) > DATE(NOW()) order by starttime";
+		String queryStr = "Select title,starttime,endtime from CalendarBooking where calendarId=48843 and FROM_UNIXTIME(startTime/1000) > DATE(NOW()) order by starttime";
 		objectList = calendarDao.findByQueryString(queryStr);
 		for (Object object : objectList) {
 			CalendarBooking cl =new CalendarBooking();
@@ -50,7 +50,6 @@ public class ClanderBookingServiceImpl implements CalenderBookingService {
 			cl.setTitle(obj[0].toString());
 			cl.setStarttime(Long.parseLong(obj[1].toString()));
 			cl.setEndtime(Long.parseLong(obj[2].toString()));
-			cl.setDescription(obj[3].toString());
 			arrlist.add(cl);
 		}
 		return arrlist;

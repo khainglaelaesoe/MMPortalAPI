@@ -86,35 +86,8 @@ public class UpcomingController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getUpcomingEvent() {
 		JSONObject resultJson = new JSONObject();
-		List<CalendarBooking> calendarbookingList = parseCalenderBooking(calendarService.getCalendarbookingforEvent());
-		if(calendarbookingList.size() > 0)
-			resultJson.put("Event",calendarbookingList);
-		else resultJson.put("Event","No Upcoming Events");
+		resultJson.put("Holiday", parseHoliday(calendarService.getCalendarbookingforEvent()));
 		return resultJson;
-	}
-	private List<CalendarBooking> parseCalenderBooking(List<CalendarBooking> calenderbookingList) {
-		List<CalendarBooking> clList = new ArrayList<CalendarBooking>();
-		String engdescription="",mmdescription="";
-		for (CalendarBooking cl : calenderbookingList) {
-			CalendarBooking clres = new CalendarBooking();
-			// holidays
-			String[] title = new DocumentParsing().ParsingTitle(cl.getTitle());
-			String engTitle = title[0];
-			String mmTitle = title[1];
-			
-			String[] description = new DocumentParsing().ParsingTitle(cl.getDescription());
-			if(description[0] != null && description[1] != null) {
-				 engdescription = description[0];
-				 mmdescription = description[1];
-			}
-			clres.setMmTitle(mmTitle);
-			clres.setEngTitle(engTitle);
-			clres.setMmDescription(!mmdescription.isEmpty()?mmdescription : engdescription);
-			clres.setEngDescription(!engdescription.isEmpty()?engdescription : mmdescription);
-			clList.add(clres);
-		}
-
-		return clList;
 	}
 	public static Date subtractDays(Date date) {
 		GregorianCalendar cal = new GregorianCalendar();

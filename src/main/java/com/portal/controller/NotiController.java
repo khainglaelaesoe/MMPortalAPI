@@ -180,15 +180,15 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> announcements = getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT, date); // announcements
 		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER, date); // tenders
 		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY, date); // jobs
-		// RequestVote notidata = getReplyList(userid);
+		RequestVote notidata = getReplyList(userid);
 		resultJson.put("announcements", announcements);
 		resultJson.put("announcementCount", announcements.size());
 		resultJson.put("tenders", tenders);
 		resultJson.put("tenderCount", tenders.size());
 		resultJson.put("jobs", jobs);
 		resultJson.put("jobCount", jobs.size());
-		// resultJson.put("comments", notidata.getMbmessagelist());
-		// resultJson.put("commentCount", notidata.getTotalNotiCount());
+		resultJson.put("comments", notidata.getMbmessagelist());
+		resultJson.put("commentCount", notidata.getTotalNotiCount());
 		return resultJson;
 	}
 
@@ -235,7 +235,7 @@ public class NotiController extends AbstractController {
 			logger.info(json);
 		}
 		notidata.setMbmessagelist(mbmessageList);
-		notidata.setTotalNotiCount(mbmessageList.size() + "");
+		//notidata.setTotalNotiCount(mbmessageList.size() + "");
 		return notidata;
 	}
 }

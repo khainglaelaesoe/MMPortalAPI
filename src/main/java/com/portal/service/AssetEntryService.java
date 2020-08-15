@@ -68,5 +68,7 @@ public interface AssetEntryService {
 	public List<String> getClassUuidByDate(Long classTypeId, String dateStr);
 
 	public long getClassPK();
+	
+	public List<Long> getClassPKListbyCatagoryId();
 
 }

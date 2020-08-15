@@ -230,5 +230,10 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		String query = "select classuuid from AssetEntry ae where  createdate like '%" + dateStr + "%'" + " and classtypeid=" + classTypeId;
 		return assetEntryDao.findByQuery(query);
 	}
+	
+	public List<Long> getClassPKListbyCatagoryId() {
+		String query = "SELECT classpk from AssetEntry where visible=1 and entryid in (Select entryid from AssetEntries_AssetCategories where categoryId=126202) order by entryid desc";
+		return assetEntryDao.findLongByQueryString(query);
+	}
 
 }

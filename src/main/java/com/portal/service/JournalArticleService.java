@@ -77,5 +77,7 @@ public interface JournalArticleService {
 	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid);
 
 	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm);
+	
+	public List<JournalArticle> getJournalArticlebyRprimekey(List<Long> classPKList);
 
 }

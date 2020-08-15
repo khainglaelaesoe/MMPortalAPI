@@ -675,6 +675,7 @@ public class AbstractController {
 
 		String url = SERVICEURL + "/user/getNoti";
 		logger.info("service url is: " + url);
+
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 

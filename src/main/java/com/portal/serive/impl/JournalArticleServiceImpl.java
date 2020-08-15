@@ -366,4 +366,20 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		String version = obj[1].toString();
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
+	
+	public List<JournalArticle> getJournalArticlebyRprimekey(List<Long> classPKList) {
+		List<JournalArticle> resjournalarticle = new ArrayList<JournalArticle>();
+		for(Long classPK : classPKList) {
+			String queryStr = "from JournalArticle journalArticle where  journalArticle.status= 0 And journalArticle.resourceprimkey=" + classPK + " order by version desc";
+			List<JournalArticle> journalArticles = journalDao.getAll(queryStr);
+			if (CollectionUtils.isEmpty(journalArticles))
+				journalArticles = null;
+			else {
+				resjournalarticle.add(journalArticles.get(0));
+			}
+					
+		}
+		
+		return resjournalarticle;
+	}
 }

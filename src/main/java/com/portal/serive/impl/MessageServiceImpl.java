@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.portal.dao.MessageDao;
 import com.portal.dao.RatingsEntryDao;
@@ -63,11 +64,14 @@ public class MessageServiceImpl implements MessageService {
 		for(Long messageid : messageidList) { 
 			MBMessage mbmessage = new MBMessage();
 			String query = "from MBMessage message where messageId=" + messageid;
-			mbmessage = messageDao.byQuery(query).get(0);
-			String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid;
-			int count = messageDao.findCountByQueryString(querycount);
-			mbmessage.setLikecount(count);
-			msg.add(mbmessage);
+			List<MBMessage> msgList = messageDao.byQuery(query);
+			if (!CollectionUtils.isEmpty(msgList)) {
+				mbmessage = messageDao.byQuery(query).get(0);
+				String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid;
+				int count = messageDao.findCountByQueryString(querycount);
+				mbmessage.setLikecount(count);
+				msg.add(mbmessage);
+			}
 		}
 		return msg;
 	}
