@@ -13,5 +13,7 @@ public interface AssetCategoryService {
 	public List<AssetCategory> getAssetCategoryByParentCategoryId(long id);
 
 	public List<AssetCategory> getAssetCategoryByParentCategoryIdMinistry(long id);
+	
+	public List<Long> getIdListByParentCategoryIdMinistry(long id);
 
 }

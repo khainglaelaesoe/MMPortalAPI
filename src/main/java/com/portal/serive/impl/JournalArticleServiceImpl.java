@@ -252,11 +252,6 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
 
-//	public long getAllBySearchterm(String searchTerm, long classTypeId) {
-//		String queryStr = "select count(*) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1))";
-//		return journalDao.findLongByQueryString(queryStr).get(0);
-//	}
-
 	public int getCount(String searchTerm, long classTypeId) {
 		String queryStr = "select distinct articleid from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1))";
 		return journalDao.findLongByQueryString(queryStr).size();

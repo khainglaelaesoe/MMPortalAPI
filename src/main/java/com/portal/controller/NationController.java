@@ -105,21 +105,21 @@ public class NationController extends AbstractController {
 		return resultJson;
 	}
 
+	/* ministry */
 	private JSONObject getAssetCategoryByParentCategoryMinistry(long pcategoryId, NationType type) {
 		JSONObject resultJson = new JSONObject();
 		List<AssetCategory> catList = assetCategoryService.getAssetCategoryByParentCategoryIdMinistry(pcategoryId);
 		System.out.println("list size.........." + catList);
-
 		List<AssetCategory> categories = parseAssetCategories(catList);
 		resultJson.put("nation", categories);
 		return resultJson;
 	}
 
-	private List<AssetCategory> parseAssetCategories(List<AssetCategory> entryList) {
+	/* ministry */
+	private List<AssetCategory> parseAssetCategories(List<AssetCategory> idList) {
 		List<AssetCategory> categoryList = new ArrayList<AssetCategory>();
-		for (AssetCategory category : entryList) {
-			List<AssetCategoryProperty> properties = assetCategoryPropertyService
-					.getAssetCategoryPropertyByCategoryId(category.getCategoryid());
+		for (AssetCategory category : idList) {
+			List<AssetCategoryProperty> properties = assetCategoryPropertyService.getAssetCategoryPropertyByCategoryId(category.getCategoryid());
 			String detailUrl = "";
 			String imageUrl = "";
 			for (int i = 0; i < properties.size(); i++) {
@@ -142,20 +142,10 @@ public class NationController extends AbstractController {
 			category.setImageurl("https://myanmar.gov.mm" + imagedecodedString);
 			category.setDetailurl("https://myanmar.gov.mm" + detaildecodedString);
 			JournalArticle ja = new JournalArticle();
-			if (category.getCategoryid() != 8251623 && category.getCategoryid() != 87166
-					&& category.getCategoryid() != 8249564 && category.getCategoryid() != 87195) {
+			if (category.getCategoryid() != 8251623 && category.getCategoryid() != 87166 && category.getCategoryid() != 8249564 && category.getCategoryid() != 87195) {
 				AssetEntry ae = new AssetEntry();
-				/*
-				 * if (category.getEngtitle().contains("Ministry of Natural Resources")) { ae =
-				 * assetEntryService.getAssetEntryMNREC("Ministry of Natural Resources"); } else
-				 * {
-				 */
-				ae = assetEntryService.getAssetEntryByClassTypeCategoryTitle(category.getCategoryid(),
-						category.getEngtitle(), category.getMyantitle());
-				// }
-				// ja =
-				// journalArticleService.getJournalArticleByAssteEntryClassUuId(ae.getClassuuid());
-				ja = journalArticleService.getJournalArticleByClassPK(ae.getClasspk());
+				ae = assetEntryService.getAssetEntryByClassTypeCategoryTitle(category.getCategoryid(), category.getEngtitle(), category.getMyantitle());
+				ja = journalArticleService.byClassPK(ae.getClasspk());
 				ArrayList<String> contentList = new ArrayList<String>();
 				String language = dp.AvailableLanguage(ja.getContent());
 				category.setLanguage(language);
@@ -168,10 +158,10 @@ public class NationController extends AbstractController {
 
 				String engcontent = "";
 				String myancontent = "";
-				
+
 				int i = 0;
 				for (String content : contentList) {
-					
+
 					if (i % 2 == 0) {
 						engcontent = engcontent.concat(content);
 					} else {
@@ -179,16 +169,18 @@ public class NationController extends AbstractController {
 					}
 					i++;
 				}
-				
+
 				if (language.equals("en_US")) {
-					if(engcontent.equals(""))engcontent=myancontent;
+					if (engcontent.equals(""))
+						engcontent = myancontent;
 					myancontent = engcontent;
 				}
 				if (language.equals("my_MM")) {
-					if(myancontent.equals(""))myancontent=engcontent;
+					if (myancontent.equals(""))
+						myancontent = engcontent;
 					engcontent = myancontent;
 				}
-				
+
 				engcontent = dp.ParsingSpan(engcontent);
 				myancontent = dp.ParsingSpan(myancontent);
 
@@ -209,68 +201,14 @@ public class NationController extends AbstractController {
 				if (start > 0 && end > 0) {
 					String str = engcontent.substring(start, end);
 					resultString = "<img src=" + str + "\">";
-					category.setAudioLink(str);
-
-					// category.setEngcontent(
-					// resultString + engcontent.substring(end + 8,
-					// engcontent.length()).replaceAll("<html>", "").replaceAll("</html>",
-					// "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>",
-					// "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span
-					// style=\"color:#0000ff;\">", "<span>").replaceAll("span
-					// style=\"color:#0000cd;\">", "<span>").replaceAll("<span
-					// style=\"color:#000080;\">", "<span>").replaceAll("<span
-					// style=\"color:#800080;\">", "<span>").replaceAll("<span
-					// style=\"color:#3d3d3d;\">", "<span>").replaceAll("<span
-					// style=\"color:#ff0000;\">", "<span>").replaceAll("<span
-					// style=\"color:#ff00;\">", "<span>"));
-					category.setEngcontent(
-							resultString + engcontent.substring(end + 8, engcontent.length()).replaceAll("<html>", "")
-									.replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "")
-									.replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
-					// category.setMyancontent(
-					// resultString + myancontent.substring(end + 8,
-					// myancontent.length()).replaceAll("<html>", "").replaceAll("</html>",
-					// "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>",
-					// "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span
-					// style=\"color:#0000ff;\">", "<span>").replaceAll("span
-					// style=\"color:#0000cd;\">", "<span>").replaceAll("<span
-					// style=\"color:#000080;\">", "<span>").replaceAll("<span
-					// style=\"color:#800080;\">", "<span>").replaceAll("<span
-					// style=\"color:#3d3d3d;\">", "<span>").replaceAll("<span
-					// style=\"color:#ff0000;\">", "<span>"));
-					category.setMyancontent(
-							resultString + myancontent.substring(end + 8, myancontent.length()).replaceAll("<html>", "")
-									.replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "")
-									.replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+					category.setAudioLink(str);					
+					category.setEngcontent(resultString + engcontent.substring(end + 8, engcontent.length()).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+					category.setMyancontent(resultString + myancontent.substring(end + 8, myancontent.length()).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
 					category.setIosEngContent(Jsoup.parse(engcontent.substring(end + 8, engcontent.length())).text());
 					category.setIosMyaContent(Jsoup.parse(myancontent.substring(end + 8, myancontent.length())).text());
-				} else {
-
-					// category.setEngcontent(engcontent.replaceAll("<html>",
-					// "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>",
-					// "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n",
-					// "").replaceAll("<span style=\"color:#0000ff;\">", "<span>").replaceAll("span
-					// style=\"color:#0000cd;\">", "<span>").replaceAll("<span
-					// style=\"color:#000080;\">", "<span>").replaceAll("<span
-					// style=\"color:#800080;\">", "<span>").replaceAll("<span
-					// style=\"color:#3d3d3d;\">", "<span>").replaceAll("<span
-					// style=\"color:#ff0000;\">", "<span>"));
-					category.setEngcontent(engcontent.replaceAll("<html>", "").replaceAll("</html>", "")
-							.replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "")
-							.replaceAll("</body>", "").replaceAll("\n \n \n", ""));
-					// category.setMyancontent(myancontent.replaceAll("<html>",
-					// "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>",
-					// "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n",
-					// "").replaceAll("<span style=\"color:#0000ff;\">", "<span>").replaceAll("span
-					// style=\"color:#0000cd;\">", "<span>").replaceAll("<span
-					// style=\"color:#000080;\">", "<span>").replaceAll("<span
-					// style=\"color:#800080;\">", "<span>").replaceAll("<span
-					// style=\"color:#3d3d3d;\">", "<span>").replaceAll("<span
-					// style=\"color:#ff0000;\">", "<span>"));
-					category.setMyancontent(myancontent.replaceAll("<html>", "").replaceAll("</html>", "")
-							.replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "")
-							.replaceAll("</body>", "").replaceAll("\n \n \n", ""));
-
+				} else {					
+					category.setEngcontent(engcontent.replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+					category.setMyancontent(myancontent.replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
 					category.setIosEngContent(Jsoup.parse(engcontent).text());
 					category.setIosMyaContent(Jsoup.parse(myancontent).text());
 				}
