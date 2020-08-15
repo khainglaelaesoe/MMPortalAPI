@@ -14,12 +14,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.CategoryType;
+import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
 import com.portal.entity.MobileResult;
@@ -181,6 +183,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER, date); // tenders
 		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY, date); // jobs
 		RequestVote notidata = getReplyList(userid);
+		//List<JournalArticle> blog = getBlogs(userid);
 		resultJson.put("announcements", announcements);
 		resultJson.put("announcementCount", announcements.size());
 		resultJson.put("tenders", tenders);
@@ -189,6 +192,8 @@ public class NotiController extends AbstractController {
 		resultJson.put("jobCount", jobs.size());
 		resultJson.put("comments", notidata.getMbmessagelist());
 		resultJson.put("commentCount", notidata.getTotalNotiCount());
+		//resultJson.put("blog", blog);
+		//resultJson.put("blogCount", blog.size());
 		return resultJson;
 	}
 
@@ -237,5 +242,65 @@ public class NotiController extends AbstractController {
 		notidata.setMbmessagelist(mbmessageList);
 		//notidata.setTotalNotiCount(mbmessageList.size() + "");
 		return notidata;
+	}
+	
+	public List<JournalArticle> getBlogs(String userId) {
+		// classTypeId=129731;
+		List<Long> classPKList = getClassPK(userId);
+		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
+		//resultJson.put("lastPageNo", lastPageNo);
+		//resultJson.put("blog", newArticles);
+		//resultJson.put("totalCount", newArticles.size());
+		return newArticles;
+	}
+	
+	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
+		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
+		for (JournalArticle journalArticle : journalArticleList)
+			newJournalList.add(parseJournalArticle(journalArticle));
+		return newJournalList;
+	}
+	
+	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
+		/* title, department title, content detail */
+
+		JournalArticle newJournal = new JournalArticle();
+		DocumentParsing dp = new DocumentParsing();
+		String title[] = dp.ParsingTitle(journalArticle.getTitle());
+		newJournal.setEngTitle(title[0]);
+		newJournal.setMynamrTitle(title[1]);
+
+		String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
+		newJournal.setEngDepartmentTitle(name);
+		newJournal.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
+
+		String dateString = journalArticle.getDisplaydate().split(" ")[0];
+		String[] dateStr = dateString.split("-");
+		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
+		newJournal.setDisplaydate(resultDateString);
+
+		List<String> contentList = dp.ParsingAllContent(journalArticle.getContent());
+		newJournal.setEngContent(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+		newJournal.setMyanmarContent(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+
+		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
+		newJournal.setMessageList(journalArticle.getMessageList());
+		newJournal.setpKString(journalArticle.getpKString());
+		return newJournal;
+	}
+	private String getShareLink(String urlTitle) {
+		return "https://myanmar.gov.mm/blogs/-/asset_publisher/m9WiUYPkhQIm/content/" + urlTitle.replaceAll("%", "%25");
 	}
 }
