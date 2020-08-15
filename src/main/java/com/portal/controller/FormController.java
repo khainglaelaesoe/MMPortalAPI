@@ -14,6 +14,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -156,18 +157,6 @@ public class FormController extends AbstractController {
 		return newJournal;
 	}
 
-	public List<JournalArticle> getJournalArticles(List<String> entryList, String input) {
-		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertEntryListToString(entryList, input);
-		String[] classUuids = info.split(",");
-		for (String classUuid : classUuids) {
-			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
-			if (journalArticle != null)
-				journalArticleList.add(journalArticle);
-		}
-		return journalArticleList;
-	}
-
 	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList)
@@ -175,134 +164,149 @@ public class FormController extends AbstractController {
 		return newJournalList;
 	}
 
-	private void setValue(long categoryId, String searchTerm, List<String> entryList, long totalCount) {
-		List<Object> objectList = journalArticleService.getFormByTopicAndSearchTerm(categoryId, searchTerm);
-		for (Object object : objectList) {
-			Object[] obj = (Object[]) object;
-			if (obj[0] == null)
-				return;
-
-			Long articleId = Long.parseLong(obj[0].toString());
-			entryList.add(journalArticleService.getClassUuidByArticleId(articleId));
-		}
-	}
-
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject getDocumentsBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
-		List<String> entryList = new ArrayList<String>();
+		List<Long> classpks = new ArrayList<Long>();
+		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
 
-		long totalCount = 0;
 		if (topic.equals("all")) {
-			entryList = assetEntryService.getAssetEntryListByClassTypeId(85212);
-			List<JournalArticle> journalArticleList = getJournalArticles(entryList, input, searchTerm); // by size // now all
+			classpks = assetEntryService.getClassPkList(85212);
+			List<JournalArticle> journalArticleList = getJournalArticles(classpks, input, searchTerm); // by size // now all
 			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
 			json.put("forms", byPaganation(parseJournalArticleList(journalArticleList), input));
-			json.put("totalCount", journalArticleList.size());
+			json.put("totalCount", 0);
 			return json;
 		}
 
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			setValue(80486, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80486, searchTerm));
 			break;
 		case Education_Research:
-			setValue(80484, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80484, searchTerm));
 			break;
 		case Social:
-			setValue(80485, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80485, searchTerm));
 			break;
 		case Economy:
-			setValue(96793, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96793, searchTerm));
 			break;
 		case Agriculture:
-			setValue(80491, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80491, searchTerm));
 			break;
 		case Labour_Employment:
-			setValue(80494, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80494, searchTerm));
 			break;
 		case Livestock:
-			setValue(87834, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(87834, searchTerm));
 			break;
 		case Law_Justice:
-			setValue(96797, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96797, searchTerm));
 			break;
 		case Security:
-			setValue(96799, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96799, searchTerm));
 			break;
 		case Hotel_Tourism:
-			setValue(80488, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80488, searchTerm));
 			break;
 		case Citizen:
-			setValue(96801, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96801, searchTerm));
 			break;
 		case Natural_Resources_Environment:
-			setValue(80501, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80501, searchTerm));
 			break;
 		case Industries:
-			setValue(80495, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80495, searchTerm));
 			break;
 		case Construction:
-			setValue(96804, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96804, searchTerm));
+
 			break;
 		case Science:
-			setValue(80499, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80499, searchTerm));
+
 			break;
 		case Technology:
-			setValue(80496, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80496, searchTerm));
+
 			break;
 		case Transportation:
-			setValue(97769, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(97769, searchTerm));
+
 			break;
 		case Communication:
-			setValue(96809, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96809, searchTerm));
+
 			break;
 		case Information_Media:
-			setValue(96815, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96815, searchTerm));
+
 			break;
 		case Religion_Art_Culture:
-			setValue(80493, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80493, searchTerm));
+
 			break;
 		case Finance_Tax:
-			setValue(80489, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80489, searchTerm));
+
 			break;
 		case SMEs:
-			setValue(80503, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80503, searchTerm));
+
 			break;
 		case Natural_Disaster:
-			setValue(96818, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96818, searchTerm));
+
 			break;
 		case Power_Energy:
-			setValue(80490, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(80490, searchTerm));
+
 			break;
 		case Sports:
-			setValue(96820, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96820, searchTerm));
+
 			break;
 		case Statistics:
-			setValue(96822, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96822, searchTerm));
+
 			break;
 		case Insurances:
-			setValue(96824, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96824, searchTerm));
+
 			break;
 		case City_Development:
-			setValue(96826, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(96826, searchTerm));
+
 			break;
 		case Visas_Passports:
-			setValue(8243647, searchTerm, entryList, totalCount);
+			journalArticles.addAll(setValue(8243647, searchTerm));
 			break;
 		default:
 			new ArrayList<String>();
 		}
 
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		int lastPageNo = journalArticles.size() % 10 == 0 ? journalArticles.size() / 10 : journalArticles.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);
-		json.put("forms", parseJournalArticleList(getJournalArticles(entryList, input)));
-		json.put("totalCount", entryList.size());
+		json.put("forms", byPaganation(parseJournalArticleList(journalArticles), input));
+		json.put("totalCount", 0);
 		return json;
+	}
+
+	private List<JournalArticle> getJournalArticles(String classPkInfo) {
+		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
+		for (String classpk : classPkInfo.split(",")) {
+			if (!classpk.isEmpty()) {
+				JournalArticle journalArticle = journalArticleService.byClassPK(Long.parseLong(classpk));
+				if (journalArticle != null)
+					journalArticles.add(parseJournalArticle(journalArticle));
+			}
+		}
+		return journalArticles;
 	}
 
 	@RequestMapping(value = "topic", method = RequestMethod.GET)
@@ -310,13 +314,13 @@ public class FormController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getServices(@RequestParam("topic") String topic, @RequestParam("input") String input) {
 		JSONObject json = new JSONObject();
-		List<String> entryList = new ArrayList<String>();
+		List<Long> classPKs = new ArrayList<Long>();
 		int lastPageNo = 0;
 		if (topic.equals("all")) {
-			entryList = assetEntryService.getAssetEntryListByClassTypeId(85212);
-			lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+			classPKs = assetEntryService.getClassPkList(85212);
+			lastPageNo = classPKs.size() % 10 == 0 ? classPKs.size() / 10 : classPKs.size() / 10 + 1;
 
-			List<JournalArticle> forms = parseJournalArticleList(getJournalArticles(entryList, input));
+			List<JournalArticle> forms = getJournalArticles(convertLongListToString(classPKs, input)); 
 			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 			forms.forEach(article -> {
 				stackList.push(article);
@@ -329,105 +333,106 @@ public class FormController extends AbstractController {
 
 			json.put("lastPageNo", lastPageNo);
 			json.put("forms", newArticles);
-			json.put("totalCount", entryList.size());
+			json.put("totalCount", classPKs.size());
 			return json;
 		}
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			entryList = assetEntryService.getAssetEntryListForForm(80486);
+			classPKs = assetEntryService.getClassPKsForForm(80486);
 			break;
 		case Education_Research:
-			entryList = assetEntryService.getAssetEntryListForForm(80484);
+			classPKs = assetEntryService.getClassPKsForForm(80484);
 			break;
 		case Social:
-			entryList = assetEntryService.getAssetEntryListForForm(80485);
+			classPKs = assetEntryService.getClassPKsForForm(80485);
 			break;
 		case Economy:
-			entryList = assetEntryService.getAssetEntryListForForm(96793);
+			classPKs = assetEntryService.getClassPKsForForm(96793);
 			break;
 		case Agriculture:
-			entryList = assetEntryService.getAssetEntryListForForm(80491);
+			classPKs = assetEntryService.getClassPKsForForm(80491);
 			break;
 		case Labour_Employment:
-			entryList = assetEntryService.getAssetEntryListForForm(80494);
+			classPKs = assetEntryService.getClassPKsForForm(80494);
 			break;
 		case Livestock:
-			entryList = assetEntryService.getAssetEntryListForForm(87834);
+			classPKs = assetEntryService.getClassPKsForForm(87834);
 			break;
 		case Law_Justice:
-			entryList = assetEntryService.getAssetEntryListForForm(96797);
+			classPKs = assetEntryService.getClassPKsForForm(96797);
 			break;
 		case Security:
-			entryList = assetEntryService.getAssetEntryListForForm(96799);
+			classPKs = assetEntryService.getClassPKsForForm(96799);
 			break;
 		case Hotel_Tourism:
-			entryList = assetEntryService.getAssetEntryListForForm(80488);
+			classPKs = assetEntryService.getClassPKsForForm(80488);
 			break;
 		case Citizen:
-			entryList = assetEntryService.getAssetEntryListForForm(96801);
+			classPKs = assetEntryService.getClassPKsForForm(96801);
 			break;
 		case Natural_Resources_Environment:
-			entryList = assetEntryService.getAssetEntryListForForm(80501);
+			classPKs = assetEntryService.getClassPKsForForm(80501);
 			break;
 		case Industries:
-			entryList = assetEntryService.getAssetEntryListForForm(80495);
+			classPKs = assetEntryService.getClassPKsForForm(80495);
 			break;
 		case Construction:
-			entryList = assetEntryService.getAssetEntryListForForm(96804);
+			classPKs = assetEntryService.getClassPKsForForm(96804);
 			break;
 		case Science:
-			entryList = assetEntryService.getAssetEntryListForForm(80499);
+			classPKs = assetEntryService.getClassPKsForForm(80499);
 			break;
 		case Technology:
-			entryList = assetEntryService.getAssetEntryListForForm(80496);
+			classPKs = assetEntryService.getClassPKsForForm(80496);
 			break;
 		case Transportation:
-			entryList = assetEntryService.getAssetEntryListForForm(97769);
+			classPKs = assetEntryService.getClassPKsForForm(97769);
 			break;
 		case Communication:
-			entryList = assetEntryService.getAssetEntryListForForm(96809);
+			classPKs = assetEntryService.getClassPKsForForm(96809);
 			break;
 		case Information_Media:
-			entryList = assetEntryService.getAssetEntryListForForm(96815);
+			classPKs = assetEntryService.getClassPKsForForm(96815);
 			break;
 		case Religion_Art_Culture:
-			entryList = assetEntryService.getAssetEntryListForForm(80493);
+			classPKs = assetEntryService.getClassPKsForForm(80493);
 			break;
 		case Finance_Tax:
-			entryList = assetEntryService.getAssetEntryListForForm(80489);
+			classPKs = assetEntryService.getClassPKsForForm(80489);
 			break;
 		case SMEs:
-			entryList = assetEntryService.getAssetEntryListForForm(80503);
+			classPKs = assetEntryService.getClassPKsForForm(80503);
 			break;
 		case Natural_Disaster:
-			entryList = assetEntryService.getAssetEntryListForForm(96818);
+			classPKs = assetEntryService.getClassPKsForForm(96818);
 			break;
 		case Power_Energy:
-			entryList = assetEntryService.getAssetEntryListForForm(80490);
+			classPKs = assetEntryService.getClassPKsForForm(80490);
 			break;
 		case Sports:
-			entryList = assetEntryService.getAssetEntryListForForm(96820);
+			classPKs = assetEntryService.getClassPKsForForm(96820);
 			break;
 		case Statistics:
-			entryList = assetEntryService.getAssetEntryListForForm(96822);
+			classPKs = assetEntryService.getClassPKsForForm(96822);
 			break;
 		case Insurances:
-			entryList = assetEntryService.getAssetEntryListForForm(96824);
+			classPKs = assetEntryService.getClassPKsForForm(96824);
 			break;
 		case City_Development:
-			entryList = assetEntryService.getAssetEntryListForForm(96826);
+			classPKs = assetEntryService.getClassPKsForForm(96826);
 			break;
 		case Visas_Passports:
-			entryList = assetEntryService.getAssetEntryListForForm(8243647);
+			classPKs = assetEntryService.getClassPKsForForm(8243647);
 			break;
 		default:
 			new ArrayList<String>();
 		}
 
-		lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		lastPageNo = classPKs.size() % 10 == 0 ? classPKs.size() / 10 : classPKs.size() / 10 + 1;
 
-		List<JournalArticle> forms = parseJournalArticleList(getJournalArticles(entryList, input));
+		List<JournalArticle> forms = getJournalArticles(convertLongListToString(classPKs, input));
+
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		forms.forEach(article -> {
 			stackList.push(article);
@@ -439,7 +444,7 @@ public class FormController extends AbstractController {
 		}
 		json.put("lastPageNo", lastPageNo);
 		json.put("forms", newForms);
-		json.put("totalCount", entryList.size());
+		json.put("totalCount", classPKs.size());
 		return json;
 	}
 

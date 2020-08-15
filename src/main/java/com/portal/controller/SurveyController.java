@@ -52,14 +52,14 @@ public class SurveyController extends AbstractController {
 
 	@Autowired
 	private DDMStructureService ddmStructureService;
-	
-	//@Value("${SERVICEURL}")
-	//private String SERVICEURL;
+
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	private static Logger logger = Logger.getLogger(SurveyController.class);
 	private static JSONParser jsonParser = new JSONParser();
 
-	private JournalArticle parseJournalArticle(JournalArticle journalArticle,String userid) {
+	private JournalArticle parseJournalArticle(JournalArticle journalArticle, String userid) {
 
 		String categoryType = getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Type", "<dynamic-content language-id=\"en_US\">");
 		CategoryType type = CategoryType.valueOf(categoryType.trim().toUpperCase());
@@ -80,7 +80,7 @@ public class SurveyController extends AbstractController {
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
 		newJournal.setDisplaydate(resultDateString);
 		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
-		RequestVote res = getMobileSurveyCount(userid,pollOrSurveyId);
+		RequestVote res = getMobileSurveyCount(userid, pollOrSurveyId);
 		long count = ddlRecordService.getCountOfVoteOrSurvey(Long.parseLong(pollOrSurveyId));
 		String definition = ddmStructureService.getDefinition(Long.parseLong(pollOrSurveyId));
 		int start = definition.indexOf("option");
@@ -107,14 +107,15 @@ public class SurveyController extends AbstractController {
 				myanmarQues.add(arr[7]);
 			}
 		}
-		//user status
+		// user status
 		newJournal.setUserstatus("V000");
-		if(res.getUserstatus() == "V000") {
-			if(ddlRecordService.getCountOfSurveybyuserid(Long.parseLong(pollOrSurveyId),Long.parseLong(res.getWebuserid()))) {
+		if (res.getUserstatus() == "V000") {
+			if (ddlRecordService.getCountOfSurveybyuserid(Long.parseLong(pollOrSurveyId), Long.parseLong(res.getWebuserid()))) {
 				newJournal.setUserstatus("V001");
 			}
-		}else newJournal.setUserstatus(res.getUserstatus());
-		
+		} else
+			newJournal.setUserstatus(res.getUserstatus());
+
 		long totalcount = count + Long.parseLong(res.getTotalVoteCount());
 		newJournal.setQuestionid(pollOrSurveyId);
 		newJournal.setMyanmarQuestions(myanmarQues);
@@ -152,10 +153,10 @@ public class SurveyController extends AbstractController {
 		return newJournalList;
 	}
 
-	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList,String userid) {
+	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList, String userid) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList) {
-			JournalArticle journal = parseJournalArticle(journalArticle,userid);
+			JournalArticle journal = parseJournalArticle(journalArticle, userid);
 			if (journal != null)
 				newJournalList.add(journal);
 		}
@@ -163,10 +164,26 @@ public class SurveyController extends AbstractController {
 		return newJournalList;
 	}
 
-	public List<JournalArticle> getJournalArticles(List<String> entryList) {
+	public List<JournalArticle> getArticlesBySearchTerm(List<Long> classPKList, String searchterm, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		for (String classUuid : entryList) {
-			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(classUuid);
+		String info = convertLongListToString(classPKList, input);
+		String[] classpkList = info.split(",");
+		for (String classpk : classpkList) {
+			Long classPK = Long.parseLong(classpk.toString());
+			JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(classPK, searchterm);
+			if (journalArticle != null)
+				journalArticleList.add(journalArticle);
+		}
+		return journalArticleList;
+	}
+
+	public List<JournalArticle> getArticlesByPaganation(List<Long> classPKList, String input) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		String info = convertLongListToString(classPKList, input);
+		String[] classpkList = info.split(",");
+		for (String classpk : classpkList) {
+			Long classPK = Long.parseLong(classpk.toString());
+			JournalArticle journalArticle = journalArticleService.byClassPK(classPK);
 			if (journalArticle != null)
 				journalArticleList.add(journalArticle);
 		}
@@ -178,9 +195,9 @@ public class SurveyController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getSurvey(@RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
-		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
-		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);		
+		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
+		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticlesByPaganation(classPKList, input), userid);
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		journalArticleList.forEach(article -> {
@@ -194,8 +211,8 @@ public class SurveyController extends AbstractController {
 
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("survey", byPaganation(newArticles, input));
-		resultJson.put("totalCount", journalArticleList.size());
+		resultJson.put("survey", newArticles);
+		resultJson.put("totalCount", newArticles.size());
 		return resultJson;
 	}
 
@@ -205,33 +222,34 @@ public class SurveyController extends AbstractController {
 	public JSONObject getSurerys(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<String> entryList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
-		entryList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getJournalArticles(entryList),userid);
-		for (JournalArticle journalArticle : journalArticleList) {
-			StringBuilder searchterms = new StringBuilder();
-			searchterms.append(journalArticle.getMyanmarDepartmentTitle());
-			searchterms.append(journalArticle.getEngDepartmentTitle());
-			searchterms.append(journalArticle.getMynamrTitle());
-			searchterms.append(journalArticle.getEngTitle());
-			searchterms.append(journalArticle.getDisplaydate());
-			if (searchterms.toString().contains(searchterm))
-				resultList.add(journalArticle);
+		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
+		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticlesBySearchTerm(classPKList, searchterm, input), userid);
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		journalArticleList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < journalArticleList.size(); i++) {
+			newArticles.add(stackList.pop());
 		}
 
 		int lastPageNo = resultList.size() % 10 == 0 ? resultList.size() / 10 : resultList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("survey", byPaganation(resultList, input));
-		resultJson.put("totalCount", resultList.size());
+		resultJson.put("survey", newArticles);
+		resultJson.put("totalCount", 0);
 		return resultJson;
 	}
+
 	@RequestMapping(value = "surveyDetail", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public JournalArticle getPollDetails(@RequestParam("id") String id, @RequestParam("userid") String userid) {
 		JournalArticle journalArticle = journalArticleService.getJournalArticle(Long.parseLong(id));
-		journalArticle = parseJournalArticle(journalArticle,userid);
+		journalArticle = parseJournalArticle(journalArticle, userid);
 		return journalArticle;
 	}
-	
+
 }

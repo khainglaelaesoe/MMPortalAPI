@@ -99,16 +99,16 @@ public class OrganizationController extends AbstractController {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (String classpk : articleInfo.split(",")) {
 			if (!classpk.isEmpty())
-				organizationList.add(parseOrganization(journalArticleService.getIdByFolderId(Long.parseLong(classpk.toString()))));
+				organizationList.add(parseOrganization(journalArticleService.byClassPK(Long.parseLong(classpk.toString()))));
 		}
 		return organizationList;
 	}
 
 	private List<Organization_> getOrganizationListBySearchTerm(String articleInfo, String searchTerm) {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
-		for (String id : articleInfo.split(",")) {
-			if (!DateUtil.isEmpty(id)) {
-				JournalArticle journalArticle = journalArticleService.getJournalArticle(Long.parseLong(id));
+		for (String classpk : articleInfo.split(",")) {
+			if (!classpk.isEmpty()) {
+				JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(Long.parseLong(classpk.toString()), searchTerm);
 				if (journalArticle != null)
 					organizationList.add(parseOrganization(journalArticle));
 			}
@@ -291,13 +291,24 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String input, @RequestParam("index") String index) {
+	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
 		JSONObject resultJson = new JSONObject();
-		List<JournalArticle> articles = journalArticleService.getIdByFolderIdAndSearchTerms(91278, input);
-		int lastPageNo = articles.size() % 10 == 0 ? articles.size() / 10 : articles.size() / 10 + 1;
+		List<Long> classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
+		List<Organization_> orgs = getOrganizationListBySearchTerm(convertLongListToString(classpks, index), searchTerm);
+		Stack<Organization_> stackList = new Stack<Organization_>();
+		orgs.forEach(org -> {
+			stackList.push(org);
+		});
+
+		List<Organization_> newArticles = new ArrayList<Organization_>();
+		for (int i = 0; i < orgs.size(); i++) {
+			newArticles.add(stackList.pop());
+		}
+
+		int lastPageNo = newArticles.size() % 10 == 0 ? newArticles.size() / 10 : newArticles.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("orginations", parseOrganizationList(articles));
-		resultJson.put("totalCount", articles.size());
+		resultJson.put("orginations", newArticles);
+		resultJson.put("totalCount", 0);
 		return resultJson;
 	}
 
@@ -339,11 +350,15 @@ public class OrganizationController extends AbstractController {
 		JSONObject json = new JSONObject();
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
-			Organization_ org = new Organization_();
-			org.setMyanmarName(name.getValue());
-			org.setEngName(OrgEngName.valueOf(name.toString()).getValue());
-			org.setKey(name.toString());
-			organizationList.add(org);
+			logger.info("name!!!!!!!!!!!!!!!!!!!!!!!!!!!" + name);
+			if (name != OrgMyanmarName.Myanmar_Computer_Federation || name != OrgMyanmarName.Topics) {
+				Organization_ org = new Organization_();
+				org.setMyanmarName(name.getValue());
+				org.setEngName(OrgEngName.valueOf(name.toString()).getValue());
+				org.setKey(name.toString());
+				if (!org.getMyanmarName().isEmpty())
+					organizationList.add(org);
+			}
 		}
 		json.put("organizationList", organizationList);
 		return json;

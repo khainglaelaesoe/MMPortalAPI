@@ -1,9 +1,7 @@
 package com.portal.serive.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Hibernate;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.portal.dao.JournalArticleDao;
-import com.portal.entity.CalendarBooking;
 import com.portal.entity.JournalArticle;
 import com.portal.service.JournalArticleService;
 
@@ -81,10 +78,6 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return null;
 	}
 
-//	public List<JournalArticle> getEmergenyContact() {
-//		String queryStr = "select journalArticle from JournalArticle journalArticle where folderId=53239 and id_=20860094 OR id_=20740504 OR id_=20740397 OR id_=5322314 OR id_=53263";
-//		return journalDao.byQuery(queryStr);
-//	}
 	public List<JournalArticle> getEmergenyContact() {
 		List<JournalArticle> journallist = new ArrayList<JournalArticle>();
 		long[] articleidlist = { 53269, 53276, 53283, 53262 };
@@ -138,15 +131,8 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	@Override
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version) {
-		List<Long> objectList;
 		String queryStr = "from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
-
 		return journalDao.getAll(queryStr).get(0);
-		// objectList = journalDao.findLongByQueryString(queryStr);
-//		Long obj = objectList.get(0);
-//		if (obj == null)
-//			return null;
-//		return getJournalArticle(obj);
 	}
 
 	public JournalArticle getJournalArticleIdByArticleIdAndVersion(long articleId, String version) {
@@ -214,32 +200,36 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return getJournalArticle(obj);
 	}
 
-	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid) {
-		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
-		List<Object> objectList = journalDao.byQueryString(queryStr);
-		Object[] obj = (Object[]) objectList.get(0);
-		if (obj[0] == null || obj[1] == null)
+	public JournalArticle byClassPK(Long classpk) {
+		String query = "from JournalArticle j where j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
 			return null;
-
-		Long articleId = Long.parseLong(obj[0].toString());
-		String version = obj[1].toString();
-		return getJournalArticleByArticleIdAndVersion(articleId, version);
+		return journals.get(0);
 	}
 
-	public JournalArticle getJournalArticleByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm) {
-		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where  title LIKE " + "'%" + searchTerm + "%' and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
-		List<Object> objectList = journalDao.byQueryString(queryStr);
-		Object[] obj = (Object[]) objectList.get(0);
-		if (obj[0] == null || obj[1] == null)
+	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm) {
+		String query = "from JournalArticle j where title LIKE " + "'%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
 			return null;
-
-		Long articleId = Long.parseLong(obj[0].toString());
-		String version = obj[1].toString();
-		return getJournalArticleByArticleIdAndVersion(articleId, version);
+		return journals.get(0);
 	}
 
 	public JournalArticle getServiceByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm) {
 		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ")  and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
+		List<Object> objectList = journalDao.byQueryString(queryStr);
+		Object[] obj = (Object[]) objectList.get(0);
+		if (obj[0] == null || obj[1] == null)
+			return null;
+
+		Long articleId = Long.parseLong(obj[0].toString());
+		String version = obj[1].toString();
+		return getJournalArticleByArticleIdAndVersion(articleId, version);
+	}
+
+	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid) {
+		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
 		List<Object> objectList = journalDao.byQueryString(queryStr);
 		Object[] obj = (Object[]) objectList.get(0);
 		if (obj[0] == null || obj[1] == null)
@@ -262,10 +252,10 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
 
-	public long getAllBySearchterm(String searchTerm, long classTypeId) {
-		String queryStr = "select count(*) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1))";
-		return journalDao.findLongByQueryString(queryStr).get(0);
-	}
+//	public long getAllBySearchterm(String searchTerm, long classTypeId) {
+//		String queryStr = "select count(*) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1))";
+//		return journalDao.findLongByQueryString(queryStr).get(0);
+//	}
 
 	public int getCount(String searchTerm, long classTypeId) {
 		String queryStr = "select distinct articleid from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1))";

@@ -1,12 +1,6 @@
 package com.portal.controller;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -161,15 +155,7 @@ public class JournalArticleController extends AbstractController {
 
 	private JournalArticle getJournalArticleForNewspaper(JournalArticle journalArticle) {
 		/* Image url, title, publish date, publisher, pages, language, download link */
-		String myanamrImage, engImage = "";
 		JournalArticle newArticle = new JournalArticle();
-
-		String imageUrl = getImageString(journalArticle.getContent());
-		myanamrImage = imageUrl.contains(".jpg") ? imageUrl : getImageUrl(journalArticle.getContent(), journalArticle.getId_() != 52071110 ? journalArticle.getId_() != 52426493 ? journalArticle.getId_() + 4 : journalArticle.getId_() + 3 : journalArticle.getId_() + 6);
-		engImage = imageUrl.contains(".jpg") ? imageUrl : getImageUrl(journalArticle.getContent(), journalArticle.getId_() == 52426493 ? journalArticle.getId_() + 2 : journalArticle.getId_() + 3);
-
-		newArticle.setEngImageUrl(engImage);
-		newArticle.setMyanamrImageUrl(myanamrImage);
 		newArticle.setId_(journalArticle.getId_());
 
 		DocumentParsing dp = new DocumentParsing();
@@ -184,11 +170,23 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngPblisher(stringList.get(0));
 		newArticle.setMyanmarPublisher(stringList.get(1));
 		newArticle.setPublicationDate(stringList.get(2));
-		newArticle.setPage(stringList.get(4));
 		String[] engmyanDownloadLink = new DocumentParsing().Parsingdocument_library(journalArticle.getContent());
 		newArticle.setEngDownloadLink(engmyanDownloadLink[0]);
 		newArticle.setMyanmarDownloadLink(engmyanDownloadLink[1]);
 		newArticle.setContent(journalArticle.getContent());
+		newArticle.setPage(stringList.get(4));
+
+		/* page */
+		newArticle.setEngPage(getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"en_US\">"));
+		newArticle.setMyaPage(getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">"));
+
+		/* image */
+		newArticle.setEngImageUrl(dp.ParsingEngImage2(journalArticle.getContent()).get(0));
+		newArticle.setMyanamrImageUrl(dp.ParsingMyanImage2(journalArticle.getContent()).get(0));
+		
+		/* Language */
+		newArticle.setEngLanguage(getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"en_US\">"));
+		newArticle.setMyaLanguage(getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">"));
 		return newArticle;
 	}
 
@@ -262,11 +260,11 @@ public class JournalArticleController extends AbstractController {
 		}
 	}
 
-	private List<JournalArticle> getJournalArticles(String entryListInfo, CategoryType type) {
+	private List<JournalArticle> getJournalArticles(String classPkInfo, CategoryType type) {
 		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
-		for (String uuid : entryListInfo.split(",")) {
-			if (!DateUtil.isEmpty(uuid)) {
-				JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(uuid);
+		for (String classpk : classPkInfo.split(",")) {
+			if (!classpk.isEmpty()) {
+				JournalArticle journalArticle = journalArticleService.byClassPK(Long.parseLong(classpk));
 				if (journalArticle != null)
 					journalArticles.add(parseJournalArticle(journalArticle, type));
 			}
@@ -276,40 +274,10 @@ public class JournalArticleController extends AbstractController {
 
 	private JSONObject getJournalArticleByClassTypeIdAndLatest(String input, long classTypeId, CategoryType type) {
 		JSONObject resultJson = new JSONObject();
-		List<String> entryList = assetEntryService.getAssetEntryListByClassTypeId(classTypeId);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<Long> classPKs = assetEntryService.getClassPkList(classTypeId);
+		int lastPageNo = classPKs.size() % 10 == 0 ? classPKs.size() / 10 : classPKs.size() / 10 + 1;
 
-		List<JournalArticle> articles = getJournalArticles(convertEntryListToString(entryList, input), type);
-		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
-		articles.forEach(article -> {
-			stackList.push(article);
-		});
-
-		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
-		for (int i = 0; i < articles.size(); i++) {
-			newArticles.add(stackList.pop());
-		}
-
-		Collections.sort(newArticles, new Comparator<JournalArticle>() {
-			public int compare(JournalArticle o1, JournalArticle o2) {
-				if (o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
-					return o2.getDisplaydate().compareTo(o1.getDisplaydate());
-				return 0;
-			}
-		});
-
-		resultJson.put("articles", newArticles);
-		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("totalCount", entryList.size());
-		return resultJson;
-	}
-
-	private JSONObject getJournalArticleByClassTypeIdAndLatestAnnouncement(String input, long classTypeId, CategoryType type) {
-		JSONObject resultJson = new JSONObject();
-		List<String> entryList = assetEntryService.getAssetEntryListByClassTypeId(classTypeId);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-
-		List<JournalArticle> articles = getJournalArticles(convertEntryListToString(entryList, input), type);
+		List<JournalArticle> articles = getJournalArticles(convertLongListToString(classPKs, input), type);
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		articles.forEach(article -> {
 			stackList.push(article);
@@ -322,16 +290,16 @@ public class JournalArticleController extends AbstractController {
 
 		resultJson.put("articles", newArticles);
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("totalCount", entryList.size());
+		resultJson.put("totalCount", classPKs.size());
 		return resultJson;
 	}
 
 	private JSONObject getJournalArticleByClassTypeIdAndMostView(String input, long classTypeId, CategoryType type) {
 		JSONObject resultJson = new JSONObject();
-		List<String> entryList = assetEntryService.getAssetEntryListByClassTypeIdAndViewCount(classTypeId);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<Long> classPks = assetEntryService.getClassPKListViewCount(classTypeId);
+		int lastPageNo = classPks.size() % 10 == 0 ? classPks.size() / 10 : classPks.size() / 10 + 1;
 
-		List<JournalArticle> articles = getJournalArticles(convertEntryListToString(entryList, input), type);
+		List<JournalArticle> articles = getJournalArticles(convertLongListToString(classPks, input), type);
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		articles.forEach(article -> {
 			stackList.push(article);
@@ -342,17 +310,9 @@ public class JournalArticleController extends AbstractController {
 			newArticles.add(stackList.pop());
 		}
 
-		Collections.sort(newArticles, new Comparator<JournalArticle>() {
-			public int compare(JournalArticle o1, JournalArticle o2) {
-				if (o1 != null && o2 != null && o2.getDisplaydate() != null && o2.getDisplaydate() != null)
-					return o2.getDisplaydate().compareTo(o1.getDisplaydate());
-				return 0;
-			}
-		});
-
 		resultJson.put("articles", newArticles);
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("totalCount", entryList.size());
+		resultJson.put("totalCount", classPks.size());
 		return resultJson;
 	}
 
@@ -380,7 +340,7 @@ public class JournalArticleController extends AbstractController {
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
 		case LATEST:
-			return getJournalArticleByClassTypeIdAndLatestAnnouncement(input, 36208, CategoryType.ANNOUNCEMENT);
+			return getJournalArticleByClassTypeIdAndLatest(input, 36208, CategoryType.ANNOUNCEMENT);
 		case MOSTVIEW:
 			return getJournalArticleByClassTypeIdAndMostView(input, 36208, CategoryType.ANNOUNCEMENT);
 		default:
@@ -412,22 +372,10 @@ public class JournalArticleController extends AbstractController {
 		return getJournalArticleByClassTypeIdAndLatest(input, 86242, CategoryType.NEWSPAPER);
 	}
 
-	public String convertLongListToString(List<Long> articleIdList, String input) {
-		int index = Integer.parseInt(input);
-		int lastIndex = (articleIdList.size() - 1) - (index * 10 - 10);
-		int substract = lastIndex < 9 ? lastIndex : 9;
-		int startIndex = lastIndex - substract;
-
-		String info = "";
-		for (int i = startIndex; i <= lastIndex; i++)
-			info += articleIdList.get(i) + ",";
-		return info;
-	}
-
-	private List<JournalArticle> getResultList(List<String> entryList, String input, CategoryType type, String searchterm) {
+	private List<JournalArticle> getResultList(List<Long> classPks, String input, CategoryType type, String searchterm) {
 
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<JournalArticle> articles = getJournalArticles(convertEntryListToString(entryList, input), type);
+		List<JournalArticle> articles = getJournalArticles(convertLongListToString(classPks, input), type);
 		for (JournalArticle journalArticle : articles) {
 			StringBuilder searchterms = new StringBuilder();
 			if (journalArticle.getShareLink() != null)
@@ -468,16 +416,17 @@ public class JournalArticleController extends AbstractController {
 	private JSONObject byClassTypeIdAndSearchTerms(String searchterm, long classTypeId, CategoryType type, String input) {
 		JSONObject resultJson = new JSONObject();
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<String> entryList = assetEntryService.getAssetEntryListByClassTypeId(classTypeId);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<Long> classPks = assetEntryService.getClassPkList(classTypeId);
+		int lastPageNo = classPks.size() % 10 == 0 ? classPks.size() / 10 : classPks.size() / 10 + 1;
 
 		while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
-			resultList.addAll(getResultList(entryList, input, type, searchterm));
+			resultList.addAll(getResultList(classPks, input, type, searchterm));
 			input = (Integer.parseInt(input) + 1) + "";
 		}
+
 		resultJson.put("articles", resultList);
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("totalCount", journalArticleService.getAllBySearchterm(searchterm, classTypeId));
+		resultJson.put("totalCount", 0);
 		resultJson.put("lastInput", input);
 		return resultJson;
 	}

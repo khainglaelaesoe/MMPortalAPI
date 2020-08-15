@@ -46,6 +46,10 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Column(name = "username")
 	private String username;
 
+	@JsonView(Views.Summary.class)
+	@Transient
+	private String page;
+
 	@JsonIgnore
 	@Column(name = "createdate")
 	private String createdate;
@@ -200,7 +204,11 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 
 	@JsonView(Views.Summary.class)
 	@Transient
-	private String page;
+	private String myaPage;
+
+	@JsonView(Views.Summary.class)
+	@Transient
+	private String engPage;
 
 	@JsonView(Views.Thin.class)
 	@Transient
@@ -308,6 +316,14 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private Date date;
+
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String myaLanguage;
+
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String engLanguage;
 
 	@Transient
 	@JsonView(Views.Thin.class)
@@ -617,6 +633,14 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 		this.articleid = articleid;
 	}
 
+	public String getPage() {
+		return page;
+	}
+
+	public void setPage(String page) {
+		this.page = page;
+	}
+
 	public String getCreatedate() {
 		return createdate;
 	}
@@ -689,12 +713,20 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 		this.publicationDate = publishionDate;
 	}
 
-	public String getPage() {
-		return page;
+	public String getMyaPage() {
+		return myaPage;
 	}
 
-	public void setPage(String page) {
-		this.page = page;
+	public void setMyaPage(String myaPage) {
+		this.myaPage = myaPage;
+	}
+
+	public String getEngPage() {
+		return engPage;
+	}
+
+	public void setEngPage(String engPage) {
+		this.engPage = engPage;
 	}
 
 	public String getMyanmarDownloadLink() {
@@ -997,4 +1029,19 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 		this.pdfLink = pdfLink;
 	}
 
+	public String getMyaLanguage() {
+		return myaLanguage;
+	}
+
+	public void setMyaLanguage(String myaLanguage) {
+		this.myaLanguage = myaLanguage;
+	}
+
+	public String getEngLanguage() {
+		return engLanguage;
+	}
+
+	public void setEngLanguage(String engLanguage) {
+		this.engLanguage = engLanguage;
+	}
 }

@@ -90,73 +90,15 @@ public class DiscussionController extends AbstractController {
 		return newJournalList;
 	}
 
-	public List<JournalArticle> getArticles(List<Object> entryList, String input, String userId) {
-		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		List<Object> objectList = bySize(entryList, input);
-		ObjectMapper mapper = new ObjectMapper();
-
-		for (Object object : objectList) {
-			Object[] arr = (Object[]) object;
-			List<MBMessage> messageList = new ArrayList<MBMessage>();
-			List<MBMessage> webComments = messageService.byClassPK(Long.parseLong(arr[1].toString()));
-			List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(arr[1].toString()), new TypeReference<List<MBMessage>>() {
-			});
-			messageList.addAll(webComments);
-			messageList.addAll(mobileComments);
-
-			for (MBMessage msg : messageList) {
-				if (msg.getMessageid() < 0)
-					continue;
-
-				if (msg.getUserid() == Long.parseLong(userId))
-					msg.setEditPermission("Yes");
-				else
-					msg.setEditPermission("No");
-
-				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
-
-				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
-				});
-				msg.getReplyList().addAll(parse(replyList, userId));
-
-				MobileResult json = getMbData(msg.getMessageid(), userId, 0);
-				String checklikemb = json.getChecklike();
-				if (checklikemb.equals("0.0")) {
-					if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
-						checklikemb = "1.0";
-					} else if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
-						checklikemb = "2.0";
-					}
-				}
-				long likecount = json.getLikecount();
-				long totallikecount = msg.getLikecount() + likecount;
-				msg.setLikecount(totallikecount);
-				msg.setDislikecount(json.getDislikecount());
-				msg.setChecklike(checklikemb);
-				// long checklikeweb =
-				// messageService.likebyuserid(msg.getMessageid(),json.getWebuserid());
-				logger.info(json);
-			}
-
-			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuId(arr[0].toString());
-			if (journalArticle != null) {
-				journalArticle.setMessageList(messageList);
-				journalArticle.setpKString(arr[1].toString());
-				journalArticleList.add(journalArticle);
-			}
-		}
-		return journalArticleList;
-	}
-
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public JSONObject getBlogs(@RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
 		// classTypeId=129731;
-		List<Object> entryList = assetEntryService.byClassTypeId(129739);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
+		List<Long> classPKList = assetEntryService.getClassPkList(129739);
+		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, input, userId));
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		journalArticleList.forEach(article -> {
@@ -169,11 +111,11 @@ public class DiscussionController extends AbstractController {
 		}
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("discussion", newArticles);
-		resultJson.put("totalCount", entryList.size());
+		resultJson.put("totalCount", newArticles.size());
 		return resultJson;
 	}
 
-	private List<JournalArticle> getResultList(List<Object> entryList, String input, String searchterm, String userId) {
+	private List<JournalArticle> getResultList(List<Long> entryList, String input, String searchterm, String userId) {
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
 		for (JournalArticle journalArticle : journalArticleList) {
@@ -204,16 +146,16 @@ public class DiscussionController extends AbstractController {
 	public JSONObject getDiscussion(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<Object> entryList = assetEntryService.byClassTypeId(129739);
-		int lastPageNo = entryList.size() % 10 == 0 ? entryList.size() / 10 : entryList.size() / 10 + 1;
+		List<Long> classPKList = assetEntryService.getClassPkList(129739);
+		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
 
 		while (resultList.size() < 10 && Integer.parseInt(input) <= lastPageNo) {
-			resultList.addAll(getResultList(entryList, input, searchterm, userId));
+			resultList.addAll(getResultList(classPKList, input, searchterm, userId));
 			input = (Integer.parseInt(input) + 1) + "";
 		}
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("discussion", resultList);
-		resultJson.put("totalCount", journalArticleService.getCountBySearchterm(searchterm, 129739));
+		resultJson.put("totalCount", 0);
 		return resultJson;
 	}
 

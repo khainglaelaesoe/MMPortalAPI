@@ -22,10 +22,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.AssetCategory;
+import com.portal.entity.CategoryType;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
@@ -46,10 +50,10 @@ public class AbstractController {
 
 	@Autowired
 	private JournalArticleService journalArticleService;
-	
+
 	@Autowired
 	private JournalFolderService journalFolderService;
-	
+
 	@Autowired
 	private MessageService messageService;
 
@@ -324,10 +328,10 @@ public class AbstractController {
 		return new ArrayList<MBMessage>();
 	}
 
-	public List<JournalArticle> getJournalArticles(List<String> entryList, String input, String searchTerm) {
+	public List<JournalArticle> getJournalArticles(List<Long> classpks, String input, String searchTerm) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		for (String classUuid : entryList) {
-			JournalArticle journalArticle = journalArticleService.getJournalArticleByAssteEntryClassUuIdAndSearchTerm(classUuid, searchTerm);
+		for (Long classPK : classpks) {
+			JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(classPK, searchTerm);
 			if (journalArticle != null)
 				journalArticleList.add(journalArticle);
 		}
@@ -553,7 +557,6 @@ public class AbstractController {
 			return "";
 		return remainString.substring(6, end + 4);
 	}
-	
 
 	public JournalArticle getJournalArticleForAnnouncement(JournalArticle journalArticle) {
 
@@ -593,24 +596,22 @@ public class AbstractController {
 		return newArticle;
 	}
 
-	
-	
 	public List<Reply> parse(List<MBMessage> messageList, String userId) {
 		List<Reply> replyList = new ArrayList<Reply>();
 		messageList.forEach(message -> {
 			Reply reply = new Reply();
-			MobileResult json = getMbData(message.getMessageid(),userId,message.getParentmessageid()); 
+			MobileResult json = getMbData(message.getMessageid(), userId, message.getParentmessageid());
 			logger.info("Reply____________________" + message.getParentmessageid());
-			String checklikemb =json.getChecklike();
-			if(checklikemb == "0.0") {
-				if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),1)) {//check web like
+			String checklikemb = json.getChecklike();
+			if (checklikemb == "0.0") {
+				if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 1)) {// check web like
 					checklikemb = "1.0";
-				}else if(messageService.likebyuserid(message.getMessageid(),json.getWebuserid(),0)) {//check web dislike
+				} else if (messageService.likebyuserid(message.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
 					checklikemb = "2.0";
 				}
 			}
 			logger.info("CheckLike____________" + checklikemb);
-			long likecount=json.getLikecount();
+			long likecount = json.getLikecount();
 			long totallikecount = message.getLikecount() + likecount;
 			reply.setChecklike(checklikemb);
 			reply.setMessageid(message.getMessageid());
@@ -631,7 +632,7 @@ public class AbstractController {
 		});
 		return replyList;
 	}
-	
+
 	public List<MBMessage> getMobileCommentsbymessageid(List<Long> messageid) {
 		RequestVote requestvote = new RequestVote();
 		requestvote.setMessageid(messageid);
@@ -662,7 +663,7 @@ public class AbstractController {
 		}
 		return new ArrayList<MBMessage>();
 	}
-	
+
 	public RequestVote getNotificationList(String userid) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -689,7 +690,95 @@ public class AbstractController {
 		}
 		return new RequestVote();
 	}
-	
 
-	
+	public String convertLongListToString(List<Long> articleIdList, String input) {
+		int index = Integer.parseInt(input);
+		int lastIndex = (articleIdList.size() - 1) - (index * 10 - 10);
+		int substract = lastIndex < 9 ? lastIndex : 9;
+		int startIndex = lastIndex - substract;
+
+		String info = "";
+		for (int i = startIndex; i <= lastIndex; i++)
+			info += articleIdList.get(i) + ",";
+		return info;
+	}
+
+	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		List<Object> objectList = journalArticleService.getFormByTopicAndSearchTerm(categoryId, searchTerm);
+		if (CollectionUtils.isEmpty(objectList))
+			return journalArticleList;
+
+		for (Object object : objectList) {
+			Object[] obj = (Object[]) object;
+			if (obj[0] == null)
+				continue;
+
+			Long articleId = Long.parseLong(obj[0].toString());
+			String version = obj[1].toString();
+
+			if (articleId == null || version == null)
+				continue;
+
+			journalArticleList.add(journalArticleService.getJournalArticleByArticleIdAndVersion(articleId, version));
+		}
+		return journalArticleList;
+	}
+
+	public List<JournalArticle> getArticles(List<Long> classPKList, String input, String userId) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		ObjectMapper mapper = new ObjectMapper();
+
+		String info = convertLongListToString(classPKList, input);
+		String[] classpkList = info.split(",");
+		for (String classpk : classpkList) {
+			Long classPK = Long.parseLong(classpk.toString());
+			JournalArticle journalArticle = journalArticleService.byClassPK(classPK);
+			if (journalArticle != null) {
+				List<MBMessage> messageList = new ArrayList<MBMessage>();
+				List<MBMessage> webComments = messageService.byClassPK(classPK);
+				List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(classpk), new TypeReference<List<MBMessage>>() {
+				});
+				messageList.addAll(webComments);
+				messageList.addAll(mobileComments);
+
+				for (MBMessage msg : messageList) {
+					if (msg.getMessageid() < 0)
+						continue;
+
+					if (msg.getUserid() == Long.parseLong(userId))
+						msg.setEditPermission("Yes");
+					else
+						msg.setEditPermission("No");
+
+					msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
+
+					List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
+					});
+					msg.getReplyList().addAll(parse(replyList, userId));
+
+					MobileResult json = getMbData(msg.getMessageid(), userId, 0);
+					String checklikemb = json.getChecklike();
+					if (checklikemb == "0.0") {
+						if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
+							checklikemb = "1.0";
+						} else if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
+							checklikemb = "2.0";
+						}
+					}
+					long likecount = json.getLikecount();
+					long totallikecount = msg.getLikecount() + likecount;
+					msg.setLikecount(totallikecount);
+					msg.setDislikecount(json.getDislikecount());
+					msg.setChecklike(checklikemb);
+				}
+
+				journalArticle.setMessageList(messageList);
+				journalArticle.setpKString(classpk);
+				journalArticleList.add(journalArticle);
+			}
+		}
+		return journalArticleList;
+	}
+
 }

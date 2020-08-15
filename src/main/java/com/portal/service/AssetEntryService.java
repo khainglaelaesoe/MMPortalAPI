@@ -17,56 +17,56 @@ public interface AssetEntryService {
 
 	public AssetEntry getAssetEntry(long id);
 
-	public List<String> getAssetEntryListByClassTypeId(long classTypeId);
+	public List<Long> getClassPkList(long classTypeId);
 
 	public List<String> getAssetEntryListForServices(long categoryId);
 
-	public List<String> getAssetEntryListForLiveStockService(long categoryId);
+	public List<Long> getAssetEntryListForLiveStockService(long categoryId);
 
 	public List<String> getAssetEntryListForTender(long categoryId);
 
-	public List<String> getAssetEntryListForForm(long categoryId);
+	public List<Long> getClassPKsForForm(long categoryId);
 
 	public List<String> getAssetEntryListForJobAndVacancy(long categoryId);
 
-	public List<String> getAssetEntryListForDocument(long categoryId);
+	public List<Long> getAssetEntryListForDocument(long categoryId);
 
-	public List<String> getAssetEntryListForLiveStockJobAndVacancy(long categoryId);
+	public List<Long> getAssetEntryListForLiveStockJobAndVacancy(long categoryId);
 
 	public List<String> getAssetEntryListForDocumentByAllTopic();
 
-	public List<String> getClassuuidListForPollAndSurvey(long categoryId);
+	public List<Long> getClassuuidListForPollAndSurvey(long categoryId);
 
 	public List<Long> getClassNameByClassUuid(String classUuid);
 
 	public List<String> getAssetEntryByTitle(String title);
 
-	public List<String> getAssetEntryListByClassTypeIdAndViewCount(long classTypeId);
+	public List<Long> getClassPKListViewCount(long classTypeId);
 
-	public List<String> getAssetEntryListForServicesByViewCount(long categoryId);
+	public List<Long> getAssetEntryListForServicesByViewCount(long categoryId);
 
 	public List<Object> byClassTypeId(long classTypeId);
 
-	public List<String> getAssetEntryListForJobAndVacancyByViewCount(long categoryId);
+	public List<Long> getAssetEntryListForJobAndVacancyByViewCount(long categoryId);
 
-	public List<String> getAssetEntryListForTendersByViewCount(long categoryId);
+	public List<String> getAssetEntryListByClassTypeId(long classTypeId);
+
+	public List<Long> getAssetEntryListForTendersByViewCount(long categoryId);
 
 	public List<Long> getClassName(String classUuid);
 
-	public List<Long> getClassPK(String classUuid);
+	public List<Long> getAssetEntryListForTendersByLatest(long categoryId);
 
-	public List<String> getAssetEntryListForTendersByLatest(long categoryId);
+	public List<Long> getAssetEntryListForJobAndVacancyByLatest(long categoryId);
 
-	public List<String> getAssetEntryListForJobAndVacancyByLatest(long categoryId);
-
-	public List<String> getAssetEntryListForServicesByLatest(long categoryId);
-
-	public long getClassPK();
+	public List<Long> getAssetEntryListForServicesByLatest(long categoryId);
 
 	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
 
 	public List<Long> getAssetEntryListByName(long classTypeId, String searchTerm);
 
 	public List<String> getClassUuidByDate(Long classTypeId, String dateStr);
+
+	public long getClassPK();
 
 }

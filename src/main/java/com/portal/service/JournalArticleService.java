@@ -22,8 +22,6 @@ public interface JournalArticleService {
 
 	public void hibernateInitializeJournalArticleList(List<JournalArticle> journalArticleList);
 
-	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid);
-
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version);
 
 	public JournalArticle getJournalArticleforGov();
@@ -38,7 +36,7 @@ public interface JournalArticleService {
 
 	public JournalArticle getJournalArticleBySearchTerms(long Id, String searchTerm);
 
-	public long getAllBySearchterm(String searchTerm, long classTypeId);
+	// public long getAllBySearchterm(String searchTerm, long classTypeId);
 
 	public List<Object> getServiceByTopicAndSearchTerm(long categoryId, String searchTerm);
 
@@ -64,18 +62,20 @@ public interface JournalArticleService {
 
 	public long getJobBySearchterm(String searchTerm, long classTypeId);
 
-	public JournalArticle getJournalArticleByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
-
 	public JournalArticle getJournalArticleByClassPK(long classpk);
 
 	public JournalArticle getServiceByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm);
 
 	public int getCount(String searchTerm, long classTypeId);
 
-	public JournalArticle getIdByFolderId(Long classpk);
+	public JournalArticle byClassPK(Long classpk);
 
 	public JournalArticle getJournalArticleByDate(String classuuid, Long dateStr);
 
 	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
+
+	public JournalArticle getJournalArticleByAssteEntryClassUuId(String classuuid);
+
+	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm);
 
 }

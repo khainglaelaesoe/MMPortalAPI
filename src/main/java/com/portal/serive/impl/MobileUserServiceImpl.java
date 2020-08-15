@@ -50,6 +50,8 @@ public class MobileUserServiceImpl implements MobileUserService {
 	public mobileuser validUserid(long userid) {
 		String query = "select u from mobileuser u where userid =" + userid;
 		List<mobileuser> userlist = mobileUserDao.findById(query);
+		if(CollectionUtils.isEmpty(userlist))
+			return null;
 		return userlist.get(0);
 	}
 

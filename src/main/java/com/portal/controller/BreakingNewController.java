@@ -21,27 +21,26 @@ import com.portal.service.JournalArticleService;
 
 @Controller
 @RequestMapping("breakingNews")
-public class BreakingNewController extends AbstractController{
+public class BreakingNewController extends AbstractController {
 	@Autowired
 	private JournalArticleService journalArticleService;
 
 	@Autowired
 	private AssetEntryService assetEntryService;
-	
+
 	@RequestMapping(value = "getBreakingNews", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject getBreakingNews() {
 		JSONObject resultJson = new JSONObject();
-		JournalArticle ja = new JournalArticle();
 		long classPK = assetEntryService.getClassPK();
 		JournalArticle journal = journalArticleService.getJournalArticleByClassPK(classPK);
-		List<Map<String, String>> contentlist  = new DocumentParsing().ParsingImageTextTextArea(journal.getContent());
+		List<Map<String, String>> contentlist = new DocumentParsing().ParsingImageTextTextArea(journal.getContent());
 		String title[] = new DocumentParsing().ParsingTitle(journal.getTitle());
 		String englishTitle = title[0];
 		String myanmarTitle = title[1];
-		resultJson.put("englishTitle", englishTitle);
-		resultJson.put("myanmarTitle", myanmarTitle);
+		resultJson.put("englishTitle", englishTitle.isEmpty() ? myanmarTitle : englishTitle);
+		resultJson.put("myanmarTitle", myanmarTitle.isEmpty() ? englishTitle : myanmarTitle);
 		resultJson.put("contentList", contentlist);
 		return resultJson;
 	}
