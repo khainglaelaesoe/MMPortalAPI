@@ -183,7 +183,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER, date); // tenders
 		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY, date); // jobs
 		RequestVote notidata = getReplyList(userid);
-		//List<JournalArticle> blog = getBlogs(userid);
+		List<JournalArticle> blog = getBlogs(userid);
 		resultJson.put("announcements", announcements);
 		resultJson.put("announcementCount", announcements.size());
 		resultJson.put("tenders", tenders);
@@ -192,8 +192,8 @@ public class NotiController extends AbstractController {
 		resultJson.put("jobCount", jobs.size());
 		resultJson.put("comments", notidata.getMbmessagelist());
 		resultJson.put("commentCount", notidata.getTotalNotiCount());
-		//resultJson.put("blog", blog);
-		//resultJson.put("blogCount", blog.size());
+		resultJson.put("blog", blog);
+		resultJson.put("blogCount", blog.size());
 		return resultJson;
 	}
 
@@ -247,19 +247,20 @@ public class NotiController extends AbstractController {
 	public List<JournalArticle> getBlogs(String userId) {
 		// classTypeId=129731;
 		List<Long> classPKList = getClassPK(userId);
-		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
-
-		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
-		journalArticleList.forEach(article -> {
-			stackList.push(article);
-		});
-
 		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
-		for (int i = 0; i < journalArticleList.size(); i++) {
-			newArticles.add(stackList.pop());
+		if(classPKList.size() > 0) {
+			int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
+			List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
+	
+			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+			journalArticleList.forEach(article -> {
+				stackList.push(article);
+			});
+			
+			for (int i = 0; i < journalArticleList.size(); i++) {
+				newArticles.add(stackList.pop());
+			}
 		}
-
 		//resultJson.put("lastPageNo", lastPageNo);
 		//resultJson.put("blog", newArticles);
 		//resultJson.put("totalCount", newArticles.size());
