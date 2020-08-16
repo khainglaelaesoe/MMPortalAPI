@@ -32,7 +32,12 @@ public class RequestVote {
 	List<MBMessage> mbmessagelist;
 	
 	@JsonView(Views.Thin.class)
+	List<Long> classpklist;
+	
+	@JsonView(Views.Thin.class)
 	String totalNotiCount;
+	
+	List<JournalArticle> journalArticle;
 	
 	public List<PollsChoice> getPollsChoiceList() {
 		return pollsChoiceList;
@@ -76,17 +81,29 @@ public class RequestVote {
 	public void setMessageid(List<Long> messageid) {
 		this.messageid = messageid;
 	}
+	public String getTotalNotiCount() {
+		return totalNotiCount;
+	}
+	public void setTotalNotiCount(String totalNotiCount) {
+		this.totalNotiCount = totalNotiCount;
+	}
 	public List<MBMessage> getMbmessagelist() {
 		return mbmessagelist;
 	}
 	public void setMbmessagelist(List<MBMessage> mbmessagelist) {
 		this.mbmessagelist = mbmessagelist;
 	}
-	public String getTotalNotiCount() {
-		return totalNotiCount;
+	public List<Long> getClasspklist() {
+		return classpklist;
 	}
-	public void setTotalNotiCount(String totalNotiCount) {
-		this.totalNotiCount = totalNotiCount;
+	public void setClasspklist(List<Long> classpklist) {
+		this.classpklist = classpklist;
+	}
+	public List<JournalArticle> getJournalArticle() {
+		return journalArticle;
+	}
+	public void setJournalArticle(List<JournalArticle> journalArticle) {
+		this.journalArticle = journalArticle;
 	}
 	
 }

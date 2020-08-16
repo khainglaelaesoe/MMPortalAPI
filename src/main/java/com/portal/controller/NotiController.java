@@ -183,7 +183,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER, date); // tenders
 		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY, date); // jobs
 		RequestVote notidata = getReplyList(userid);
-		List<JournalArticle> blog = getBlogs(userid);
+		RequestVote blog = getBlogs(userid);
 		resultJson.put("announcements", announcements);
 		resultJson.put("announcementCount", announcements.size());
 		resultJson.put("tenders", tenders);
@@ -192,8 +192,8 @@ public class NotiController extends AbstractController {
 		resultJson.put("jobCount", jobs.size());
 		resultJson.put("comments", notidata.getMbmessagelist());
 		resultJson.put("commentCount", notidata.getTotalNotiCount());
-		resultJson.put("blog", blog);
-		resultJson.put("blogCount", blog.size());
+		resultJson.put("blog", blog.getJournalArticle());
+		resultJson.put("blogCount", blog.getTotalNotiCount());
 		return resultJson;
 	}
 
@@ -244,10 +244,11 @@ public class NotiController extends AbstractController {
 		return notidata;
 	}
 	
-	public List<JournalArticle> getBlogs(String userId) {
-		// classTypeId=129731;
-		List<Long> classPKList = getClassPK(userId);
+	public RequestVote getBlogs(String userId) {
 		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		List<Long> classPKList = new ArrayList<Long>();
+		RequestVote res = getBlogUserbyid(userId);
+		classPKList = res.getClasspklist();
 		if(classPKList.size() > 0) {
 			int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
 			List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
@@ -264,7 +265,8 @@ public class NotiController extends AbstractController {
 		//resultJson.put("lastPageNo", lastPageNo);
 		//resultJson.put("blog", newArticles);
 		//resultJson.put("totalCount", newArticles.size());
-		return newArticles;
+		res.setJournalArticle(newArticles);
+		return res;
 	}
 	
 	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {

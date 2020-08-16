@@ -782,7 +782,7 @@ public class AbstractController {
 		return journalArticleList;
 	}
 	
-	public List<Long> getClassPK(String userid) {
+	public RequestVote getBlogUserbyid(String userid) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("userid", userid);
@@ -798,19 +798,18 @@ public class AbstractController {
 		logger.info("calling webservice..." + builder);
 
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<List> response = null;
+		HttpEntity<RequestVote> response = null;
 		try {
 
-			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, List.class);
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, RequestVote.class);
 			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
-			List<Long> userScores = response.getBody();
-			logger.info("LeaveBalance list size:" + userScores.size());
+			RequestVote userScores = response.getBody();
 			return userScores;
 
 		} catch (Exception e) {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
-		return new ArrayList<Long>();
+		return new RequestVote();
 	}
 
 }
