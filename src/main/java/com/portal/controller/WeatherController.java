@@ -40,12 +40,12 @@ public class WeatherController {
 		Weather weather = new Weather();
 
 		weatherService.getPageLinks("https://www.moezala.gov.mm/my/daily-weather-forecast%20");
-		String[] myanoutput = weatherService.getArticles();
+		String[] myanoutput = weatherService.parseArticle();
 		weather.setMyantitle(myanoutput[0]);
 		weather.setMyancontent(myanoutput[1]);
 
 		weatherService.getPageLinks("https://www.moezala.gov.mm/daily-weather-forecast%20");
-		String[] engoutput = weatherService.getEngArticles();
+		String[] engoutput = weatherService.parseArticle();
 		weather.setEngtitle(engoutput[0]);
 		weather.setEngcontent(engoutput[1]);
 		resultJson.put("DailyWeather", weather);
@@ -54,13 +54,13 @@ public class WeatherController {
 		Weather tenday=new Weather();
 		System.out.println("========================10day Myanmar=========================");
 		weatherService.getPageLinks("https://moezala.gov.mm/my/10-days-weather-forecast%20");
-		String[] tenmyanoutput = weatherService.get10DayMyanmarArticles();
+		String[] tenmyanoutput = weatherService.parseArticle();
 		tenday.setMyantitle(tenmyanoutput[0]);
 		tenday.setMyancontent(tenmyanoutput[1]);
 
 		System.out.println("========================10day English=========================");
 		weatherService.getPageLinks("https://moezala.gov.mm/10-days-weather-forecast%20");
-		String[] tenengoutput = weatherService.getEngArticles();
+		String[] tenengoutput = weatherService.parseArticle();
 		tenday.setEngtitle(tenengoutput[0]);
 		tenday.setEngcontent(tenengoutput[1]);
 		resultJson.put("10DayWeather", tenday);

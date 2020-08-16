@@ -28,36 +28,6 @@ public class WeatherServiceImpl implements WeatherService {
 		articles = new ArrayList<>();
 	}
 
-	/*
-	 * // Find all URLs that start with "http://www.mkyong.com/page/" and add them
-	 * to // the HashSet public void getPageLinks(String URL) { if
-	 * (!links.contains(URL)) { try { Document document = Jsoup.connect(URL).get();
-	 * Elements spans = document.select("span");
-	 * 
-	 * for (Element span : spans) { if (span.hasClass("field-content") == true) {
-	 * Elements urllinks = span.getElementsByTag("a"); for (Element link : urllinks)
-	 * { links.add(link.absUrl("href")); } // links.add(page.attr("abs:href"));
-	 * 
-	 * }
-	 * 
-	 * } } catch (IOException e) { System.err.println(e.getMessage()); } }
-	 * System.out.println("link size...." + links.size());
-	 * 
-	 * Integer max = 0; String maxvalue = "";
-	 * 
-	 * for (String value : links) { System.out.println("value.............." +
-	 * value); if (value.startsWith("https://www.moezala.gov.mm/himawari"))
-	 * continue; int start = value.lastIndexOf("-") + 1; String indexS =
-	 * value.substring(start); System.out.println("Link............" + indexS);
-	 * Integer index = Integer.parseInt(indexS); if (index > max) { max = index;
-	 * maxvalue = value; }
-	 * 
-	 * } links.clear(); links.add(maxvalue);
-	 * 
-	 * 
-	 * }
-	 */
-
 	public void getPageLinks(String URL) {
 		links.clear();
 		if (!links.contains(URL)) {
@@ -66,15 +36,15 @@ public class WeatherServiceImpl implements WeatherService {
 				Elements spans = document.select("div.region-inner.region-content-inner").select("span");
 
 				for (Element span : spans) {
-					System.out.println("span........."+span.text());
+					System.out.println("span........." + span.text());
 					Element link = span.select("a").first();
-					
-					if(link!=null) {
-						System.out.println("link in 10 days........"+link);
+
+					if (link != null) {
+						System.out.println("link in 10 days........" + link);
 						links.add(link.absUrl("href"));
 						break;
 					}
-					
+
 				}
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
@@ -91,9 +61,11 @@ public class WeatherServiceImpl implements WeatherService {
 			Document document;
 			try {
 				document = Jsoup.connect(x).get();
-				Elements paras = document.select("article p");
+				//Elements paras = document.select("article p");
+				Elements paras = document.select("div.region-inner.region-content-inner").select("p");
 				String title = "";
 				String content = "";
+				
 				for (Element p : paras) {
 					if (p.hasClass("rtecenter")) {
 						Elements spans = p.getElementsByTag("span");
@@ -109,27 +81,57 @@ public class WeatherServiceImpl implements WeatherService {
 
 					} else {
 						Elements spans = p.getElementsByTag("span");
-						
+
 						for (Element span : spans) {
 							if (span.children().size() == 0)
 								content += span.text();
 							if (span.children().size() > 2)
 								content += "\n";
-							
+
 						}
 
 					} // else
 				} // for
 				output[0] = title;
 				output[1] = content;
-				
+
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 			}
 		});
 		return output;
 	}
-	
+
+	public String[] parseArticle() {
+		String[] output = new String[2];
+		links.forEach(x -> {
+			Document document;
+			try {
+				document = Jsoup.connect(x).get();
+				Elements paras = document.select("article p");
+				String title = "";
+				String content = "";
+				
+				for (Element p : paras) {
+					if (p.hasClass("rtecenter")) {
+						title += p.text()+"<br>";
+					}
+					else
+						content += p.text()+"<br>";
+				} // for
+				
+				output[0] = title;
+				output[1] = content;
+				System.out.println("title........." + output[0]);
+				System.out.println("content........." + output[1]);
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+			}
+
+		});
+		return output;
+	}
+
 	public String[] get10DayMyanmarArticles() {
 		String[] output = new String[2];
 		links.forEach(x -> {
@@ -154,22 +156,23 @@ public class WeatherServiceImpl implements WeatherService {
 
 					} else {
 						Elements spans = p.getElementsByTag("span");
-						
+
 						for (Element span : spans) {
-							if (span.getElementsByAttributeValueContaining("style", "color").size()>0) {
-								content += "\n";								
-								}
-							else if (span.children().size() == 0) {
-								  String value=span.text().substring(0, 1);
-								  String fix=span.text().substring(1, 2);
-								  if(fix.equals("။")==true)System.out.println("value......"+value); 
-								  boolean number=isNumeric(value);
-								  if(number=true && fix.equals("။")==true )content += "\n";
-								  content += span.text();
-							
+							if (span.getElementsByAttributeValueContaining("style", "color").size() > 0) {
+								content += "\n";
+							} else if (span.children().size() == 0) {
+								String value = span.text().substring(0, 1);
+								String fix = span.text().substring(1, 2);
+								if (fix.equals("။") == true)
+									System.out.println("value......" + value);
+								boolean number = isNumeric(value);
+								if (number = true && fix.equals("။") == true)
+									content += "\n";
+								content += span.text();
+
+							} else {
 							}
-							else {}
-							
+
 						}
 
 					} // else
@@ -178,26 +181,25 @@ public class WeatherServiceImpl implements WeatherService {
 				output[1] = content;
 				System.out.println("title........." + output[0]);
 				System.out.println("content........." + output[1]);
-				
+
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 			}
 		});
 		return output;
 	}
-	
-	public static boolean isNumeric(String strNum) {
-	    if (strNum == null) {
-	        return false;
-	    }
-	    try {
-	        double d = Double.parseDouble(strNum);
-	    } catch (NumberFormatException nfe) {
-	        return false;
-	    }
-	    return true;
-	}
 
+	public static boolean isNumeric(String strNum) {
+		if (strNum == null) {
+			return false;
+		}
+		try {
+			double d = Double.parseDouble(strNum);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
+	}
 
 	public String[] getEngArticles() {
 		String[] output = new String[2];
@@ -212,10 +214,14 @@ public class WeatherServiceImpl implements WeatherService {
 					if (p.hasClass("rtecenter")) {
 						Elements spans = p.getElementsByTag("span");
 						for (Element span : spans) {
-							
-							if (span.children().size() == 0 || span.getElementsByTag("strong") != null)
-								title += span.text()+"\n";
-						
+
+							if (span.children().size() == 0) {
+								if (span.getElementsByTag("strong") != null)
+									title += span.text() + "\n";
+								else
+									title += span.text() + "\n";
+							}
+
 						}
 
 					} else {
@@ -225,7 +231,6 @@ public class WeatherServiceImpl implements WeatherService {
 				} // for
 				output[0] = title;
 				output[1] = content;
-				
 
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
