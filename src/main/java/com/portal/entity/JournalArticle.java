@@ -62,7 +62,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Column(name = "folderid")
 	private long folderid;
 
-	@JsonView(Views.Thin.class)
+	@JsonIgnore
 	@Column(name = "classpk")
 	private String classpk;
 

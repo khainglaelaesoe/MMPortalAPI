@@ -11,9 +11,14 @@ public interface AssetCategoryService {
 	List<AssetCategory> getAssetCategoryNameExceptionByVocalbularyId(long id);
 
 	public List<AssetCategory> getAssetCategoryByParentCategoryId(long id);
+	
+	public AssetCategory getAssetCategoryByParentCategoryIdandName(long id, String name);
 
 	public List<AssetCategory> getAssetCategoryByParentCategoryIdMinistry(long id);
 	
 	public List<Long> getIdListByParentCategoryIdMinistry(long id);
+
+	public AssetCategory getAssetCategoryByParentCategoryIdMinistryName(long id, String name);
+
 
 }

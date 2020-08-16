@@ -38,11 +38,25 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
 		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and parentcategoryid=" + id + " order by leftcategoryid";
 		return assetCategoryDao.byQuery(queryStr);
 	}
+	
+	@Override
+	public AssetCategory getAssetCategoryByParentCategoryIdandName(long id, String name) {
+		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and parentcategoryid=" + id+" and name like '%" + name + "%'";
+		return assetCategoryDao.byQuery(queryStr).get(0);
+	}
+	
+	
 
 	@Override
 	public List<AssetCategory> getAssetCategoryByParentCategoryIdMinistry(long id) {
 		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and" + " name!='No Longer In Use Minitries' and parentcategoryid=" + id + " order by leftcategoryid";
 		return assetCategoryDao.byQuery(queryStr);
+	}
+	
+	@Override
+	public AssetCategory getAssetCategoryByParentCategoryIdMinistryName(long id, String name) {
+		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and" + " name!='No Longer In Use Minitries' and parentcategoryid=" + id+" and name like '%" + name + "%'";
+		return assetCategoryDao.byQuery(queryStr).get(0);
 	}
 
 	public List<Long> getIdListByParentCategoryIdMinistry(long id) {

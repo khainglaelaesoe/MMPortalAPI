@@ -1,7 +1,9 @@
 package com.portal.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.Base32;
 import org.apache.log4j.Logger;
@@ -26,6 +28,7 @@ import com.portal.entity.AssetCategory;
 import com.portal.entity.AssetCategoryProperty;
 import com.portal.entity.AssetEntry;
 import com.portal.parsing.DocumentParsing;
+import com.portal.entity.Nation;
 import com.portal.service.AssetCategoryPropertyService;
 import com.portal.service.AssetCategoryService;
 import com.portal.service.AssetEntryService;
@@ -99,7 +102,25 @@ public class NationController extends AbstractController {
 
 	private JSONObject getAssetCategoryByParentCategoryId(long pcategoryId) {
 		JSONObject resultJson = new JSONObject();
-		List<AssetCategory> catList = assetCategoryService.getAssetCategoryByParentCategoryId(pcategoryId);
+
+		/*
+		 * Nation.stream().filter(d ->
+		 * d.getCategoryId()==pcategoryId).forEach(System.out::println);
+		 */
+		 
+		 List<Nation> enumNames = Nation.stream()
+				 .filter(d ->
+				 d.getCategoryId()==pcategoryId)
+		            .collect(Collectors.toList());
+		
+		 List<AssetCategory> catList=new  ArrayList<AssetCategory>();
+				 
+		 for(Nation nation: enumNames) {
+		 AssetCategory category= assetCategoryService.getAssetCategoryByParentCategoryIdandName(pcategoryId, nation.getMyanName());
+		 catList.add(category);
+		 }
+		//List<AssetCategory> catList = assetCategoryService.getAssetCategoryByParentCategoryId(pcategoryId);
+		
 		List<AssetCategory> categories = parseAssetCategories(catList);
 		resultJson.put("nation", categories);
 		return resultJson;
@@ -108,8 +129,21 @@ public class NationController extends AbstractController {
 	/* ministry */
 	private JSONObject getAssetCategoryByParentCategoryMinistry(long pcategoryId, NationType type) {
 		JSONObject resultJson = new JSONObject();
-		List<AssetCategory> catList = assetCategoryService.getAssetCategoryByParentCategoryIdMinistry(pcategoryId);
+
+		List<AssetCategory> catList=new  ArrayList<AssetCategory>();
 		System.out.println("list size.........." + catList);
+
+		List<Nation> enumNames = Nation.stream()
+				 .filter(d ->
+				 d.getCategoryId()==pcategoryId)
+		            .collect(Collectors.toList());
+		
+		
+		 for(Nation nation: enumNames) {
+		 AssetCategory category= assetCategoryService.getAssetCategoryByParentCategoryIdandName(pcategoryId, nation.getMyanName());
+		 catList.add(category);
+		 }
+
 		List<AssetCategory> categories = parseAssetCategories(catList);
 		resultJson.put("nation", categories);
 		return resultJson;
@@ -144,8 +178,12 @@ public class NationController extends AbstractController {
 			JournalArticle ja = new JournalArticle();
 			if (category.getCategoryid() != 8251623 && category.getCategoryid() != 87166 && category.getCategoryid() != 8249564 && category.getCategoryid() != 87195) {
 				AssetEntry ae = new AssetEntry();
+
 				ae = assetEntryService.getAssetEntryByClassTypeCategoryTitle(category.getCategoryid(), category.getEngtitle(), category.getMyantitle());
 				ja = journalArticleService.byClassPK(ae.getClasspk());
+
+
+
 				ArrayList<String> contentList = new ArrayList<String>();
 				String language = dp.AvailableLanguage(ja.getContent());
 				category.setLanguage(language);
@@ -201,6 +239,7 @@ public class NationController extends AbstractController {
 				if (start > 0 && end > 0) {
 					String str = engcontent.substring(start, end);
 					resultString = "<img src=" + str + "\">";
+
 					category.setAudioLink(str);					
 					category.setEngcontent(resultString + engcontent.substring(end + 8, engcontent.length()).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
 					category.setMyancontent(resultString + myancontent.substring(end + 8, myancontent.length()).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
@@ -209,10 +248,18 @@ public class NationController extends AbstractController {
 				} else {					
 					category.setEngcontent(engcontent.replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
 					category.setMyancontent(myancontent.replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
-					category.setIosEngContent(Jsoup.parse(engcontent).text());
-					category.setIosMyaContent(Jsoup.parse(myancontent).text());
-				}
+					category.setEngcontent(
+							resultString + engcontent.substring(end + 8, engcontent.length()).replaceAll("<html>", "")
+									.replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "")
+									.replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
 
+					category.setMyancontent(
+							resultString + myancontent.substring(end + 8, myancontent.length()).replaceAll("<html>", "")
+									.replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "")
+									.replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+					category.setIosEngContent(Jsoup.parse(engcontent.substring(end + 8, engcontent.length())).text());
+					category.setIosMyaContent(Jsoup.parse(myancontent.substring(end + 8, myancontent.length())).text());
+				} 
 			} // for
 			categoryList.add(category);
 		} // if
@@ -299,6 +346,7 @@ public class NationController extends AbstractController {
 	public JSONObject getMinistry() {
 		// 9590639
 		return getAssetCategoryByParentCategoryMinistry(87166, NationType.MINISTRY);
+		//return getAssetCategoryByParentCategoryId(87166);
 	}
 
 }

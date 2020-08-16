@@ -131,8 +131,11 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	@Override
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version) {
+
 		String queryStr = "from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
 		return journalDao.getAll(queryStr).get(0);
+
+		
 	}
 
 	public JournalArticle getJournalArticleIdByArticleIdAndVersion(long articleId, String version) {
@@ -241,15 +244,17 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	}
 
 	public JournalArticle getJournalArticleByClassPK(long classpk) {
-		String queryStr = "select articleid, max(version) from JournalArticle journalArticle where journalArticle.resourceprimkey='" + classpk + "')";
-		List<Object> objectList = journalDao.byQueryString(queryStr);
-		Object[] obj = (Object[]) objectList.get(0);
-		if (obj[0] == null || obj[1] == null)
-			return null;
-
-		Long articleId = Long.parseLong(obj[0].toString());
-		String version = obj[1].toString();
-		return getJournalArticleByArticleIdAndVersion(articleId, version);
+		String queryStr = "from JournalArticle journalArticle where journalArticle.resourceprimkey=" + classpk + " order by version desc";
+		return  journalDao.getAll(queryStr).get(0);
+		/*
+		 * List<Object> objectList = journalDao.byQueryString(queryStr); Object[] obj =
+		 * (Object[]) objectList.get(0); if (obj[0] == null || obj[1] == null) return
+		 * null;
+		 * 
+		 * Long articleId = Long.parseLong(obj[0].toString()); String version =
+		 * obj[1].toString(); return getJournalArticleByArticleIdAndVersion(articleId,
+		 * version);
+		 */
 	}
 
 	public int getCount(String searchTerm, long classTypeId) {

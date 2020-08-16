@@ -425,14 +425,14 @@ public class AboutMyanmarController extends AbstractController {
 				}
 
 				journal = journalArticleService.byClassPK(ae.getClasspk());
-				List<String> engimage = dp.ParsingEngImage(journal.getContent());
-				List<String> myanimage = dp.ParsingMyanImage(journal.getContent());
-				String engimages = "";
-				String myanimages = "";
-				for (String eng : engimage)
-					engimages += eng;
-				for (String myan : myanimage)
-					myanimages += myan;
+				
+
+				List<String> engimage=dp.ParsingEngImage(journal.getContent());
+				List<String> myanimage=dp.ParsingMyanImage(journal.getContent());
+				String engimages=""; String myanimages="";
+				for(String eng: engimage) engimages+=eng;
+				for(String myan: myanimage) myanimages += myan;
+
 				category.setEngImageUrl(engimages);
 				category.setMyanImageUrl(myanimages);
 				ArrayList<String> contentList = new ArrayList<String>();
@@ -501,10 +501,10 @@ public class AboutMyanmarController extends AbstractController {
 		AssetEntry visa = assetEntryService.getAssetEntryByClassType(36199);
 		AssetEntry embassy = assetEntryService.getAssetEntryByClassType(99099);
 
+
 		JournalArticle travelja = parseJournalArticle(journalArticleService.byClassPK(travel.getClasspk()));
 		JournalArticle visaja = parseJournalArticleforVisa(journalArticleService.byClassPK(visa.getClasspk()));
 		JournalArticle embassyja = parseJournalArticleforEmbassy(journalArticleService.byClassPK(embassy.getClasspk()));
-
 		List<Long> destination = assetEntryService.getClassPkList(36187);
 		List<JournalArticle> destinationList = new ArrayList<JournalArticle>();
 		for (Long classPk : destination) {
@@ -512,6 +512,8 @@ public class AboutMyanmarController extends AbstractController {
 			if (journal != null)
 				destinationList.add(journal);
 		}
+		
+	
 		resultJson.put("travel", travelja);
 		resultJson.put("visa", visaja);
 		resultJson.put("embassy", embassyja);

@@ -6,6 +6,7 @@ import com.portal.entity.AssetEntry;
 import com.portal.entity.MBMessage;
 
 public interface AssetEntryService {
+	public List<Long> getAssetEntryClassPkByClassTypeId(long classTypeId);
 
 	public AssetEntry getAssetEntryByClassTypeCategoryTitle(long cid, String engtitle, String myantitle);
 
