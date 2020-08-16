@@ -14,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -140,10 +139,10 @@ public class NotiController extends AbstractController {
 		return entities;
 	}
 
-	private List<JournalArticle> getEntities(JSONObject resultJson, Long calssTypeId, CategoryType categoryType, String egdate) {
+	private List<JournalArticle> getEntities(JSONObject resultJson, Long calssTypeId, CategoryType categoryType) {
 
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
-		for (JournalArticle journal : getJournalObjects(calssTypeId)) {
+		for (JournalArticle journal : getJournalObjects(calssTypeId)) { /* today date */
 			if (journal != null) {
 				switch (categoryType) {
 				case ANNOUNCEMENT:
@@ -172,18 +171,80 @@ public class NotiController extends AbstractController {
 		return newArticles;
 	}
 
+	@RequestMapping(value = "count", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getCount(@RequestHeader(value = "userid") String userid) {
+		// 36208,
+		JSONObject resultJson = new JSONObject();
+		RequestVote notidata = getReplyList(userid);
+		RequestVote blog = getBlogs(userid);
+		resultJson.put("announcementCount", getJournalObjects(Long.parseLong(36208 + "")).size());
+		resultJson.put("tenderCount", getJournalObjects(Long.parseLong(85086 + "")).size());
+		resultJson.put("jobCount", getJournalObjects(Long.parseLong(85090 + "")).size());
+		resultJson.put("commentCount", notidata.getTotalNotiCount());
+		resultJson.put("blogs", blog.getTotalNotiCount());
+		return resultJson;
+	}
+
+	@RequestMapping(value = "announcements", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getAnnouncements() {
+		JSONObject resultJson = new JSONObject();
+		resultJson.put("announcements", getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT));
+		return resultJson;
+	}
+
+	@RequestMapping(value = "tenders", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getTenders() {
+		JSONObject resultJson = new JSONObject();
+		resultJson.put("tenders", getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER));
+		return resultJson;
+	}
+
+	@RequestMapping(value = "jobs", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getJobs() {
+		JSONObject resultJson = new JSONObject();
+		resultJson.put("jobs", getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY));
+		return resultJson;
+	}
+
+	@RequestMapping(value = "comments", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getReplies(@RequestHeader(value = "userid") String userid) {
+		JSONObject resultJson = new JSONObject();
+		RequestVote notidata = getReplyList(userid);
+		resultJson.put("comments", notidata.getMbmessagelist());
+		return resultJson;
+	}
+
+	@RequestMapping(value = "blogs", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getComments(@RequestHeader(value = "userid") String userid) {
+		JSONObject resultJson = new JSONObject();
+		RequestVote blog = getBlogs(userid);
+		resultJson.put("blogs", blog.getJournalArticle());
+		return resultJson;
+	}
+
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject getAnnouncementsByLimit(@RequestHeader(value = "date") String date, @RequestHeader(value = "userid") String userid) {
 		// 36208,
 		JSONObject resultJson = new JSONObject();
-
-		List<JournalArticle> announcements = getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT, date); // announcements
-		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER, date); // tenders
-		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY, date); // jobs
 		RequestVote notidata = getReplyList(userid);
 		RequestVote blog = getBlogs(userid);
+		List<JournalArticle> announcements = getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT); // announcements
+		List<JournalArticle> tenders = getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER); // tenders
+		List<JournalArticle> jobs = getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY); // jobs
 		resultJson.put("announcements", announcements);
 		resultJson.put("announcementCount", announcements.size());
 		resultJson.put("tenders", tenders);
@@ -197,8 +258,9 @@ public class NotiController extends AbstractController {
 		return resultJson;
 	}
 
-	public RequestVote getReplyList(String userId) {// @RequestParam("userid")
+	public RequestVote getReplyList(String userId) {
 		RequestVote notidata = getNotificationList(userId);
+		logger.info("notidata!!!!!!!!!!!!!!!!!!!!!!!!" + notidata);
 		List<Long> messageid = notidata.getMessageid();
 		List<MBMessage> mbmessageList = new ArrayList<MBMessage>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -237,45 +299,40 @@ public class NotiController extends AbstractController {
 			msg.setLikecount(totallikecount);
 			msg.setDislikecount(json.getDislikecount());
 			msg.setChecklike(checklikemb);
-			logger.info(json);
 		}
 		notidata.setMbmessagelist(mbmessageList);
-		//notidata.setTotalNotiCount(mbmessageList.size() + "");
 		return notidata;
 	}
-	
+
 	public RequestVote getBlogs(String userId) {
 		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
 		List<Long> classPKList = new ArrayList<Long>();
 		RequestVote res = getBlogUserbyid(userId);
 		classPKList = res.getClasspklist();
-		if(classPKList.size() > 0) {
+		if (classPKList.size() > 0) {
 			int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
 			List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
-	
+
 			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 			journalArticleList.forEach(article -> {
 				stackList.push(article);
 			});
-			
+
 			for (int i = 0; i < journalArticleList.size(); i++) {
 				newArticles.add(stackList.pop());
 			}
 		}
-		//resultJson.put("lastPageNo", lastPageNo);
-		//resultJson.put("blog", newArticles);
-		//resultJson.put("totalCount", newArticles.size());
 		res.setJournalArticle(newArticles);
 		return res;
 	}
-	
+
 	private List<JournalArticle> parseJournalArticleList(List<JournalArticle> journalArticleList) {
 		List<JournalArticle> newJournalList = new ArrayList<JournalArticle>();
 		for (JournalArticle journalArticle : journalArticleList)
 			newJournalList.add(parseJournalArticle(journalArticle));
 		return newJournalList;
 	}
-	
+
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
 		/* title, department title, content detail */
 
@@ -303,7 +360,9 @@ public class NotiController extends AbstractController {
 		newJournal.setpKString(journalArticle.getpKString());
 		return newJournal;
 	}
+
 	private String getShareLink(String urlTitle) {
 		return "https://myanmar.gov.mm/blogs/-/asset_publisher/m9WiUYPkhQIm/content/" + urlTitle.replaceAll("%", "%25");
 	}
+
 }

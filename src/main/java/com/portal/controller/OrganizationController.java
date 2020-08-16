@@ -351,7 +351,7 @@ public class OrganizationController extends AbstractController {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
 			logger.info("name!!!!!!!!!!!!!!!!!!!!!!!!!!!" + name);
-			if (name != OrgMyanmarName.Myanmar_Computer_Federation || name != OrgMyanmarName.Topics) {
+			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance) {
 				Organization_ org = new Organization_();
 				org.setMyanmarName(name.getValue());
 				org.setEngName(OrgEngName.valueOf(name.toString()).getValue());
