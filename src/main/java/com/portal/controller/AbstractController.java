@@ -673,7 +673,7 @@ public class AbstractController {
 		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = SERVICEURL + "/user/getNoti";
+		String url = SERVICEURL + "/user/getNotiUpdate";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -810,6 +810,35 @@ public class AbstractController {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return new RequestVote();
+	}
+	
+	public long getCommentCount(String userid) {
+		long count = 0;
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("userid", userid);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/user/getCommentCount";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<Long> response = null;
+		try {
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, Long.class);
+			count = response.getBody();
+			return count;
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return count;
 	}
 
 }

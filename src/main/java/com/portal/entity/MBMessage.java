@@ -64,6 +64,10 @@ public class MBMessage extends AbstractEntity {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String editPermission;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private long notiid;
 
 	public long getUserid() {
 		return userid;
@@ -178,4 +182,13 @@ public class MBMessage extends AbstractEntity {
 	public void setChecklike(String checklike) {
 		this.checklike = checklike;
 	}
+
+	public long getNotiid() {
+		return notiid;
+	}
+
+	public void setNotiid(long notiid) {
+		this.notiid = notiid;
+	}
+	
 }

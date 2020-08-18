@@ -177,12 +177,12 @@ public class NotiController extends AbstractController {
 	public JSONObject getCount(@RequestHeader(value = "userid") String userid) {
 		// 36208,
 		JSONObject resultJson = new JSONObject();
-		RequestVote notidata = getReplyList(userid);
+		Long commentcount = getCommentCount(userid);
 		RequestVote blog = getBlogs(userid);
 		resultJson.put("announcementCount", getJournalObjects(Long.parseLong(36208 + "")).size());
 		resultJson.put("tenderCount", getJournalObjects(Long.parseLong(85086 + "")).size());
 		resultJson.put("jobCount", getJournalObjects(Long.parseLong(85090 + "")).size());
-		resultJson.put("commentCount", notidata.getTotalNotiCount());
+		resultJson.put("commentCount", commentcount);
 		resultJson.put("blogs", blog.getTotalNotiCount());
 		return resultJson;
 	}
@@ -217,7 +217,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "comments", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getReplies(@RequestHeader(value = "userid") String userid) {
+	public JSONObject getReplies(@RequestHeader(value = "userid") String userid,@RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
 		RequestVote notidata = getReplyList(userid);
 		resultJson.put("comments", notidata.getMbmessagelist());
@@ -259,6 +259,7 @@ public class NotiController extends AbstractController {
 	}
 
 	public RequestVote getReplyList(String userId) {
+		logger.info("ndata!!!!!!!!!!!!!!!!!!!!!!!!");
 		RequestVote notidata = getNotificationList(userId);
 		logger.info("notidata!!!!!!!!!!!!!!!!!!!!!!!!" + notidata);
 		List<Long> messageid = notidata.getMessageid();
@@ -364,5 +365,5 @@ public class NotiController extends AbstractController {
 	private String getShareLink(String urlTitle) {
 		return "https://myanmar.gov.mm/blogs/-/asset_publisher/m9WiUYPkhQIm/content/" + urlTitle.replaceAll("%", "%25");
 	}
-
+	
 }
