@@ -129,7 +129,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
 		List<Long> classpks = journalArticleService.getAssetEntryListByClassTypeIdAndOrderByPriority(calssTypeId);
 		for (Long classpk : classpks) {
-			JournalArticle journal = journalArticleService.byClassPKAndDate(todayDate, classpk); // 2020-06-1
+			JournalArticle journal = journalArticleService.byClassPKAndDate("2020-06-1", classpk);
 			if (journal != null)
 				entities.add(journal);
 		}
@@ -175,12 +175,12 @@ public class NotiController extends AbstractController {
 		// 36208,
 		JSONObject resultJson = new JSONObject();
 		Long commentcount = getCommentCount(userid);
-		RequestVote blog = getBlogs(userid);
+		Long blogcount = getBlogCount(userid);
 		resultJson.put("announcementCount", getJournalObjects(Long.parseLong(36208 + "")).size());
 		resultJson.put("tenderCount", getJournalObjects(Long.parseLong(85086 + "")).size());
 		resultJson.put("jobCount", getJournalObjects(Long.parseLong(85090 + "")).size());
 		resultJson.put("commentCount", commentcount);
-		resultJson.put("blogs", blog.getTotalNotiCount());
+		resultJson.put("blogCount", blogcount);
 		return resultJson;
 	}
 

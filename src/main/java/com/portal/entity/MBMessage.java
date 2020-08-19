@@ -17,6 +17,14 @@ public class MBMessage extends AbstractEntity {
 
 	@Transient
 	@JsonView(Views.Thin.class)
+	private String notiStatus;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
+	private String profilepicture;
+	
+	@Transient
+	@JsonView(Views.Thin.class)
 	private String checklike;
 
 	@Transient
