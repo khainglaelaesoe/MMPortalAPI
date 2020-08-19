@@ -86,4 +86,6 @@ public interface JournalArticleService {
 
 	public String getTitleByClassPK(Long classpk);
 
+	public JournalArticle byClassPKAndDate(String dateStr, Long classpk);
+
 }

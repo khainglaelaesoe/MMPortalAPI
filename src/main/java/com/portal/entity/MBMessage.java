@@ -57,9 +57,11 @@ public class MBMessage extends AbstractEntity {
 	@JsonView(Views.Thin.class)
 	private Long classpk;
 
+	@Transient
 	@JsonView(Views.Thin.class)
 	private String myaPostTitle;
 
+	@Transient
 	@JsonView(Views.Thin.class)
 	private String engPostTitle;
 

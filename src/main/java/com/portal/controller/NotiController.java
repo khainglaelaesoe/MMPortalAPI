@@ -87,8 +87,8 @@ public class NotiController extends AbstractController {
 			int end = remainString.indexOf("]]");
 			imageUrl = remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
 		}
+		
 		newJournal.setImageUrl(imageUrl);
-
 		newJournal.setContent(content);
 		return newJournal;
 	}
@@ -129,7 +129,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
 		List<Long> classpks = journalArticleService.getAssetEntryListByClassTypeIdAndOrderByPriority(calssTypeId);
 		for (Long classpk : classpks) {
-			JournalArticle journal = journalArticleService.getJournalArticleByDate(todayDate, classpk);
+			JournalArticle journal = journalArticleService.byClassPKAndDate(todayDate, classpk);
 			if (journal != null)
 				entities.add(journal);
 		}
@@ -274,7 +274,6 @@ public class NotiController extends AbstractController {
 	}
 
 	public RequestVote getReplyList(String userId) {
-		logger.info("ndata!!!!!!!!!!!!!!!!!!!!!!!!");
 		RequestVote notidata = getNotificationList(userId);
 		List<Long> messageid = notidata.getMessageid();
 		List<MBMessage> mbmessageList = new ArrayList<MBMessage>();

@@ -217,14 +217,6 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journals.get(0);
 	}
 
-	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm) {
-		String query = "from JournalArticle j where title LIKE " + "'%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
-		List<JournalArticle> journals = journalDao.getAll(query);
-		if (CollectionUtils.isEmpty(journals))
-			return null;
-		return journals.get(0);
-	}
-
 	public List<JournalArticle> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
 
 		String query = "from JournalArticle where title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%' and resourceprimkey in (SELECT classpk from AssetEntry where classtypeid=" + classTypeId + "and visible = 1 order by priority desc)";
@@ -388,6 +380,22 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		Long articleId = Long.parseLong(obj[0].toString());
 		String version = obj[1].toString();
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
+	}
+
+	public JournalArticle byClassPKAndDate(String dateStr, Long classpk) {
+		String query = "from JournalArticle j where j.displaydate like '%" + dateStr + "%' and j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
+			return null;
+		return journals.get(0);
+	}
+
+	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm) {
+		String query = "from JournalArticle j where title LIKE " + "'%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
+			return null;
+		return journals.get(0);
 	}
 
 	public List<JournalArticle> getJournalArticlebyRprimekey(List<Long> classPKList) {
