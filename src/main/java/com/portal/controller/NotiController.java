@@ -87,7 +87,7 @@ public class NotiController extends AbstractController {
 			int end = remainString.indexOf("]]");
 			imageUrl = remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
 		}
-		
+
 		newJournal.setImageUrl(imageUrl);
 		newJournal.setContent(content);
 		return newJournal;
@@ -129,7 +129,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
 		List<Long> classpks = journalArticleService.getAssetEntryListByClassTypeIdAndOrderByPriority(calssTypeId);
 		for (Long classpk : classpks) {
-			JournalArticle journal = journalArticleService.byClassPKAndDate(todayDate, classpk);
+			JournalArticle journal = journalArticleService.byClassPKAndDate(todayDate, classpk); // 2020-06-1
 			if (journal != null)
 				entities.add(journal);
 		}
@@ -232,7 +232,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "comments", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getReplies(@RequestHeader(value = "userid") String userid,@RequestHeader(value = "messageid") String messageid) {
+	public JSONObject getReplies(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
 		RequestVote notidata = getReplyList(userid);
 		resultJson.put("comments", notidata.getMbmessagelist());
@@ -242,10 +242,9 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "blogs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getComments(@RequestHeader(value = "userid") String userid) {
+	public JSONObject getComments(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk) {
 		JSONObject resultJson = new JSONObject();
-		RequestVote blog = getBlogs(userid);
-		resultJson.put("blogs", blog.getJournalArticle());
+		resultJson.put("blogs", parseJournalArticle(getArticle(classpk, userid)));
 		return resultJson;
 	}
 
@@ -346,7 +345,11 @@ public class NotiController extends AbstractController {
 	}
 
 	private JournalArticle parseJournalArticle(JournalArticle journalArticle) {
+
 		/* title, department title, content detail */
+
+		if (journalArticle == null)
+			return null;
 
 		JournalArticle newJournal = new JournalArticle();
 		DocumentParsing dp = new DocumentParsing();
@@ -376,5 +379,5 @@ public class NotiController extends AbstractController {
 	private String getShareLink(String urlTitle) {
 		return "https://myanmar.gov.mm/blogs/-/asset_publisher/m9WiUYPkhQIm/content/" + urlTitle.replaceAll("%", "%25");
 	}
-	
+
 }
