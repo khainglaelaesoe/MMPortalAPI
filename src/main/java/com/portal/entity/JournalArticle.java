@@ -30,7 +30,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Column(name = "uuid_")
 	private String uuid_;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "resourceprimkey")
 	private long resourceprimkey;
 

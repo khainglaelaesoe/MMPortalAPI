@@ -46,9 +46,6 @@ public class NotiController extends AbstractController {
 	@Autowired
 	private MessageService messageService;
 
-	@Autowired
-	private AssetEntryService assetEntryService;
-
 	private static Logger logger = Logger.getLogger(NotiController.class);
 
 	private String getClosingDate(String content) {
@@ -187,6 +184,24 @@ public class NotiController extends AbstractController {
 		return resultJson;
 	}
 
+	@RequestMapping(value = "commentList", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getReply(@RequestHeader(value = "userid") String userid) {
+		JSONObject resultJson = new JSONObject();
+		RequestVote blog = getBlogUserbyid(userid); // comment/getClassPK"
+		DocumentParsing dp = new DocumentParsing();
+
+		for (MBMessage comment : blog.getCommentList()) {
+			String title[] = dp.ParsingTitle(journalArticleService.getTitleByClassPK(comment.getClasspk()));
+			comment.setEngPostTitle(title[0]);
+			comment.setMyaPostTitle(title[1]);
+		}
+
+		resultJson.put("comments", blog.getCommentList());
+		return resultJson;
+	}
+
 	@RequestMapping(value = "announcements", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -261,7 +276,6 @@ public class NotiController extends AbstractController {
 	public RequestVote getReplyList(String userId) {
 		logger.info("ndata!!!!!!!!!!!!!!!!!!!!!!!!");
 		RequestVote notidata = getNotificationList(userId);
-		logger.info("notidata!!!!!!!!!!!!!!!!!!!!!!!!" + notidata);
 		List<Long> messageid = notidata.getMessageid();
 		List<MBMessage> mbmessageList = new ArrayList<MBMessage>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -311,9 +325,7 @@ public class NotiController extends AbstractController {
 		RequestVote res = getBlogUserbyid(userId);
 		classPKList = res.getClasspklist();
 		if (classPKList.size() > 0) {
-			int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
 			List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, "1", userId));
-
 			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 			journalArticleList.forEach(article -> {
 				stackList.push(article);

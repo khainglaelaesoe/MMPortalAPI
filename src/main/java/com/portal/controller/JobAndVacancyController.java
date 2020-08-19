@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -91,6 +92,28 @@ public class JobAndVacancyController extends AbstractController {
 		for (JournalArticle journalArticle : journalArticleList)
 			newJournalList.add(parseJournalArticle(journalArticle));
 		return newJournalList;
+	}
+
+	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		List<Object> objectList = journalArticleService.getJobAndVacancyByTopicAndSearchTerm(categoryId, searchTerm);
+		if (CollectionUtils.isEmpty(objectList))
+			return journalArticleList;
+
+		for (Object object : objectList) {
+			Object[] obj = (Object[]) object;
+			if (obj[0] == null)
+				continue;
+
+			Long articleId = Long.parseLong(obj[0].toString());
+			String version = obj[1].toString();
+
+			if (articleId == null || version == null)
+				continue;
+
+			journalArticleList.add(journalArticleService.getJournalArticleByArticleIdAndVersion(articleId, version));
+		}
+		return journalArticleList;
 	}
 
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
@@ -366,6 +389,9 @@ public class JobAndVacancyController extends AbstractController {
 
 	public List<JournalArticle> getArticles(List<Long> classpks, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		if (CollectionUtils.isEmpty(classpks))
+			return journalArticleList;
+		
 		String info = convertLongListToString(classpks, input);
 		String[] classpkList = info.split(",");
 		for (String classpk : classpkList) {

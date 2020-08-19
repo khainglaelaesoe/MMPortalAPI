@@ -131,11 +131,9 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	@Override
 	public JournalArticle getJournalArticleByArticleIdAndVersion(long articleId, String version) {
-
 		String queryStr = "from JournalArticle journalArticle where journalArticle.articleid=" + articleId + " and version=" + version;
 		return journalDao.getAll(queryStr).get(0);
 
-		
 	}
 
 	public JournalArticle getJournalArticleIdByArticleIdAndVersion(long articleId, String version) {
@@ -183,6 +181,14 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journalDao.getAll(query).get(0);
 	}
 
+	public String getTitleByClassPK(Long classpk) {
+		String query = "select title from JournalArticle where resourceprimkey=" + classpk + " order by version desc";
+		List<String> titleList = journalDao.findByQuery(query);
+		if (CollectionUtils.isEmpty(titleList))
+			return "";
+		return titleList.get(0);
+	}
+
 	public JournalArticle getContactUsbyArticleAndVersion() {
 		List<Long> objectList;
 		String queryStr = "select id_ from JournalArticle where articleid=44959 order by version desc";
@@ -219,6 +225,18 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journals.get(0);
 	}
 
+	public List<JournalArticle> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
+
+		String query = "from JournalArticle where title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%' and resourceprimkey in (SELECT classpk from AssetEntry where classtypeid=" + classTypeId + "and visible = 1 order by priority desc)";
+		// String query = "from JournalArticle j where title LIKE '%" + searchTerm + "%'
+		// or content LIKE '%" + searchTerm + "%' and j.resourceprimkey=" + classpk +
+		// "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
+			return new ArrayList<JournalArticle>();
+		return journals;
+	}
+
 	public JournalArticle getServiceByAssteEntryClassUuIdAndSearchTerm(String classuuid, String searchTerm) {
 		String queryStr = "select articleid, max(version) from JournalArticle journalArticle  where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ")  and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_='" + classuuid + "')";
 		List<Object> objectList = journalDao.byQueryString(queryStr);
@@ -245,7 +263,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	public JournalArticle getJournalArticleByClassPK(long classpk) {
 		String queryStr = "from JournalArticle journalArticle where journalArticle.resourceprimkey=" + classpk + " order by version desc";
-		return  journalDao.getAll(queryStr).get(0);
+		return journalDao.getAll(queryStr).get(0);
 		/*
 		 * List<Object> objectList = journalDao.byQueryString(queryStr); Object[] obj =
 		 * (Object[]) objectList.get(0); if (obj[0] == null || obj[1] == null) return
@@ -283,31 +301,36 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	}
 
 	public List<Object> getServiceByTopicAndSearchTerm(long categoryId, String searchTerm) {
-		String query = "select articleid, max(version)  from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85099 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
+		String query = "select articleid, max(version)  from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85099 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
 		        + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc)) group by articleid";
 		return journalDao.findByQueryString(query);
 	}
 
+	public List<Long> getServiceByTopicAndSearchTerm2(long categoryId, String searchTerm) {
+		String query = "Select ae.classpk from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85099 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc) group by articleid";
+		return journalDao.findLongByQueryString(query);
+	}
+
 	public List<Object> getDocumentByTopicAndSearchTerm(long categoryId, String searchTerm) {
-		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 84948 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
+		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid=84948 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
 		        + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc)) group by articleid";
 		return journalDao.findByQueryString(query);
 	}
 
 	public List<Object> getFormByTopicAndSearchTerm(long categoryId, String searchTerm) {
-		String query = "select articleid, max(version)   from JournalArticle journalArticle where  (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85212 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
+		String query = "select articleid, max(version)   from JournalArticle journalArticle where  (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85212 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
 		        + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc)) group by articleid";
 		return journalDao.findByQueryString(query);
 	}
 
 	public List<Object> getJobAndVacancyByTopicAndSearchTerm(long categoryId, String searchTerm) {
-		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85090 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
+		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85090 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
 		        + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc)) group by articleid";
 		return journalDao.findByQueryString(query);
 	}
 
 	public List<Object> getTenderByTopicAndSearchTerm(long categoryId, String searchTerm) {
-		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid= 85086 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
+		String query = "select articleid, max(version) from JournalArticle journalArticle where (title LIKE " + "'%" + searchTerm + "%'" + " or content LIKE " + "'%" + searchTerm + "%'" + ") and journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in(Select ae.classuuid from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85086 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId
 		        + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc)) group by articleid";
 		return journalDao.findByQueryString(query);
 	}
@@ -366,10 +389,10 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		String version = obj[1].toString();
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
-	
+
 	public List<JournalArticle> getJournalArticlebyRprimekey(List<Long> classPKList) {
 		List<JournalArticle> resjournalarticle = new ArrayList<JournalArticle>();
-		for(Long classPK : classPKList) {
+		for (Long classPK : classPKList) {
 			String queryStr = "from JournalArticle journalArticle where  journalArticle.status= 0 And journalArticle.resourceprimkey=" + classPK + " order by version desc";
 			List<JournalArticle> journalArticles = journalDao.getAll(queryStr);
 			if (CollectionUtils.isEmpty(journalArticles))
@@ -377,9 +400,10 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 			else {
 				resjournalarticle.add(journalArticles.get(0));
 			}
-					
+
 		}
-		
+
 		return resjournalarticle;
 	}
+
 }

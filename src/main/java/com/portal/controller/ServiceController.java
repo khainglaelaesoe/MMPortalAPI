@@ -114,7 +114,7 @@ public class ServiceController extends AbstractController {
 		newJournal.setId_(journalArticle.getId_());
 		newJournal.setRating(journalArticle.getRating());
 		newJournal.setRatingAction(journalArticle.getRatingAction());
-		newJournal.setShareLink(journalArticle.getShareLink());
+		newJournal.setShareLink(journalArticle.getShareLink() == null ? "" : journalArticle.getShareLink());
 		newJournal.setClassNameString(journalArticle.getClassNameString());
 		newJournal.setpKString(journalArticle.getpKString());
 		newJournal.setUserRating(journalArticle.getUserRating());
@@ -212,7 +212,7 @@ public class ServiceController extends AbstractController {
 
 				journalArticle.setRating(CollectionUtils.isEmpty(ratingsEntriesFromWeb) && CollectionUtils.isEmpty(mobileRatingsEntries) ? 0 : totalScore / (ratingsEntriesFromWeb.size() + mobileRatingsEntries.size()));
 				journalArticle.setUserRating(userRating);
-				journalArticle.setShareLink(getShareLink(journalArticle.getUrltitle(), entryId.toString()));
+				journalArticle.setShareLink(getShareLink(journalArticle.getUrltitle(), entryId.toString()) == null ? "" : getShareLink(journalArticle.getUrltitle(), entryId.toString()));
 				journalArticle.setClassNameString(classNameId.toString());
 				journalArticle.setpKString(classpk);
 				journalArticle.setRatingAction(ratingAction);
@@ -249,13 +249,17 @@ public class ServiceController extends AbstractController {
 		return resultList;
 	}
 
+	public List<Long> setValue(long categoryId, String searchTerm) {
+		return journalArticleService.getServiceByTopicAndSearchTerm2(categoryId, searchTerm);
+
+	}
+
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject getServicesBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic, @RequestParam("userid") String userId) {
 		JSONObject json = new JSONObject();
 		List<Long> classpks = new ArrayList<Long>();
-		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
 
 		if (topic.equals("all")) {
 			classpks = assetEntryService.getClassPkList(85099);
@@ -276,106 +280,106 @@ public class ServiceController extends AbstractController {
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:
-			journalArticles.addAll(setValue(80486, searchTerm));
+			classpks.addAll(setValue(80486, searchTerm));
 			break;
 		case Education_Research:
-			journalArticles.addAll(setValue(80484, searchTerm));
+			classpks.addAll(setValue(80484, searchTerm));
 			break;
 		case Social:
-			journalArticles.addAll(setValue(80485, searchTerm));
+			classpks.addAll(setValue(80485, searchTerm));
 			break;
 		case Economy:
-			journalArticles.addAll(setValue(96793, searchTerm));
+			classpks.addAll(setValue(96793, searchTerm));
 			break;
 		case Agriculture:
-			journalArticles.addAll(setValue(80491, searchTerm));
+			classpks.addAll(setValue(80491, searchTerm));
 			break;
 		case Labour_Employment:
-			journalArticles.addAll(setValue(80494, searchTerm));
+			classpks.addAll(setValue(80494, searchTerm));
 			break;
 		case Livestock:
-			journalArticles.addAll(setValue(87834, searchTerm));
+			classpks.addAll(setValue(87834, searchTerm));
 			break;
 		case Law_Justice:
-			journalArticles.addAll(setValue(96797, searchTerm));
+			classpks.addAll(setValue(96797, searchTerm));
 			break;
 		case Security:
-			journalArticles.addAll(setValue(96799, searchTerm));
+			classpks.addAll(setValue(96799, searchTerm));
 			break;
 		case Hotel_Tourism:
-			journalArticles.addAll(setValue(80488, searchTerm));
+			classpks.addAll(setValue(80488, searchTerm));
 			break;
 		case Citizen:
-			journalArticles.addAll(setValue(96801, searchTerm));
+			classpks.addAll(setValue(96801, searchTerm));
 			break;
 		case Natural_Resources_Environment:
-			journalArticles.addAll(setValue(80501, searchTerm));
+			classpks.addAll(setValue(80501, searchTerm));
 			break;
 		case Industries:
-			journalArticles.addAll(setValue(80495, searchTerm));
+			classpks.addAll(setValue(80495, searchTerm));
 			break;
 		case Construction:
-			journalArticles.addAll(setValue(96804, searchTerm));
+			classpks.addAll(setValue(96804, searchTerm));
 
 			break;
 		case Science:
-			journalArticles.addAll(setValue(80499, searchTerm));
+			classpks.addAll(setValue(80499, searchTerm));
 
 			break;
 		case Technology:
-			journalArticles.addAll(setValue(80496, searchTerm));
+			classpks.addAll(setValue(80496, searchTerm));
 
 			break;
 		case Transportation:
-			journalArticles.addAll(setValue(97769, searchTerm));
+			classpks.addAll(setValue(97769, searchTerm));
 
 			break;
 		case Communication:
-			journalArticles.addAll(setValue(96809, searchTerm));
+			classpks.addAll(setValue(96809, searchTerm));
 
 			break;
 		case Information_Media:
-			journalArticles.addAll(setValue(96815, searchTerm));
+			classpks.addAll(setValue(96815, searchTerm));
 
 			break;
 		case Religion_Art_Culture:
-			journalArticles.addAll(setValue(80493, searchTerm));
+			classpks.addAll(setValue(80493, searchTerm));
 
 			break;
 		case Finance_Tax:
-			journalArticles.addAll(setValue(80489, searchTerm));
+			classpks.addAll(setValue(80489, searchTerm));
 
 			break;
 		case SMEs:
-			journalArticles.addAll(setValue(80503, searchTerm));
+			classpks.addAll(setValue(80503, searchTerm));
 
 			break;
 		case Natural_Disaster:
-			journalArticles.addAll(setValue(96818, searchTerm));
+			classpks.addAll(setValue(96818, searchTerm));
 
 			break;
 		case Power_Energy:
-			journalArticles.addAll(setValue(80490, searchTerm));
+			classpks.addAll(setValue(80490, searchTerm));
 
 			break;
 		case Sports:
-			journalArticles.addAll(setValue(96820, searchTerm));
+			classpks.addAll(setValue(96820, searchTerm));
 
 			break;
 		case Statistics:
-			journalArticles.addAll(setValue(96822, searchTerm));
+			classpks.addAll(setValue(96822, searchTerm));
 
 			break;
 		case Insurances:
-			journalArticles.addAll(setValue(96824, searchTerm));
+			classpks.addAll(setValue(96824, searchTerm));
 
 			break;
 		case City_Development:
-			journalArticles.addAll(setValue(96826, searchTerm));
+			classpks.addAll(setValue(96826, searchTerm));
 
 			break;
 		case Visas_Passports:
-			journalArticles.addAll(setValue(8243647, searchTerm));
+			classpks.addAll(setValue(8243647, searchTerm));
 			break;
 		default:
 			new ArrayList<String>();
@@ -383,7 +387,7 @@ public class ServiceController extends AbstractController {
 
 		int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);
-		json.put("services", byPaganation(parseJournalArticleList(journalArticles), input));
+		json.put("services", byPaganation(parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm)), input));
 		json.put("totalCount", 0);
 		return json;
 	}

@@ -53,17 +53,6 @@ public class JournalArticleController extends AbstractController {
 		return removeInvalidString(titleInfo);
 	}
 
-	private String getImageUrl(String articleContent, long imageId) {
-		int startIndex = articleContent.indexOf("[CDATA[") + 7;
-		int endIndex = articleContent.indexOf("]]");
-		imageId = imageId != 2835775 ? imageId != 2833620 ? (imageId - 1) : 8312373 : 8312472;
-		if (imageId < 0)
-			return "";
-		String url = "https://myanmar.gov.mm/image/journal/article?img_id=" + imageId;
-		String link = startIndex > 0 && endIndex > 0 ? articleContent.substring(startIndex, endIndex) : "";
-		return link.contains("https:") ? link : url;
-	}
-
 	private String getShareLinkForNews(String urlTitle) {
 		return "https://myanmar.gov.mm/news-media/news/latest-news/-/asset_publisher/idasset354/content/" + urlTitle.replaceAll("%", "%25");
 	}
@@ -132,27 +121,6 @@ public class JournalArticleController extends AbstractController {
 		}
 	}
 
-	private String getImageString(String articleContent) {
-		int startIndex = articleContent.indexOf("/documents/");
-		String first = articleContent.substring(startIndex, articleContent.length() - 1);
-		int end = first.indexOf(".jpg");
-		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
-		return "https://myanmar.gov.mm" + first.substring(0, endIndex);
-	}
-
-	private String getEngDownLoadLink(String articleContent) {
-		int startIndex = articleContent.lastIndexOf("[CDATA[") - 200;
-		String first = articleContent.substring(startIndex, articleContent.length() - 1);
-		int end = first.lastIndexOf("</p>");
-		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
-		String raw = first.substring(0, endIndex);
-
-		int rawStart = raw.indexOf("/documents/");
-		if (rawStart < 0)
-			return "";
-		return "https://myanmar.gov.mm" + raw.substring(rawStart, raw.length());
-	}
-
 	private JournalArticle getJournalArticleForNewspaper(JournalArticle journalArticle) {
 		/* Image url, title, publish date, publisher, pages, language, download link */
 		JournalArticle newArticle = new JournalArticle();
@@ -169,7 +137,8 @@ public class JournalArticleController extends AbstractController {
 		List<String> stringList = removeInvalidString(contentInfo);
 		newArticle.setEngPblisher(stringList.get(0));
 		newArticle.setMyanmarPublisher(stringList.get(1));
-		newArticle.setPublicationDate(stringList.get(2));
+		String date = stringList.get(2);
+		newArticle.setPublicationDate(date.isEmpty() ? "" : date.split("-")[0]);
 		String[] engmyanDownloadLink = new DocumentParsing().Parsingdocument_library(journalArticle.getContent());
 		newArticle.setEngDownloadLink(engmyanDownloadLink[0]);
 		newArticle.setMyanmarDownloadLink(engmyanDownloadLink[1]);
@@ -183,7 +152,7 @@ public class JournalArticleController extends AbstractController {
 		/* image */
 		newArticle.setEngImageUrl(dp.ParsingEngImage2(journalArticle.getContent()).get(0));
 		newArticle.setMyanamrImageUrl(dp.ParsingMyanImage2(journalArticle.getContent()).get(0));
-		
+
 		/* Language */
 		newArticle.setEngLanguage(getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"en_US\">"));
 		newArticle.setMyaLanguage(getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"my_MM\">"));
@@ -202,14 +171,6 @@ public class JournalArticleController extends AbstractController {
 	private String getDownloadLink(String content) {
 		int start = content.lastIndexOf("[CDATA[") + 7;
 		int end = content.lastIndexOf("]]");
-		if (start < 0 || end < 0)
-			return "";
-		return content.substring(start, end).isEmpty() ? "" : "https://myanmar.gov.mm" + content.substring(start, end);
-	}
-
-	private String getImageUrl(String content) {
-		int start = content.indexOf("/image/");
-		int end = content.indexOf("&amp;");
 		if (start < 0 || end < 0)
 			return "";
 		return content.substring(start, end).isEmpty() ? "" : "https://myanmar.gov.mm" + content.substring(start, end);

@@ -104,18 +104,6 @@ public class OrganizationController extends AbstractController {
 		return organizationList;
 	}
 
-	private List<Organization_> getOrganizationListBySearchTerm(String articleInfo, String searchTerm) {
-		List<Organization_> organizationList = new ArrayList<Organization_>();
-		for (String classpk : articleInfo.split(",")) {
-			if (!classpk.isEmpty()) {
-				JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(Long.parseLong(classpk.toString()), searchTerm);
-				if (journalArticle != null)
-					organizationList.add(parseOrganization(journalArticle));
-			}
-		}
-		return organizationList;
-	}
-
 	@RequestMapping(value = "getContactUs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -288,6 +276,18 @@ public class OrganizationController extends AbstractController {
 		return organizationList;
 	}
 
+	private List<Organization_> getOrganizationListBySearchTerm(String articleInfo, String searchTerm) {
+		List<Organization_> organizationList = new ArrayList<Organization_>();
+		for (String classpk : articleInfo.split(",")) {
+			if (!classpk.isEmpty()) {
+				JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(Long.parseLong(classpk.toString()), searchTerm);
+				if (journalArticle != null)
+					organizationList.add(parseOrganization(journalArticle));
+			}
+		}
+		return organizationList;
+	}
+
 	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -321,7 +321,92 @@ public class OrganizationController extends AbstractController {
 		if (input.equals("all"))
 			classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
 		else {
-			String value = OrgEngName.valueOf(input).getValue();
+			String value = "";
+			OrgEngName orgName = OrgEngName.valueOf(input);
+			switch (orgName) {
+			case Ministry_of_Social_Welfare_Relief_Resettlement:
+				value = "social welfare";
+				break;
+			case Ministry_of_Defence:
+				value = "defence";
+				break;
+			case Ministry_of_President_Office:
+				value = "president office";
+				break;
+			case Ministry_of_Information:
+				value = "information";
+				break;
+			case Ministry_of_Religious_Affairs_and_Culture:
+				value = "religious";
+				break;
+			case Ministry_of_Transport_and_Communications:
+				value = "transport";
+				break;
+			case Ministry_of_Hotel_and_Tourism:
+				value = "Hotel";
+				break;
+			case Ministry_of_Electricity_and_Energy:
+				value = "electricity";
+				break;
+			case Ministry_of_Education:
+				value = "education";
+				break;
+			case Ministry_of_Health_and_Sports:
+				value = "health";
+				break;
+			case Ministry_of_International_Cooperation:
+				value = "international";
+				break;
+			case Union_Attonery_Generals_Office:
+				value = "attorney";
+				break;
+			case Kachin_State_Government:
+				value = "kachin";
+				break;
+			case Kayah_State_Government:
+				value = "kayah";
+				break;
+			case Kayin_State_Government:
+				value = "kayin";
+				break;
+			case Chin_State_Government:
+				value = "chin";
+				break;
+			case Sagaing_Region_Government:
+				value = "sagaing";
+				break;
+			case Tanintaryi_Region_Government:
+				value = "Tanintaryi";
+				break;
+			case Bago_Region_Government:
+				value = "bago";
+				break;
+			case Magway_Region_Government:
+				value = "magway";
+				break;
+			case Mandalay_Region_Government:
+				value = "mandalay region";
+				break;
+			case Mon_State_Government:
+				value = "mon state";
+				break;
+			case Rakhine_State_Government:
+				value = "rakhine state";
+				break;
+			case Yangon_Region_Government:
+				value = "yangon region";
+				break;
+			case Shan_State_Government:
+				value = "shan state";
+				break;
+			case Ayeyarwaddy_Region_Government:
+				value = "ayeyarwaddy region";
+				break;
+			default:
+				value = orgName.getValue();
+				break;
+			}
+
 			classpks = assetEntryService.getAssetEntryListByName(91234, value);
 		}
 

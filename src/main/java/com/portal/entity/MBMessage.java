@@ -14,11 +14,11 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Entity
 @Table(name = "MBMessage")
 public class MBMessage extends AbstractEntity {
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String checklike;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private long dislikecount;
@@ -56,6 +56,12 @@ public class MBMessage extends AbstractEntity {
 
 	@JsonView(Views.Thin.class)
 	private Long classpk;
+
+	@JsonView(Views.Thin.class)
+	private String myaPostTitle;
+
+	@JsonView(Views.Thin.class)
+	private String engPostTitle;
 
 	@Transient
 	@JsonView(Views.Thin.class)
@@ -99,6 +105,22 @@ public class MBMessage extends AbstractEntity {
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+
+	public String getMyaPostTitle() {
+		return myaPostTitle;
+	}
+
+	public void setMyaPostTitle(String myaPostTitle) {
+		this.myaPostTitle = myaPostTitle;
+	}
+
+	public String getEngPostTitle() {
+		return engPostTitle;
+	}
+
+	public void setEngPostTitle(String engPostTitle) {
+		this.engPostTitle = engPostTitle;
 	}
 
 	public String getStatusbyusername() {

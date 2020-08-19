@@ -704,28 +704,6 @@ public class AbstractController {
 		return info;
 	}
 
-	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
-		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		List<Object> objectList = journalArticleService.getFormByTopicAndSearchTerm(categoryId, searchTerm);
-		if (CollectionUtils.isEmpty(objectList))
-			return journalArticleList;
-
-		for (Object object : objectList) {
-			Object[] obj = (Object[]) object;
-			if (obj[0] == null)
-				continue;
-
-			Long articleId = Long.parseLong(obj[0].toString());
-			String version = obj[1].toString();
-
-			if (articleId == null || version == null)
-				continue;
-
-			journalArticleList.add(journalArticleService.getJournalArticleByArticleIdAndVersion(articleId, version));
-		}
-		return journalArticleList;
-	}
-
 	public List<JournalArticle> getArticles(List<Long> classPKList, String input, String userId) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -781,7 +759,7 @@ public class AbstractController {
 		}
 		return journalArticleList;
 	}
-	
+
 	public RequestVote getBlogUserbyid(String userid) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -839,6 +817,27 @@ public class AbstractController {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return count;
+	}
+
+	public String getImageString(String articleContent) {
+		int startIndex = articleContent.indexOf("/documents/");
+		String first = articleContent.substring(startIndex, articleContent.length() - 1);
+		int end = first.indexOf(".jpg");
+		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
+		return "https://myanmar.gov.mm" + first.substring(0, endIndex);
+	}
+
+	public String getEngDownLoadLink(String articleContent) {
+		int startIndex = articleContent.lastIndexOf("[CDATA[") - 200;
+		String first = articleContent.substring(startIndex, articleContent.length() - 1);
+		int end = first.lastIndexOf("</p>");
+		int endIndex = end < 0 ? first.indexOf("]]") : end + 4;
+		String raw = first.substring(0, endIndex);
+
+		int rawStart = raw.indexOf("/documents/");
+		if (rawStart < 0)
+			return "";
+		return "https://myanmar.gov.mm" + raw.substring(rawStart, raw.length());
 	}
 
 }

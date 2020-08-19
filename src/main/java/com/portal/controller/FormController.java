@@ -163,6 +163,28 @@ public class FormController extends AbstractController {
 			newJournalList.add(parseJournalArticle(journalArticle));
 		return newJournalList;
 	}
+	
+	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		List<Object> objectList = journalArticleService.getFormByTopicAndSearchTerm(categoryId, searchTerm);
+		if (CollectionUtils.isEmpty(objectList))
+			return journalArticleList;
+
+		for (Object object : objectList) {
+			Object[] obj = (Object[]) object;
+			if (obj[0] == null)
+				continue;
+
+			Long articleId = Long.parseLong(obj[0].toString());
+			String version = obj[1].toString();
+
+			if (articleId == null || version == null)
+				continue;
+
+			journalArticleList.add(journalArticleService.getJournalArticleByArticleIdAndVersion(articleId, version));
+		}
+		return journalArticleList;
+	}
 
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody

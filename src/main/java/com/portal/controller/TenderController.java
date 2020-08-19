@@ -86,7 +86,11 @@ public class TenderController extends AbstractController {
 	}
 
 	public List<JournalArticle> getJournalArticles(List<Long> classpks, String input) {
+
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		if (CollectionUtils.isEmpty(classpks))
+			return journalArticleList;
+
 		String info = convertLongListToString(classpks, input);
 		String[] classpkList = info.split(",");
 		for (String classpk : classpkList) {
@@ -105,16 +109,26 @@ public class TenderController extends AbstractController {
 		return newJournalList;
 	}
 
-	private void setValue(long categoryId, String searchTerm, List<String> entryList, long totalCount) {
+	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = journalArticleService.getTenderByTopicAndSearchTerm(categoryId, searchTerm);
+		if (CollectionUtils.isEmpty(objectList))
+			return journalArticleList;
+
 		for (Object object : objectList) {
 			Object[] obj = (Object[]) object;
-			if (obj[0] == null || obj[1] == null)
-				return;
+			if (obj[0] == null)
+				continue;
 
 			Long articleId = Long.parseLong(obj[0].toString());
-			entryList.add(journalArticleService.getClassUuidByArticleId(articleId));
+			String version = obj[1].toString();
+
+			if (articleId == null || version == null)
+				continue;
+
+			journalArticleList.add(journalArticleService.getJournalArticleByArticleIdAndVersion(articleId, version));
 		}
+		return journalArticleList;
 	}
 
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
@@ -371,6 +385,7 @@ public class TenderController extends AbstractController {
 
 		lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
 		List<JournalArticle> tenders = getJournalArticles(classpks, input);
+
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		tenders.forEach(article -> {
 			stackList.push(article);
