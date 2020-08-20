@@ -372,11 +372,9 @@ public class ServiceController extends AbstractController {
 			break;
 		case Insurances:
 			classpks.addAll(setValue(96824, searchTerm));
-
 			break;
 		case City_Development:
 			classpks.addAll(setValue(96826, searchTerm));
-
 			break;
 		case Visas_Passports:
 			classpks.addAll(setValue(8243647, searchTerm));
@@ -384,10 +382,12 @@ public class ServiceController extends AbstractController {
 		default:
 			new ArrayList<String>();
 		}
-
-		int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
+		
+		
+		List<JournalArticle> journals = parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm));
+		int lastPageNo = journals.size() % 10 == 0 ? journals.size() / 10 : journals.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);
-		json.put("services", byPaganation(parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm)), input));
+		json.put("services", byPaganation(journals,input));
 		json.put("totalCount", 0);
 		return json;
 	}

@@ -348,9 +348,6 @@ public class OrganizationController extends AbstractController {
 			case Ministry_of_Electricity_and_Energy:
 				value = "electricity";
 				break;
-//			case Ministry_of_Education:
-//				value = "Meducation";
-//				break;
 			case Ministry_of_Health_and_Sports:
 				value = "health";
 				break;
