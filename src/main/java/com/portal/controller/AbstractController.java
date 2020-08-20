@@ -814,7 +814,7 @@ public class AbstractController {
 		try {
 			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, Long.class);
 			count = response.getBody();
-			logger.info("comment count __________" + count );
+			logger.info("comment count __________" + count);
 			return count;
 
 		} catch (Exception e) {
@@ -843,7 +843,7 @@ public class AbstractController {
 			return "";
 		return "https://myanmar.gov.mm" + raw.substring(rawStart, raw.length());
 	}
-	
+
 	public long getBlogCount(String userid) {
 		long count = 0;
 		HttpHeaders headers = new HttpHeaders();
@@ -865,13 +865,39 @@ public class AbstractController {
 		try {
 			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, Long.class);
 			count = response.getBody();
-			logger.info("Blog count __________" + count );
+			logger.info("Blog count __________" + count);
 			return count;
 
 		} catch (Exception e) {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return count;
+	}
+
+	public String setVisibleStatus(String messageid) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("messageid", messageid);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/comment/changeStatus";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<String> response = null;
+		try {
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, String.class);
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
+		return response.getBody();
 	}
 
 }

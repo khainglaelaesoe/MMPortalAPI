@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -18,11 +20,11 @@ public class MBMessage extends AbstractEntity {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String notiStatus;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String profilepicture;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String checklike;
@@ -46,6 +48,11 @@ public class MBMessage extends AbstractEntity {
 
 	@Column(name = "parentmessageid")
 	private long parentmessageid;
+
+	@Transient
+	@JsonView(Views.Thin.class)
+	@Enumerated(EnumType.STRING)	
+	private VisibleStatus visibleStatus;
 
 	@JsonView(Views.Thin.class)
 	private String statusbyusername;
@@ -80,7 +87,7 @@ public class MBMessage extends AbstractEntity {
 	@Transient
 	@JsonView(Views.Thin.class)
 	private String editPermission;
-	
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private long notiid;
@@ -107,6 +114,14 @@ public class MBMessage extends AbstractEntity {
 
 	public void setSubject(String subject) {
 		this.subject = subject;
+	}
+
+	public VisibleStatus getVisibleStatus() {
+		return visibleStatus;
+	}
+
+	public void setVisibleStatus(VisibleStatus visibleStatus) {
+		this.visibleStatus = visibleStatus;
 	}
 
 	public String getBody() {
@@ -222,5 +237,5 @@ public class MBMessage extends AbstractEntity {
 	public void setNotiid(long notiid) {
 		this.notiid = notiid;
 	}
-	
+
 }

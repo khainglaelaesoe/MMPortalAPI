@@ -27,8 +27,8 @@ import com.portal.entity.MobileResult;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.RequestVote;
 import com.portal.entity.Views;
+import com.portal.entity.VisibleStatus;
 import com.portal.parsing.DocumentParsing;
-import com.portal.service.AssetEntryService;
 import com.portal.service.JournalArticleService;
 import com.portal.service.JournalFolderService;
 import com.portal.service.MessageService;
@@ -129,7 +129,7 @@ public class NotiController extends AbstractController {
 		List<JournalArticle> entities = new ArrayList<JournalArticle>();
 		List<Long> classpks = journalArticleService.getAssetEntryListByClassTypeIdAndOrderByPriority(calssTypeId);
 		for (Long classpk : classpks) {
-			JournalArticle journal = journalArticleService.byClassPKAndDate("2020-06-1", classpk);
+			JournalArticle journal = journalArticleService.byClassPKAndDate(todayDate, classpk);
 			if (journal != null)
 				entities.add(journal);
 		}
@@ -184,24 +184,6 @@ public class NotiController extends AbstractController {
 		return resultJson;
 	}
 
-	@RequestMapping(value = "commentList", method = RequestMethod.GET)
-	@ResponseBody
-	@JsonView(Views.Summary.class)
-	public JSONObject getReply(@RequestHeader(value = "userid") String userid) {
-		JSONObject resultJson = new JSONObject();
-		RequestVote blog = getBlogUserbyid(userid); // comment/getClassPK"
-		DocumentParsing dp = new DocumentParsing();
-
-		for (MBMessage comment : blog.getCommentList()) {
-			String title[] = dp.ParsingTitle(journalArticleService.getTitleByClassPK(comment.getClasspk()));
-			comment.setEngPostTitle(title[0]);
-			comment.setMyaPostTitle(title[1]);
-		}
-
-		resultJson.put("comments", blog.getCommentList());
-		return resultJson;
-	}
-
 	@RequestMapping(value = "announcements", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -242,9 +224,10 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "blogs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getComments(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk) {
+	public JSONObject getComments(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
 		resultJson.put("blogs", parseJournalArticle(getArticle(classpk, userid)));
+		resultJson.put("message", setVisibleStatus(messageid));
 		return resultJson;
 	}
 

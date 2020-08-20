@@ -16,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -175,5 +176,12 @@ public class BlogController extends AbstractController {
 	public String getlikecount(@RequestParam("messageid") String messageid) {
 		String likecount = messageService.likeCount(Long.parseLong(messageid)) + "";
 		return likecount;
+	}
+
+	@RequestMapping(value = "title", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	public String getTitle(@RequestHeader("classpk") String classpk) {
+		return journalArticleService.getTitleByClassPK(Long.parseLong(classpk));
 	}
 }
