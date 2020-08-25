@@ -357,7 +357,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	public List<JournalArticle> getImagebyClassuuid() {
 		List<JournalArticle> articleList = new ArrayList<JournalArticle>();
-		String queryStr = "Select journalArticle from JournalArticle journalArticle  where journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (Select classuuid from AssetEntry  where visible=1 and classtypeid= 46307))";
+		String queryStr = "Select journalArticle from JournalArticle journalArticle  where journalArticle.articleid in (Select r.articleid from JournalArticleResource r where r.uuid_ in (Select classuuid from AssetEntry  where visible=1 and classtypeid= 46307)) order by displayDate desc";
 		articleList = journalDao.byQuery(queryStr);
 		return articleList;
 	}
