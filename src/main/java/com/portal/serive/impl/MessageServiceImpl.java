@@ -34,7 +34,7 @@ public class MessageServiceImpl implements MessageService {
 		String query = "from MBMessage message where classpk=" + classPK;
 		msgList = messageDao.byQuery(query);
 		for (MBMessage msg : msgList) {
-			String querycount = "Select count(*) from RatingsEntry where classPk=" + msg.getMessageid();
+			String querycount = "Select count(*) from RatingsEntry where classPk=" + msg.getMessageid() + " order by createdate";
 			int count = messageDao.findCountByQueryString(querycount);
 			msg.setLikecount(count);
 		}
@@ -45,23 +45,24 @@ public class MessageServiceImpl implements MessageService {
 		String query = "from MBMessage message where parentmessageid=" + messageId;
 		return messageDao.byQuery(query);
 	}
-	
+
 	public int likeCount(Long messageid) {
 		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid;
 		return messageDao.findCountByQueryString(querycount);
 	}
-	
-	public boolean likebyuserid(Long messageid,Long webuserid,long score) { 
-		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid + " And userid=" + webuserid +" And score= " + score ;
-		if(messageDao.findCountByQueryString(querycount) > 0) {
+
+	public boolean likebyuserid(Long messageid, Long webuserid, long score) {
+		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid + " And userid=" + webuserid + " And score= " + score;
+		if (messageDao.findCountByQueryString(querycount) > 0) {
 			return true;
-		}else return false;
-		
+		} else
+			return false;
+
 	}
-	
+
 	public List<MBMessage> byClassPKbymessageid(List<Long> messageidList) {
 		List<MBMessage> msg = new ArrayList<MBMessage>();
-		for(Long messageid : messageidList) { 
+		for (Long messageid : messageidList) {
 			MBMessage mbmessage = new MBMessage();
 			String query = "from MBMessage message where messageId=" + messageid;
 			List<MBMessage> msgList = messageDao.byQuery(query);

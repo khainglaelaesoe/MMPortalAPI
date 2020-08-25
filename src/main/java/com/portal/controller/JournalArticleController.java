@@ -417,7 +417,7 @@ public class JournalArticleController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getAppLink() {
 		JSONObject resultJson = new JSONObject();
-		resultJson.put("applink", "https://drive.google.com/file/d/1jI3Li8RHzl87DyeXjdEhNKLUOnXAtJJH/view?usp=sharing");
+		resultJson.put("applink", "https://play.google.com/store/apps/details?id=com.securelink.myangov");
 		return resultJson;
 	}
 }

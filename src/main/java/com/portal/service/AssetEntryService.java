@@ -64,12 +64,14 @@ public interface AssetEntryService {
 
 	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId);
 
-	public List<Long> getAssetEntryListByName(long classTypeId, String searchTerm);
-
 	public List<String> getClassUuidByDate(Long classTypeId, String dateStr);
 
 	public long getClassPK();
-	
+
 	public List<Long> getClassPKListbyCatagoryId();
+
+	public List<Long> getAssetEntryListForChin(long classTypeId, String searchTerm);
+
+	public List<Long> getAssetEntryListBySearchTerm(long classTypeId, String searchTerm);
 
 }

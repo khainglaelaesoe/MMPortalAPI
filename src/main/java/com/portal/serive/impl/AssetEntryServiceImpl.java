@@ -100,7 +100,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		String query = "SELECT classuuid from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by createdate";
 		return assetEntryDao.findByQuery(query);
 	}
-	
+
 	public List<Long> getAssetEntryClassPkByClassTypeId(long classTypeId) {
 		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1";
 		return assetEntryDao.findLongByQueryString(query);
@@ -116,8 +116,13 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		return assetEntryDao.findLongByQueryString(query);
 	}
 
-	public List<Long> getAssetEntryListByName(long classTypeId, String searchTerm) {
-		String query = "SELECT classpk from AssetEntry where title LIKE " + "'%" + searchTerm + "%'" + " and classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
+	public List<Long> getAssetEntryListBySearchTerm(long classTypeId, String searchTerm) {
+		String query = "Select assetEntry.classpk from AssetEntry assetEntry where assetEntry.classtypeid=" + classTypeId + " and assetEntry.visible=1 and assetEntry.entryid in (Select ae.entryid from AssetEntries_AssetCategories ae where ae.categoryid in (Select assetCategory.categoryid from AssetCategory assetCategory where assetCategory.vocabularyid=80291 and assetCategory.title LIKE '%" + searchTerm + "%')) order by assetEntry.priority desc";
+		return assetEntryDao.findLongByQueryString(query);
+	}
+
+	public List<Long> getAssetEntryListForChin(long classTypeId, String searchTerm) {
+		String query = "Select classpk from AssetEntry assetEntry where classtypeid=" + classTypeId + " and title LIKE '%" + searchTerm + "%' order by priority desc";
 		return assetEntryDao.findLongByQueryString(query);
 	}
 
@@ -235,7 +240,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		String query = "select classuuid from AssetEntry ae where  createdate like '%" + dateStr + "%'" + " and classtypeid=" + classTypeId;
 		return assetEntryDao.findByQuery(query);
 	}
-	
+
 	public List<Long> getClassPKListbyCatagoryId() {
 		String query = "SELECT classpk from AssetEntry where visible=1 and entryid in (Select entryid from AssetEntries_AssetCategories where categoryId=126202) order by entryid desc";
 		return assetEntryDao.findLongByQueryString(query);

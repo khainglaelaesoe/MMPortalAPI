@@ -13,11 +13,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -25,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.DateUtil;
@@ -123,10 +116,10 @@ public class ServiceController extends AbstractController {
 
 	public List<JournalArticle> getJournalArticlesBySearchTerm(List<Long> classPKList, String input, String userId, String searchTerm) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertLongListToString(classPKList, input);
-		String[] classpks = info.split(",");
-		for (String classpk : classpks) {
-			Long classPK = Long.parseLong(classpk.toString());
+		//String info = convertLongListToString(classPKList, input);
+		//String[] classpks = info.split(",");
+		for (Long classPK : classPKList) {
+			String classpk = classPK.toString();
 			JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(classPK, searchTerm);
 			if (journalArticle != null) {
 				Long entryId = assetEntryService.getClassNameByClassUuid(classpk).get(0);
@@ -263,17 +256,12 @@ public class ServiceController extends AbstractController {
 
 		if (topic.equals("all")) {
 			classpks = assetEntryService.getClassPkList(85099);
-			List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-			int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
-			while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
-				resultList.addAll(parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm)));
-				input = (Integer.parseInt(input) + 1) + "";
-			}
-
+			List<JournalArticle> journals = parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm));
+			int lastPageNo = journals.size() % 10 == 0 ? journals.size() / 10 : journals.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
-			json.put("services", resultList);
+			json.put("services", byPaganation(journals, input));
 			json.put("totalCount", 0);
-			json.put("lastInput", input);
+			json.put("lastInput", 0);
 			return json;
 		}
 
@@ -382,12 +370,11 @@ public class ServiceController extends AbstractController {
 		default:
 			new ArrayList<String>();
 		}
-		
-		
+
 		List<JournalArticle> journals = parseJournalArticleList(getJournalArticlesBySearchTerm(classpks, input, userId, searchTerm));
 		int lastPageNo = journals.size() % 10 == 0 ? journals.size() / 10 : journals.size() / 10 + 1;
 		json.put("lastPageNo", lastPageNo);
-		json.put("services", byPaganation(journals,input));
+		json.put("services", byPaganation(journals, input));
 		json.put("totalCount", 0);
 		return json;
 	}

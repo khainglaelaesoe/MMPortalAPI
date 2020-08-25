@@ -73,13 +73,11 @@ public class OrganizationController extends AbstractController {
 	}
 
 	private Organization_ parseOrganization(JournalArticle journalArticle) {
-
 		Organization_ organization = new Organization_();
 		DocumentParsing dp = new DocumentParsing();
 		String title[] = dp.ParsingTitle(journalArticle.getTitle());
 		organization.setEngName(title[0]);
 		organization.setMyanmarName(title[1]);
-
 		organization.setEmail(getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"en_US\">"));
 		organization.setEngPhoneNo(getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"en_US\">"));
 		organization.setMyanmarPhoneNo(getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">"));
@@ -293,8 +291,8 @@ public class OrganizationController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
 		JSONObject resultJson = new JSONObject();
-		List<Long> classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
-		List<Organization_> orgs = getOrganizationListBySearchTerm(convertLongListToString(classpks, index), searchTerm);
+		List<Long> classpks = assetEntryService.getAssetEntryListBySearchTerm(91234, searchTerm);
+		List<Organization_> orgs = getOrganizationList(convertToString(classpks, index));
 		Stack<Organization_> stackList = new Stack<Organization_>();
 		orgs.forEach(org -> {
 			stackList.push(org);
@@ -321,90 +319,17 @@ public class OrganizationController extends AbstractController {
 		if (input.equals("all"))
 			classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
 		else {
-			String value = "";
 			OrgEngName orgName = OrgEngName.valueOf(input);
+			String value = orgName.getValue();
 			switch (orgName) {
-			case Ministry_of_Social_Welfare_Relief_Resettlement:
-				value = "social welfare";
-				break;
-			case Ministry_of_Defence:
-				value = "defence";
-				break;
-			case Ministry_of_President_Office:
-				value = "president office";
-				break;
-			case Ministry_of_Information:
-				value = "information";
-				break;
-			case Ministry_of_Religious_Affairs_and_Culture:
-				value = "religious";
-				break;
-			case Ministry_of_Transport_and_Communications:
-				value = "transport";
-				break;
-			case Ministry_of_Hotel_and_Tourism:
-				value = "Hotel";
-				break;
-			case Ministry_of_Electricity_and_Energy:
-				value = "electricity";
-				break;
-			case Ministry_of_Health_and_Sports:
-				value = "health";
-				break;
-			case Ministry_of_International_Cooperation:
-				value = "international";
-				break;
-			case Union_Attonery_Generals_Office:
-				value = "attorney";
-				break;
-			case Kachin_State_Government:
-				value = "kachin";
-				break;
-			case Kayah_State_Government:
-				value = "kayah";
-				break;
-			case Kayin_State_Government:
-				value = "kayin";
-				break;
 			case Chin_State_Government:
-				value = "chin";
-				break;
-			case Sagaing_Region_Government:
-				value = "sagaing";
-				break;
-			case Tanintaryi_Region_Government:
-				value = "Tanintaryi";
-				break;
-			case Bago_Region_Government:
-				value = "bago";
-				break;
-			case Magway_Region_Government:
-				value = "magway";
-				break;
-			case Mandalay_Region_Government:
-				value = "mandalay region";
-				break;
-			case Mon_State_Government:
-				value = "mon state";
-				break;
-			case Rakhine_State_Government:
-				value = "rakhine state";
-				break;
-			case Yangon_Region_Government:
-				value = "yangon region";
-				break;
-			case Shan_State_Government:
-				value = "shan state";
-				break;
-			case Ayeyarwaddy_Region_Government:
-				value = "ayeyarwaddy region";
+				value = "ချင်းပြည်နယ်";
+				classpks = assetEntryService.getAssetEntryListForChin(91234, value);
 				break;
 			default:
-				value = orgName.getValue();
+				classpks = assetEntryService.getAssetEntryListBySearchTerm(91234, value);
 				break;
 			}
-
-			classpks = assetEntryService.getAssetEntryListByName(91234, value);
 		}
 
 		int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;

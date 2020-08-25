@@ -713,8 +713,8 @@ public class AbstractController {
 			List<MBMessage> webComments = messageService.byClassPK(classPK);
 			List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(classpk), new TypeReference<List<MBMessage>>() {
 			});
-			messageList.addAll(webComments);
 			messageList.addAll(mobileComments);
+			messageList.addAll(webComments);
 
 			for (MBMessage msg : messageList) {
 				if (msg.getMessageid() < 0)

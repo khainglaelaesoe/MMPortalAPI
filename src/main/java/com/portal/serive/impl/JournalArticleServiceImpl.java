@@ -391,6 +391,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	}
 
 	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm) {
+		logger.info("searchTerm!!!!!!!!!!!!!!!!!!" + searchTerm);
 		String query = "from JournalArticle j where title LIKE " + "'%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
 		List<JournalArticle> journals = journalDao.getAll(query);
 		if (CollectionUtils.isEmpty(journals))

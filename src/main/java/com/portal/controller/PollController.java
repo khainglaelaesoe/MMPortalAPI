@@ -79,7 +79,10 @@ public class PollController extends AbstractController {
 		newJournal.setEngTitle(titleList.get(0));
 		newJournal.setMynamrTitle(titleList.size() > 1 ? titleList.get(1) : titleList.get(0));
 		newJournal.setEngDepartmentTitle(getEngElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"en_US\">"));
-		newJournal.setMyanmarDepartmentTitle(getMyanmarElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"my_MM\">"));
+		
+		String myaDepTitle = getMyanmarElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"my_MM\">");		
+		newJournal.setMyanmarDepartmentTitle(myaDepTitle);
+		
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -127,6 +130,7 @@ public class PollController extends AbstractController {
 		newJournal.setEngQuestionsMap(engQuesmaps);
 		newJournal.setMyanmarQuestionsMap(myanmarQuesmaps);
 		newJournal.setId_(journalArticle.getId_());
+		newJournal.setContent(journalArticle.getContent());
 		return newJournal;
 	}
 
