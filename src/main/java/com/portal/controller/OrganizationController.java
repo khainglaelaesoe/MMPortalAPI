@@ -145,9 +145,9 @@ public class OrganizationController extends AbstractController {
 			int j = 0;
 			for (String i : infoList) {
 				if (i.contains("0") || i.contains("191"))
-					org.setEngPhoneNo(i);
+					org.setEngPhoneNo(i.replace(" ",""));
 				else if (i.trim().contains("၀") || i.trim().contains("၁၉၁"))
-					org.setMyanmarPhoneNo(i);
+					org.setMyanmarPhoneNo(i.replace(" ",""));
 				else if ((i.trim().charAt(0) >= 'a' && i.trim().charAt(0) <= 'z') || (i.trim().charAt(0) >= 'A' && i.trim().charAt(0) <= 'Z'))
 					org.setEngContent(i);
 				else
