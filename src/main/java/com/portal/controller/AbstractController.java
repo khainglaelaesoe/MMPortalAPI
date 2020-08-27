@@ -753,13 +753,72 @@ public class AbstractController {
 		return journalArticle;
 	}
 
-	public List<JournalArticle> getArticles(List<Long> classPKList, String input, String userId) {
-		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+	public JournalArticle getArticleBySearchTerm(String classpk, String userId, String searchTerm) {
+		ObjectMapper mapper = new ObjectMapper();
+		Long classPK = Long.parseLong(classpk.toString());
+		JournalArticle journalArticle = journalArticleService.byClassPK(classPK, searchTerm);
+		if (journalArticle != null) {
+			List<MBMessage> messageList = new ArrayList<MBMessage>();
+			List<MBMessage> webComments = messageService.byClassPK(classPK);
+			List<MBMessage> mobileComments = mapper.convertValue(getMobileComments(classpk), new TypeReference<List<MBMessage>>() {
+			});
+			messageList.addAll(mobileComments);
+			messageList.addAll(webComments);
 
-		String info = convertLongListToString(classPKList, input);
-		String[] classpkList = info.split(",");
-		for (String classpk : classpkList)
-			journalArticleList.add(getArticle(classpk, userId));
+			for (MBMessage msg : messageList) {
+				if (msg.getMessageid() < 0)
+					continue;
+
+				if (msg.getUserid() == Long.parseLong(userId))
+					msg.setEditPermission("Yes");
+				else
+					msg.setEditPermission("No");
+
+				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
+
+				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {
+				});
+				msg.getReplyList().addAll(parse(replyList, userId));
+
+				MobileResult json = getMbData(msg.getMessageid(), userId, 0);
+				String checklikemb = json.getChecklike();
+				if (checklikemb == "0.0") {
+					if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
+						checklikemb = "1.0";
+					} else if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 0)) {// check web dislike
+						checklikemb = "2.0";
+					}
+				}
+				long likecount = json.getLikecount();
+				long totallikecount = msg.getLikecount() + likecount;
+				msg.setLikecount(totallikecount);
+				msg.setDislikecount(json.getDislikecount());
+				msg.setChecklike(checklikemb);
+			}
+
+			journalArticle.setMessageList(messageList);
+			journalArticle.setpKString(classpk);
+		}
+		return journalArticle;
+	}
+	
+	public List<JournalArticle> getAllArticles(List<Long> classPKList,String input, String userId) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		for (Long classpk : classPKList) {
+			JournalArticle journal = getArticle(classpk.toString(), userId);
+			if (journal != null)
+				journalArticleList.add(journal);
+		}
+		return journalArticleList;
+	}
+
+	public List<JournalArticle> getArticles(List<Long> classPKList, String userId, String searchTerm) {
+		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
+		for (Long classpk : classPKList) {
+			JournalArticle journal = getArticleBySearchTerm(classpk.toString(), userId, searchTerm);
+			if (journal != null)
+				journalArticleList.add(journal);
+		}
 		return journalArticleList;
 	}
 

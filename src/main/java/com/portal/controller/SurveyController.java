@@ -177,13 +177,12 @@ public class SurveyController extends AbstractController {
 		return journalArticleList;
 	}
 
-	public List<JournalArticle> getArticlesByPaganation(List<Long> classPKList, String input) {
+	public List<JournalArticle> getAllArticles(List<Long> classPKList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertLongListToString(classPKList, input);
-		String[] classpkList = info.split(",");
-		for (String classpk : classpkList) {
-			Long classPK = Long.parseLong(classpk.toString());
-			JournalArticle journalArticle = journalArticleService.byClassPK(classPK);
+		// String info = convertLongListToString(classPKList, input);
+		// String[] classpkList = info.split(",");
+		for (Long classpk : classPKList) {
+			JournalArticle journalArticle = journalArticleService.byClassPK(classpk);
 			if (journalArticle != null)
 				journalArticleList.add(journalArticle);
 		}
@@ -197,7 +196,7 @@ public class SurveyController extends AbstractController {
 		JSONObject resultJson = new JSONObject();
 		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticlesByPaganation(classPKList, input), userid);
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getAllArticles(classPKList, input), userid);
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		journalArticleList.forEach(article -> {
@@ -211,7 +210,7 @@ public class SurveyController extends AbstractController {
 
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("survey", newArticles);
+		resultJson.put("survey", byPaganation(newArticles, input));
 		resultJson.put("totalCount", newArticles.size());
 		return resultJson;
 	}

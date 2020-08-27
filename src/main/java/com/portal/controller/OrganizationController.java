@@ -319,13 +319,29 @@ public class OrganizationController extends AbstractController {
 		if (input.equals("all"))
 			classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
 		else {
-			OrgEngName orgName = OrgEngName.valueOf(input);
+			OrgMyanmarName orgName = OrgMyanmarName.valueOf(input);
 			String value = orgName.getValue();
 			switch (orgName) {
+			case Napyitaw_City_Development_Committee:
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Yangon_City_Development_Committee:
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Ministry_of_Natural_Resources_and_Environmental_Conservation:
+				value = "Ministry of Natural Resources and Environmental Conservation";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Ministry_of_Labour_Immigration_and_Population:
+				value = "Ministry of Labour, Immigration and Population";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Ministry_of_Social_Welfare_Relief_Resettlement:
+				value = "Ministry of Social Welfare, Relief and Resettlement";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
 			case Chin_State_Government:
 				value = "ချင်းပြည်နယ်";
-				classpks = assetEntryService.getAssetEntryListForChin(91234, value);
-				break;
 			default:
 				classpks = assetEntryService.getAssetEntryListBySearchTerm(91234, value);
 				break;

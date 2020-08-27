@@ -70,7 +70,7 @@ public interface AssetEntryService {
 
 	public List<Long> getClassPKListbyCatagoryId();
 
-	public List<Long> getAssetEntryListForChin(long classTypeId, String searchTerm);
+	public List<Long> getAssetEntryListByKeyword(long classTypeId, String searchTerm);
 
 	public List<Long> getAssetEntryListBySearchTerm(long classTypeId, String searchTerm);
 

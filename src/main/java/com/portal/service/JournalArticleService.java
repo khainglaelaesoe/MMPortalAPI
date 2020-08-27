@@ -88,4 +88,6 @@ public interface JournalArticleService {
 
 	public JournalArticle byClassPKAndDate(String dateStr, Long classpk);
 
+	public JournalArticle byClassPK(Long classpk, String searchTerm);
+
 }

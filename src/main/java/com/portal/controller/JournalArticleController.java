@@ -70,6 +70,8 @@ public class JournalArticleController extends AbstractController {
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 
+		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getImage(journalArticle.getContent()) : newArticle.getImageUrl());
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];

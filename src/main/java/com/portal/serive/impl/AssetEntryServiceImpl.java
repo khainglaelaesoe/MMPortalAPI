@@ -121,7 +121,7 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 		return assetEntryDao.findLongByQueryString(query);
 	}
 
-	public List<Long> getAssetEntryListForChin(long classTypeId, String searchTerm) {
+	public List<Long> getAssetEntryListByKeyword(long classTypeId, String searchTerm) {
 		String query = "Select classpk from AssetEntry assetEntry where classtypeid=" + classTypeId + " and title LIKE '%" + searchTerm + "%' order by priority desc";
 		return assetEntryDao.findLongByQueryString(query);
 	}

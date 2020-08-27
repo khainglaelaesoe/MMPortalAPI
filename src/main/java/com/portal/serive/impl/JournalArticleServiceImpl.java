@@ -217,12 +217,16 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journals.get(0);
 	}
 
-	public List<JournalArticle> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
+	public JournalArticle byClassPK(Long classpk, String searchTerm) {
+		String query = "from JournalArticle j where (title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%') and j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
+			return null;
+		return journals.get(0);
+	}
 
+	public List<JournalArticle> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
 		String query = "from JournalArticle where title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%' and resourceprimkey in (SELECT classpk from AssetEntry where classtypeid=" + classTypeId + "and visible = 1 order by priority desc)";
-		// String query = "from JournalArticle j where title LIKE '%" + searchTerm + "%'
-		// or content LIKE '%" + searchTerm + "%' and j.resourceprimkey=" + classpk +
-		// "order by version desc";
 		List<JournalArticle> journals = journalDao.getAll(query);
 		if (CollectionUtils.isEmpty(journals))
 			return new ArrayList<JournalArticle>();

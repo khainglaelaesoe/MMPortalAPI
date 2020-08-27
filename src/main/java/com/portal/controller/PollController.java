@@ -79,10 +79,10 @@ public class PollController extends AbstractController {
 		newJournal.setEngTitle(titleList.get(0));
 		newJournal.setMynamrTitle(titleList.size() > 1 ? titleList.get(1) : titleList.get(0));
 		newJournal.setEngDepartmentTitle(getEngElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"en_US\">"));
-		
-		String myaDepTitle = getMyanmarElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"my_MM\">");		
+
+		String myaDepTitle = getMyanmarElement(journalArticle.getContent(), "Department", "<dynamic-content language-id=\"my_MM\">");
 		newJournal.setMyanmarDepartmentTitle(myaDepTitle);
-		
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -203,13 +203,12 @@ public class PollController extends AbstractController {
 		return journalArticleList;
 	}
 
-	public List<JournalArticle> getArticlesByPaganation(List<Long> classPKList, String input) {
+	public List<JournalArticle> getAllArticles(List<Long> classPKList, String input) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		String info = convertLongListToString(classPKList, input);
-		String[] classpkList = info.split(",");
-		for (String classpk : classpkList) {
-			Long classPK = Long.parseLong(classpk.toString());
-			JournalArticle journalArticle = journalArticleService.byClassPK(classPK);
+		// String info = convertLongListToString(classPKList, input);
+		// String[] classpkList = info.split(",");
+		for (Long classpk : classPKList) {
+			JournalArticle journalArticle = journalArticleService.byClassPK(classpk);
 			if (journalArticle != null)
 				journalArticleList.add(journalArticle);
 		}
@@ -223,7 +222,7 @@ public class PollController extends AbstractController {
 		JSONObject resultJson = new JSONObject();
 		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
-		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getArticlesByPaganation(classPKList, input), mbuserid);
+		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getAllArticles(classPKList, input), mbuserid);
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		journalArticleList.forEach(article -> {
@@ -237,7 +236,7 @@ public class PollController extends AbstractController {
 
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("poll", newArticles);
+		resultJson.put("poll", byPaganation(newArticles, input));
 		resultJson.put("totalCount", newArticles.size());
 		return resultJson;
 	}

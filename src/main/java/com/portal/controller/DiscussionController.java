@@ -16,14 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
-import com.portal.entity.MBMessage;
-import com.portal.entity.MobileResult;
 import com.portal.entity.OrgMyanmarName;
-import com.portal.entity.Reply;
 import com.portal.entity.Views;
 import com.portal.parsing.DocumentParsing;
 import com.portal.service.AssetEntryService;
@@ -98,7 +93,7 @@ public class DiscussionController extends AbstractController {
 		// classTypeId=129731;
 		List<Long> classPKList = assetEntryService.getClassPkList(129739);
 		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, input, userId));
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getAllArticles(classPKList, input, userId));
 
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 		journalArticleList.forEach(article -> {
@@ -110,34 +105,9 @@ public class DiscussionController extends AbstractController {
 			newArticles.add(stackList.pop());
 		}
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("discussion", newArticles);
+		resultJson.put("discussion", byPaganation(newArticles, input));
 		resultJson.put("totalCount", newArticles.size());
 		return resultJson;
-	}
-
-	private List<JournalArticle> getResultList(List<Long> entryList, String input, String searchterm, String userId) {
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(entryList, input, userId));
-		for (JournalArticle journalArticle : journalArticleList) {
-			StringBuilder searchterms = new StringBuilder();
-			if (journalArticle.getMyanmarDepartmentTitle() != null)
-				searchterms.append(journalArticle.getMyanmarDepartmentTitle());
-			if (journalArticle.getEngDepartmentTitle() != null)
-				searchterms.append(journalArticle.getEngDepartmentTitle());
-			if (journalArticle.getMynamrTitle() != null)
-				searchterms.append(journalArticle.getMynamrTitle());
-			if (journalArticle.getEngTitle() != null)
-				searchterms.append(journalArticle.getEngTitle());
-			if (journalArticle.getDisplaydate() != null)
-				searchterms.append(journalArticle.getDisplaydate());
-			if (journalArticle.getMyanmarContent() != null)
-				searchterms.append(journalArticle.getMyanmarContent());
-			if (journalArticle.getEngContent() != null)
-				searchterms.append(journalArticle.getEngContent());
-			if (searchterms.toString().contains(searchterm))
-				resultList.add(journalArticle);
-		}
-		return resultList;
 	}
 
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
@@ -145,16 +115,12 @@ public class DiscussionController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getDiscussion(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<Long> classPKList = assetEntryService.getClassPkList(129739);
-		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
+		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, userId, searchterm));
+		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 
-		while (resultList.size() < 10 && Integer.parseInt(input) <= lastPageNo) {
-			resultList.addAll(getResultList(classPKList, input, searchterm, userId));
-			input = (Integer.parseInt(input) + 1) + "";
-		}
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("discussion", resultList);
+		resultJson.put("discussion", byPaganation(journalArticleList, input));
 		resultJson.put("totalCount", 0);
 		return resultJson;
 	}
