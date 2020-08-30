@@ -144,9 +144,9 @@ public class OrganizationController extends AbstractController {
 			Organization_ org = new Organization_();
 			int j = 0;
 			for (String i : infoList) {
-				if (i.contains("0") || i.contains("191"))
+				if (i.startsWith("0") || i.startsWith("19"))
 					org.setEngPhoneNo(i.replace(" ",""));
-				else if (i.trim().contains("၀") || i.trim().contains("၁၉၁"))
+				else if (i.startsWith("၀") || i.startsWith("၁၉"))
 					org.setMyanmarPhoneNo(i.replace(" ",""));
 				else if ((i.trim().charAt(0) >= 'a' && i.trim().charAt(0) <= 'z') || (i.trim().charAt(0) >= 'A' && i.trim().charAt(0) <= 'Z'))
 					org.setEngContent(i);
@@ -199,7 +199,7 @@ public class OrganizationController extends AbstractController {
 			}
 		}
 		for (Element e : myanpara) {
-			if (e.text().toString().startsWith("၀") && e.text().toString().startsWith("၁၉")) {
+			if (e.text().toString().contains("၀")) {
 				myanmarPhoneNo = e.text().toString();
 			}
 			if (e.text().toString().contains("@")) {
