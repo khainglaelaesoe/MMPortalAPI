@@ -199,7 +199,7 @@ public class OrganizationController extends AbstractController {
 			}
 		}
 		for (Element e : myanpara) {
-			if (e.text().toString().contains("၀")) {
+			if (e.text().toString().startsWith("၀") && e.text().toString().startsWith("၁၉")) {
 				myanmarPhoneNo = e.text().toString();
 			}
 			if (e.text().toString().contains("@")) {
@@ -259,10 +259,12 @@ public class OrganizationController extends AbstractController {
 		if (mStart > 0) {
 			int mEnd = remainString.lastIndexOf("</dynamic-content>");
 			myanmarContent = Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "");
+			
 		}
-
-		organization.setMmContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
-		organization.setEngContent(!engContent.isEmpty() ? engContent : myanmarContent);
+		String mm = myanmarContent.replaceAll("website", "mobile application");
+		String eng = engContent.replaceAll("website", "mobile application");
+		organization.setMmContent(!mm.isEmpty() ? mm : eng);
+		organization.setEngContent(!eng.isEmpty() ? eng : mm);
 		return organization;
 	}
 
