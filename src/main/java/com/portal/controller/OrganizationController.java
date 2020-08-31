@@ -144,8 +144,6 @@ public class OrganizationController extends AbstractController {
 			Organization_ org = new Organization_();
 			int j = 0;
 			for (String i : infoList) {
-				char p = i.charAt(i.length()-2);
-				logger.info("Char_________" + p);
 				if (i.startsWith("0") || i.startsWith("19"))
 					org.setEngPhoneNo(i.replace(" ",""));
 				else if (i.startsWith("၀") || i.startsWith("၁၉"))
