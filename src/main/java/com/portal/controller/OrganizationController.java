@@ -144,11 +144,13 @@ public class OrganizationController extends AbstractController {
 			Organization_ org = new Organization_();
 			int j = 0;
 			for (String i : infoList) {
+				char p = i.charAt(i.length()-2);
+				logger.info("Char_________" + p);
 				if (i.startsWith("0") || i.startsWith("19"))
 					org.setEngPhoneNo(i.replace(" ",""));
 				else if (i.startsWith("၀") || i.startsWith("၁၉"))
 					org.setMyanmarPhoneNo(i.replace(" ",""));
-				else if ((i.trim().charAt(0) >= 'a' && i.trim().charAt(0) <= 'z') || (i.trim().charAt(0) >= 'A' && i.trim().charAt(0) <= 'Z'))
+				else if ((i.trim().charAt(i.length()-2) >= 'a' && i.trim().charAt(i.length()-2) <= 'z') || (i.trim().charAt(i.length()-2) >= 'A' && i.trim().charAt(i.length()-2) <= 'Z'))
 					org.setEngContent(i);
 				else
 					org.setMmContent(i);
