@@ -33,29 +33,30 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return getJournalArticleByArticleIdAndVersion(articleId, version);
 	}
 
-	public List<JournalArticle> getJournalArticlesByFolderId(long folderId) {
-		List<Object> objectList;
-		List<JournalArticle> articleList = new ArrayList<JournalArticle>();
-		String queryStr = "Select distinct articleid from JournalArticle where folderid=" + folderId;
-		objectList = journalDao.byQueryString(queryStr);
-		int i = 0;
-		while (i < objectList.size()) {
-			Long articleid = (Long) objectList.get(i);
-			i++;
-			articleList.add(getJournalArticleByArticleId(articleid));
-		}
-		return articleList;
-	}
-
-	@Override
-	public JournalArticle getJournalArticleByArticleId(long articleId) {
+	public JournalArticle getJournalArticleByArticleId(String articleId) {
 		List<Long> objectList;
-		String queryStr = "select id_ from JournalArticle where articleid=" + articleId + "" + "order by version desc";
+		String queryStr = "select id_ from JournalArticle where articleid='" + articleId + "'";
 		objectList = journalDao.findLongByQueryString(queryStr);
 		Long obj = objectList.get(0);
 		if (obj == null)
 			return null;
 		return getJournalArticle(obj);
+	}
+
+	public JournalArticle getMaxVersionJournalByArticleId(String articleId) {
+		String queryStr = "select journalArticle from JournalArticle journalArticle where articleid='" + articleId + "' order by version desc";
+		List<JournalArticle> journalArticleList = journalDao.byQuery(queryStr);
+		if (CollectionUtils.isEmpty(journalArticleList))
+			return null;
+		return journalArticleList.get(0);
+	}
+
+	public JournalArticle getJournalArticleByResourcePrimKey(long resourcePrimKey) {
+		String queryStr = "from JournalArticle where resourceprimkey=" + resourcePrimKey;
+		List<JournalArticle> journals = journalDao.getAll(queryStr);
+		if (CollectionUtils.isEmpty(journals))
+			return null;
+		return journals.get(0);
 	}
 
 	@Override
@@ -80,8 +81,8 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	public List<JournalArticle> getEmergenyContact() {
 		List<JournalArticle> journallist = new ArrayList<JournalArticle>();
-		long[] articleidlist = { 53269, 53276, 53283, 53262 };
-		for (long articleid : articleidlist) {
+		String[] articleidlist = { "53269", "53276", "53283", "53262" };
+		for (String articleid : articleidlist) {
 			String queryStr = "select journalArticle from JournalArticle journalArticle where folderId=53239 and articleid=:dataInput order by version desc";
 			journallist.add(journalDao.findDatabyQueryString(queryStr, articleid).get(0));
 		}
@@ -217,6 +218,14 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journals.get(0);
 	}
 
+	public JournalArticle byClassPKAndTitle(Long classpk, String searchTerm) {
+		String query = "from JournalArticle j where title like '%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
+		List<JournalArticle> journals = journalDao.getAll(query);
+		if (CollectionUtils.isEmpty(journals))
+			return null;
+		return journals.get(0);
+	}
+
 	public JournalArticle byClassPK(Long classpk, String searchTerm) {
 		String query = "from JournalArticle j where (title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%') and j.resourceprimkey=" + classpk + "order by version desc";
 		List<JournalArticle> journals = journalDao.getAll(query);
@@ -225,11 +234,11 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 		return journals.get(0);
 	}
 
-	public List<JournalArticle> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
-		String query = "from JournalArticle where title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%' and resourceprimkey in (SELECT classpk from AssetEntry where classtypeid=" + classTypeId + "and visible = 1 order by priority desc)";
-		List<JournalArticle> journals = journalDao.getAll(query);
+	public List<String> byClassPKAndSearchTerm(Long classTypeId, String searchTerm) {
+		String query = "select distinct articleId from JournalArticle journalArticle where title like '%" + searchTerm + "%' and resourceprimkey in (SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1) order by displaydate";
+		List<String> journals = journalDao.findByQuery(query);
 		if (CollectionUtils.isEmpty(journals))
-			return new ArrayList<JournalArticle>();
+			return new ArrayList<String>();
 		return journals;
 	}
 
@@ -304,6 +313,11 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 
 	public List<Long> getServiceByTopicAndSearchTerm2(long categoryId, String searchTerm) {
 		String query = "Select ae.classpk from AssetEntry ae where ae.visible = 1 and ae.classtypeid=85099 and ae.entryid in(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + categoryId + " or aeac.categoryid in (Select ac.categoryid from AssetCategory ac where ac.parentcategoryid=" + categoryId + ")) order by ae.createdate desc) group by articleid";
+		return journalDao.findLongByQueryString(query);
+	}
+
+	public List<Long> getJournalsByOverallSearch(String searchTerm) {
+		String query = "select distinct resourceprimkey from JournalArticle where title like '%" + searchTerm + "%' or content like '%" + searchTerm + "%'";
 		return journalDao.findLongByQueryString(query);
 	}
 
@@ -395,8 +409,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	}
 
 	public JournalArticle byClassPKAndSearchTerms(Long classpk, String searchTerm) {
-		logger.info("searchTerm!!!!!!!!!!!!!!!!!!" + searchTerm);
-		String query = "from JournalArticle j where title LIKE " + "'%" + searchTerm + "%' and j.resourceprimkey=" + classpk + "order by version desc";
+		String query = "from JournalArticle j where (title LIKE " + "'%" + searchTerm + "%' or content LIKE " + "'%" + searchTerm + "%') and j.resourceprimkey=" + classpk + "order by version desc";
 		List<JournalArticle> journals = journalDao.getAll(query);
 		if (CollectionUtils.isEmpty(journals))
 			return null;

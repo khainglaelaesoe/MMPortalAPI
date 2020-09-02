@@ -77,13 +77,17 @@ public class BlogController extends AbstractController {
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
 		newJournal.setDisplaydate(resultDateString);
 
-		List<String> contentList = dp.ParsingAllContent(journalArticle.getContent());
-		newJournal.setEngContent(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
-		newJournal.setMyanmarContent(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", ""));
+		String engContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">");
+
+		newJournal.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
+		newJournal.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
 
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
 		newJournal.setMessageList(journalArticle.getMessageList());
 		newJournal.setpKString(journalArticle.getpKString());
+
+		newJournal.setContent(journalArticle.getContent());
 		return newJournal;
 	}
 
@@ -107,20 +111,20 @@ public class BlogController extends AbstractController {
 		List<Long> classPKList = assetEntryService.getClassPkList(129731);
 		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getAllArticles(classPKList, input, userId));
-
+		List<JournalArticle> resultList = byPaganation(journalArticleList, input);
 		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
-		journalArticleList.forEach(article -> {
+		resultList.forEach(article -> {
 			stackList.push(article);
 		});
 
 		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
-		for (int i = 0; i < journalArticleList.size(); i++) {
+		for (int i = 0; i < resultList.size(); i++) {
 			newArticles.add(stackList.pop());
 		}
 
 		resultJson.put("lastPageNo", lastPageNo);
-		resultJson.put("blog", byPaganation(newArticles, input));
-		resultJson.put("totalCount", newArticles.size());
+		resultJson.put("blog", newArticles);
+		resultJson.put("totalCount", journalArticleList.size());
 		return resultJson;
 	}
 

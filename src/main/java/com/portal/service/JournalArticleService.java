@@ -6,15 +6,19 @@ import com.portal.entity.JournalArticle;
 
 public interface JournalArticleService {
 
+	public JournalArticle getMaxVersionJournalByArticleId(String articleId);
+
+	public JournalArticle getJournalArticleByResourcePrimKey(long resourcePrimKey);
+
+	public JournalArticle byClassPKAndTitle(Long classpk, String searchTerm);
+
 	public List<JournalArticle> getJournalArticles();
 
 	public List<JournalArticle> getIdByFolderIdByName(String input, String classuuid);
 
 	public JournalArticle getJournalArticleByFolderId(long folderId);
 
-	public List<JournalArticle> getJournalArticlesByFolderId(long folderId);
-
-	public JournalArticle getJournalArticleByArticleId(long articleId);
+	public JournalArticle getJournalArticleByArticleId(String articleId);
 
 	public JournalArticle getJournalArticle(long id);
 
@@ -35,8 +39,6 @@ public interface JournalArticleService {
 	public List<Long> getAllArticleId();
 
 	public JournalArticle getJournalArticleBySearchTerms(long Id, String searchTerm);
-
-	// public long getAllBySearchterm(String searchTerm, long classTypeId);
 
 	public List<Object> getServiceByTopicAndSearchTerm(long categoryId, String searchTerm);
 
@@ -80,7 +82,7 @@ public interface JournalArticleService {
 
 	public List<JournalArticle> getJournalArticlebyRprimekey(List<Long> classPKList);
 
-	public List<JournalArticle> byClassPKAndSearchTerm(Long classpk, String searchTerm);
+	public List<String> byClassPKAndSearchTerm(Long classTypeId, String searchTerm);
 
 	public List<Long> getServiceByTopicAndSearchTerm2(long categoryId, String searchTerm);
 
@@ -89,5 +91,7 @@ public interface JournalArticleService {
 	public JournalArticle byClassPKAndDate(String dateStr, Long classpk);
 
 	public JournalArticle byClassPK(Long classpk, String searchTerm);
+
+	public List<Long> getJournalsByOverallSearch(String searchTerm);
 
 }

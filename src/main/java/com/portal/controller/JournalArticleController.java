@@ -14,6 +14,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,7 +70,6 @@ public class JournalArticleController extends AbstractController {
 		String imageUrl = "";
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
-
 		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getImage(journalArticle.getContent()) : newArticle.getImageUrl());
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
@@ -81,6 +81,12 @@ public class JournalArticleController extends AbstractController {
 		if (name.equals("News and Media"))
 			name = "Ministry of Information";
 
+		if (name.equals("Ministry of Social Welfare, Relief and Resettlement"))
+			name = "Ministry of Social Welfare Relief Resettlement";
+
+		if (name.equals("Constitutional Tribunal of the Union of Myanmar"))
+			name = "Constitutional Tribunal";
+
 		newArticle.setEngDepartmentTitle(name);
 		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 
@@ -90,26 +96,16 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMyanmarLocation(getAttribute(index, content, "my_MM"));
 		newArticle.setShareLink(getShareLinkForNews(journalArticle.getUrltitle()));
 
-		String engContent = "", myanmarContent = "";
-		int begin = content.indexOf("\"text_area\"");
-		content = content.substring(begin, content.length());
+		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
 
-		int start = content.indexOf("<dynamic-content language-id=\"en_US\">");
-		int end = content.indexOf("</dynamic-content>");
+		engContent = engContent.isEmpty() ? myaContent : engContent;
+		myaContent = myaContent.isEmpty() ? engContent : myaContent;
 
-		engContent = ImageSourceChange(dp.ParsingSpan(Jsoup.parse(content.substring(start, end)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
-		String remainString = content.substring(end, content.length());
-
-		int mStart = remainString.indexOf("<dynamic-content language-id=\"my_MM\">");
-		if (mStart > 0) {
-			int mEnd = remainString.lastIndexOf("</dynamic-content>");
-			myanmarContent = ImageSourceChange(dp.ParsingSpan(Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "")).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("\\&quot;", ""));
-		}
-
-		newArticle.setMyanmarContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
-		newArticle.setEngContent(!engContent.isEmpty() ? engContent : myanmarContent);
-
+		newArticle.setEngContent(engContent.isEmpty() ? "" : ImageSourceChange(dp.ParsingSpan(engContent)));
+		newArticle.setMyanmarContent(myaContent.isEmpty() ? "" : ImageSourceChange(dp.ParsingSpan(myaContent)));
 		newArticle.setContent(journalArticle.getContent());
+		newArticle.setCategoryType(CategoryType.NEW);
 		return newArticle;
 	}
 
@@ -133,27 +129,31 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngTitle(title[0]);
 		newArticle.setMynamrTitle(title[1]);
 
-		Document doc = Jsoup.parse(journalArticle.getContent());
-		replaceTag(doc.children());
-		String[] contentInfo = Jsoup.parse(doc.toString()).text().split("/");
-		List<String> stringList = removeInvalidString(contentInfo);
-		newArticle.setEngPblisher(stringList.get(0));
-		newArticle.setMyanmarPublisher(stringList.get(1));
-		String date = stringList.get(2);
-		newArticle.setPublicationDate(date.isEmpty() ? "" : date.split("-")[0]);
 		String[] engmyanDownloadLink = new DocumentParsing().Parsingdocument_library(journalArticle.getContent());
 		newArticle.setEngDownloadLink(engmyanDownloadLink[0]);
 		newArticle.setMyanmarDownloadLink(engmyanDownloadLink[1]);
 		newArticle.setContent(journalArticle.getContent());
-		newArticle.setPage(stringList.get(4));
+
+		/* publisher */
+		newArticle.setEngPblisher(getEngElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"en_US\">"));
+		newArticle.setMyanmarPublisher(getEngElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Publisher", "<dynamic-content language-id=\"my_MM\">"));
+
+		/* date */
+		String engDate = getEngElement(journalArticle.getContent(), "PublicationDate", "<dynamic-content language-id=\"en_US\">");
+		String myaDate = getEngElement(journalArticle.getContent(), "PublicationDate", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "PublicationDate", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PublicationDate", "<dynamic-content language-id=\"my_MM\">");
+		newArticle.setPublicationDate(engDate.isEmpty() ? myaDate.split("-")[0] : engDate.split("-")[0]);
 
 		/* page */
 		newArticle.setEngPage(getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"en_US\">"));
 		newArticle.setMyaPage(getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Pages", "<dynamic-content language-id=\"my_MM\">"));
+		newArticle.setPage(newArticle.getEngPage());
 
 		/* image */
-		newArticle.setEngImageUrl(dp.ParsingEngImage2(journalArticle.getContent()).get(0));
-		newArticle.setMyanamrImageUrl(dp.ParsingMyanImage2(journalArticle.getContent()).get(0));
+		List<String> engImageList = dp.ParsingEngImage2(journalArticle.getContent());
+		newArticle.setEngImageUrl(CollectionUtils.isEmpty(engImageList) ? "" : engImageList.get(0));
+
+		List<String> myaImageList = dp.ParsingMyanImage2(journalArticle.getContent());
+		newArticle.setMyanamrImageUrl(CollectionUtils.isEmpty(myaImageList) ? "" : myaImageList.get(0));
 
 		/* Language */
 		newArticle.setEngLanguage(getEngElement(journalArticle.getContent(), "Language", "<dynamic-content language-id=\"en_US\">"));
@@ -221,18 +221,6 @@ public class JournalArticleController extends AbstractController {
 		default:
 			return getJournalArticleForLatestNew(journalArticle);
 		}
-	}
-
-	private List<JournalArticle> getJournalArticles(String classPkInfo, CategoryType type) {
-		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
-		for (String classpk : classPkInfo.split(",")) {
-			if (!classpk.isEmpty()) {
-				JournalArticle journalArticle = journalArticleService.byClassPK(Long.parseLong(classpk));
-				if (journalArticle != null)
-					journalArticles.add(parseJournalArticle(journalArticle, type));
-			}
-		}
-		return journalArticles;
 	}
 
 	private JSONObject getJournalArticleByClassTypeIdAndLatest(String input, long classTypeId, CategoryType type) {
@@ -376,39 +364,105 @@ public class JournalArticleController extends AbstractController {
 
 	}
 
-	private JSONObject byClassTypeIdAndSearchTerms(String searchterm, long classTypeId, CategoryType type, String input) {
-		JSONObject resultJson = new JSONObject();
-		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
-		List<Long> classPks = assetEntryService.getClassPkList(classTypeId);
-		int lastPageNo = classPks.size() % 10 == 0 ? classPks.size() / 10 : classPks.size() / 10 + 1;
+	private List<JournalArticle> getJournalArticles(String classPkInfo, CategoryType type) {
+		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
+		for (String classpk : classPkInfo.split(",")) {
+			if (!classpk.isEmpty()) {
+				JournalArticle journalArticle = journalArticleService.byClassPK(Long.parseLong(classpk));
+				if (journalArticle != null)
+					journalArticles.add(parseJournalArticle(journalArticle, type));
+			}
+		}
+		return journalArticles;
+	}
 
-		while (resultList.size() < 10 && Integer.parseInt(input) < lastPageNo) {
-			resultList.addAll(getResultList(classPks, input, type, searchterm));
-			input = (Integer.parseInt(input) + 1) + "";
+	private List<JournalArticle> parseArticlesWithPaganation(String articleInfo, CategoryType type) {
+		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
+		String[] articleList = articleInfo.split(",");
+		for (String articleId : articleList) {
+			JournalArticle journalArticle = journalArticleService.getMaxVersionJournalByArticleId(articleId);
+			if (journalArticle != null)
+				journalArticles.add(parseJournalArticle(journalArticle, type));
+		}
+		return journalArticles;
+	}
+
+	private JSONObject getArticlesBySearchTerms(String searchterm, long classTypeId, CategoryType type, String input) {
+		JSONObject resultJson = new JSONObject();
+
+		List<String> articleList = journalArticleService.byClassPKAndSearchTerm(classTypeId, searchterm);
+		List<JournalArticle> resultList = parseArticlesWithPaganation(byPaganationWithArticle(articleList, input), type);
+
+		Stack<JournalArticle> stackList = new Stack<JournalArticle>();
+		resultList.forEach(article -> {
+			stackList.push(article);
+		});
+
+		List<JournalArticle> newArticles = new ArrayList<JournalArticle>();
+		for (int i = 0; i < resultList.size(); i++) {
+			newArticles.add(stackList.pop());
 		}
 
-		resultJson.put("articles", resultList);
+		int lastPageNo = articleList.size() % 10 == 0 ? articleList.size() / 10 : articleList.size() / 10 + 1;
+
+		resultJson.put("articles", newArticles);
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("totalCount", 0);
-		resultJson.put("lastInput", input);
+		resultJson.put("lastInput", Integer.parseInt(input));
+		return resultJson;
+	}
+
+	@RequestMapping(value = "overallsearch", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject overallsearch(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input) {
+		JSONObject resultJson = new JSONObject();
+
+		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
+		List<Long> resourcePrimKeys = journalArticleService.getJournalsByOverallSearch(searchTerm);
+		if (CollectionUtils.isEmpty(resourcePrimKeys)) {
+			resultJson.put("articles", new ArrayList<JournalArticle>());
+			resultJson.put("lastPageNo", 0);
+			return resultJson;
+		}
+
+		for (Long resourcePrimKey : resourcePrimKeys) {
+			Long classtypeid = assetEntryService.getClassTypeId(resourcePrimKey);
+			JournalArticle journalArticle = journalArticleService.getJournalArticleByResourcePrimKey(resourcePrimKey);
+			if (journalArticle != null) {
+
+				switch (classtypeid.toString()) {
+				case "36205":
+					journalArticles.add(getJournalArticleForLatestNew(journalArticle));
+					break;
+				case "36208":
+					journalArticles.add(getJournalArticleForAnnouncement(journalArticle));
+					break;
+				}
+			}
+		}
+
+		int lastPageNo = journalArticles.size() % 10 == 0 ? journalArticles.size() / 10 : journalArticles.size() / 10 + 1;
+		resultJson.put("articles", byPaganation(journalArticles, input));
+		resultJson.put("lastPageNo", lastPageNo);
 		return resultJson;
 	}
 
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
-	@JsonView(Views.Thin.class)
-	public JSONObject getPolls(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
+	@JsonView(Views.Summary.class)
+	public JSONObject getJournals(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
 		JSONObject resultJson = new JSONObject();
 		CategoryType categoryType = CategoryType.valueOf(categorytype.toUpperCase().trim());
 		switch (categoryType) {
 		case NEW:
-			return byClassTypeIdAndSearchTerms(searchterm, 36205, CategoryType.NEW, input);
+			return getArticlesBySearchTerms(searchterm, 36205, CategoryType.NEW, input);
 		case ANNOUNCEMENT:
-			return byClassTypeIdAndSearchTerms(searchterm, 36208, CategoryType.ANNOUNCEMENT, input);
+			return getArticlesBySearchTerms(searchterm, 36208, CategoryType.ANNOUNCEMENT, input);
 		case MEDIAVIDEO:
-			return byClassTypeIdAndSearchTerms(searchterm, 36211, CategoryType.MEDIAVIDEO, input);
+			return getArticlesBySearchTerms(searchterm, 36211, CategoryType.MEDIAVIDEO, input);
 		case NEWSPAPER:
-			return byClassTypeIdAndSearchTerms(searchterm, 86242, CategoryType.NEWSPAPER, input);
+			return getArticlesBySearchTerms(searchterm, 86242, CategoryType.NEWSPAPER, input);
 		default:
 			return resultJson;
 		}

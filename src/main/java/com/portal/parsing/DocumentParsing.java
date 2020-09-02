@@ -312,11 +312,11 @@ public class DocumentParsing {
 	 */
 
 	public String SourceChange(String content) {
-		if(!content.contains("http")) {
+		if (!content.contains("http")) {
 			content = "<img src=" + "\"https://myanmar.gov.mm" + content + "\">";
-		}else 
+		} else
 			content = "<img src=" + content + ">";
-		
+
 		return content;
 	}
 

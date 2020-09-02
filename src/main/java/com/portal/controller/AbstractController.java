@@ -328,7 +328,7 @@ public class AbstractController {
 		return new ArrayList<MBMessage>();
 	}
 
-	public List<JournalArticle> getJournalArticles(List<Long> classpks, String input, String searchTerm) {
+	public List<JournalArticle> getJournalArticlesBySearchTerm(List<Long> classpks, String searchTerm) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		for (Long classPK : classpks) {
 			JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(classPK, searchTerm);
@@ -593,6 +593,7 @@ public class AbstractController {
 		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
 		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
+		newArticle.setCategoryType(CategoryType.ANNOUNCEMENT);
 		return newArticle;
 	}
 
@@ -704,6 +705,18 @@ public class AbstractController {
 		return info;
 	}
 
+	public String byPaganationWithArticle(List<String> articleIdList, String input) {
+		int index = Integer.parseInt(input);
+		int lastIndex = (articleIdList.size() - 1) - (index * 10 - 10);
+		int substract = lastIndex < 9 ? lastIndex : 9;
+		int startIndex = lastIndex - substract;
+
+		String info = "";
+		for (int i = startIndex; i <= lastIndex; i++)
+			info += articleIdList.get(i) + ",";
+		return info;
+	}
+
 	public JournalArticle getArticle(String classpk, String userId) {
 		ObjectMapper mapper = new ObjectMapper();
 		Long classPK = Long.parseLong(classpk.toString());
@@ -801,13 +814,14 @@ public class AbstractController {
 		}
 		return journalArticle;
 	}
-	
-	public List<JournalArticle> getAllArticles(List<Long> classPKList,String input, String userId) {
+
+	public List<JournalArticle> getAllArticles(List<Long> classPKList, String input, String userId) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		for (Long classpk : classPKList) {
 			JournalArticle journal = getArticle(classpk.toString(), userId);
-			if (journal != null)
+			if (journal != null) {
 				journalArticleList.add(journal);
+			}
 		}
 		return journalArticleList;
 	}

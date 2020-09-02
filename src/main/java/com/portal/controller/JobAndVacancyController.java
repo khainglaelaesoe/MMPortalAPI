@@ -126,7 +126,7 @@ public class JobAndVacancyController extends AbstractController {
 
 		if (topic.equals("all")) {
 			classpks = assetEntryService.getClassPkList(85090);
-			List<JournalArticle> journalArticleList = getJournalArticles(classpks, input, searchTerm);
+			List<JournalArticle> journalArticleList = getJournalArticlesBySearchTerm(classpks, searchTerm);
 
 			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);

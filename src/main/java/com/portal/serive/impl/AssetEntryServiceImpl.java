@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.portal.dao.AssetEntryDao;
 import com.portal.entity.AssetEntry;
@@ -234,6 +235,15 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	public long getClassPK() {
 		String query = "SELECT classpk from AssetEntry where visible=1 and entryid in (Select entryid from AssetEntries_AssetCategories where categoryId=126202) order by entryid desc";
 		return assetEntryDao.findLongByQueryString(query).get(0);
+	}
+
+	public long getClassTypeId(Long classpk) {
+		String query = "select classtypeid from AssetEntry where classpk=" + classpk;
+		List<Long> classpks = assetEntryDao.findLongByQueryString(query);
+		if (CollectionUtils.isEmpty(classpks))
+			return 0;
+
+		return classpks.get(0);
 	}
 
 	public List<String> getClassUuidByDate(Long classTypeId, String dateStr) {

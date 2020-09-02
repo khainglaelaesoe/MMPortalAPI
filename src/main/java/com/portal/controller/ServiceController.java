@@ -116,8 +116,8 @@ public class ServiceController extends AbstractController {
 
 	public List<JournalArticle> getJournalArticlesBySearchTerm(List<Long> classPKList, String input, String userId, String searchTerm) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
-		//String info = convertLongListToString(classPKList, input);
-		//String[] classpks = info.split(",");
+		// String info = convertLongListToString(classPKList, input);
+		// String[] classpks = info.split(",");
 		for (Long classPK : classPKList) {
 			String classpk = classPK.toString();
 			JournalArticle journalArticle = journalArticleService.byClassPKAndSearchTerms(classPK, searchTerm);

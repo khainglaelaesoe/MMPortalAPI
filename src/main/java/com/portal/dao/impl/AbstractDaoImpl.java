@@ -190,7 +190,7 @@ public abstract class AbstractDaoImpl<E, I extends Serializable> implements Abst
 		}
 	}
 
-	public List<E> findDatabyQueryString(String queryString, long dataInput) {
+	public List<E> findDatabyQueryString(String queryString, String dataInput) {
 		List<E> entityList;
 		Query query = entityManager.createQuery(queryString).setParameter("dataInput", dataInput);
 		entityList = query.getResultList();

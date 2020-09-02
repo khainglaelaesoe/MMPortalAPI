@@ -51,10 +51,6 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	private String page;
 
 	@JsonIgnore
-	@Column(name = "createdate")
-	private String createdate;
-
-	@JsonIgnore
 	@Column(name = "modifieddate")
 	private String modifieddate;
 
@@ -130,6 +126,10 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	private String displaydate;
 
 	@JsonView(Views.Thin.class)
+	@Column(name = "createdate")
+	private String createdate;
+
+	@JsonView(Views.Thin.class)
 	@Transient
 	private String myanmarLocation;
 
@@ -172,7 +172,7 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	// @JsonIgnore
 	@JsonView(Views.Thin.class)
 	@Column(name = "articleid")
-	private long articleid;
+	private String articleid;
 
 	@JsonView(Views.Thin.class)
 	@Transient
@@ -353,6 +353,10 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 	@Transient
 	private String pdfLink;
 
+	@JsonView(Views.Summary.class)
+	@Transient
+	private CategoryType categoryType;
+
 	@Transient
 	@JsonView(Views.Thin.class)
 	private List<Map<String, String>> myanmarQuestionsMap;
@@ -379,6 +383,14 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 
 	public HashMap<Integer, String> getiOSmLinkList() {
 		return iOSmLinkList;
+	}
+
+	public CategoryType getCategoryType() {
+		return categoryType;
+	}
+
+	public void setCategoryType(CategoryType categoryType) {
+		this.categoryType = categoryType;
 	}
 
 	public void setiOSmLinkList(HashMap<Integer, String> iOSmLinkList) {
@@ -625,11 +637,11 @@ public class JournalArticle extends AbstractEntity implements Serializable {
 		this.statusbyusername = statusbyusername;
 	}
 
-	public long getArticleid() {
+	public String getArticleid() {
 		return articleid;
 	}
 
-	public void setArticleid(long articleid) {
+	public void setArticleid(String articleid) {
 		this.articleid = articleid;
 	}
 

@@ -142,7 +142,7 @@ public class TenderController extends AbstractController {
 		long totalCount = 0;
 		if (topic.equals("all")) {
 			classpks = assetEntryService.getClassPkList(85086);
-			List<JournalArticle> journalArticles = getJournalArticles(classpks, input, searchTerm); // by size // now all
+			List<JournalArticle> journalArticles = getJournalArticlesBySearchTerm(classpks, searchTerm); // by size // now all
 
 			int lastPageNo = journalArticles.size() % 10 == 0 ? journalArticles.size() / 10 : journalArticles.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);

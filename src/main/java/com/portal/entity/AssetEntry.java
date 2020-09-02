@@ -40,7 +40,7 @@ public class AssetEntry implements Serializable {
 
 	@JsonIgnore
 	@Column(name = "classtypeid")
-	private String classtypeid;
+	private Long classtypeid;
 
 	@JsonIgnore
 	@Column(name = "publishdate")
@@ -126,11 +126,11 @@ public class AssetEntry implements Serializable {
 		this.classuuid = classuuid;
 	}
 
-	public String getClasstypeid() {
+	public Long getClasstypeid() {
 		return classtypeid;
 	}
 
-	public void setClasstypeid(String classtypeid) {
+	public void setClasstypeid(Long classtypeid) {
 		this.classtypeid = classtypeid;
 	}
 

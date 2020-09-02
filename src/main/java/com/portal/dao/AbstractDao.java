@@ -40,7 +40,7 @@ public interface AbstractDao<E, I extends Serializable> {
 
 	public boolean saveUpdate(E e) throws ServiceUnavailableException;
 
-	public List<E> findDatabyQueryString(String queryString, long dataInput);
+	public List<E> findDatabyQueryString(String queryString, String dataInput);
 
 	public int findCountByQueryString(String queryString);
 

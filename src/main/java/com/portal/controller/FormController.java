@@ -196,7 +196,7 @@ public class FormController extends AbstractController {
 
 		if (topic.equals("all")) {
 			classpks = assetEntryService.getClassPkList(85212);
-			List<JournalArticle> journalArticleList = getJournalArticles(classpks, input, searchTerm); // by size // now all
+			List<JournalArticle> journalArticleList = getJournalArticlesBySearchTerm(classpks, searchTerm); // by size // now all
 			int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;
 			json.put("lastPageNo", lastPageNo);
 			json.put("forms", byPaganation(parseJournalArticleList(journalArticleList), input));
