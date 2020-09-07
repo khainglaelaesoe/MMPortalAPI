@@ -15,6 +15,7 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
 import com.portal.controller.DiscussionController;
+import com.portal.entity.Organization_;
 import com.portal.entity.TableData;
 
 public class DocumentParsing {
@@ -547,6 +548,49 @@ public class DocumentParsing {
 			}
 		}
 		return engmyan;
+
+	}
+	public ArrayList<Organization_> ParsingEmergencyContent(String input) {
+		ArrayList<Organization_> orgList = new ArrayList<Organization_>();
+		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
+		Elements elements = doc.select("dynamic-element");
+		for (Element element : elements) {
+			Organization_ org = new Organization_();
+			if (element.attr("type").equals("selection_break")) {
+				if (element.getElementsByAttributeValueContaining("name", "key").size() > 0) {
+					Elements eleKeys = element.getElementsByAttributeValueContaining("name", "key");
+					for(Element eleKey : eleKeys) {
+						if (eleKey.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+							String enginput = eleKey.getElementsByAttributeValueContaining("language-id", "en_US").text();
+							org.setEngContent(enginput);
+						}
+
+						if (eleKey.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+							String myaninput = eleKey.getElementsByAttributeValueContaining("language-id", "my_MM").text();
+							org.setMmContent(myaninput);
+
+						}
+					}
+				}
+				if (element.getElementsByAttributeValueContaining("name", "value").size() > 0) {
+					Elements eleValues = element.getElementsByAttributeValueContaining("name", "value");
+					for(Element eleValue : eleValues) {
+						if (eleValue.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+							String enginput = eleValue.getElementsByAttributeValueContaining("language-id", "en_US").text();
+							org.setEngPhoneNo(enginput.replace(" ", ""));
+						}
+	
+						if (eleValue.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+							String myaninput = eleValue.getElementsByAttributeValueContaining("language-id", "my_MM").text();
+							org.setMyanmarPhoneNo(myaninput.replace(" ", ""));
+	
+						}
+					}
+				}
+				orgList.add(org);
+			}
+		}
+		return orgList;
 
 	}
 }

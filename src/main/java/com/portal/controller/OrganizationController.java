@@ -131,36 +131,8 @@ public class OrganizationController extends AbstractController {
 			String title[] = new DocumentParsing().ParsingTitle(journal.getTitle());
 			organization.setEngName(title[0]);
 			organization.setMyanmarName(title[1]);
-
-			Document doc = Jsoup.parse(journal.getContent());
-			replaceTag(doc.children());
-			String[] contentInfo = Jsoup.parse(doc.toString()).text().split("/");
-			List<String> infoList = new ArrayList<String>();
-			for (int i = 0; i < contentInfo.length; i++) {
-				if (contentInfo[i] != null && !contentInfo[i].isEmpty() && contentInfo[i].length() > 1)
-					infoList.add(contentInfo[i]);
-			}
 			ArrayList<Organization_> oldArr = new ArrayList<Organization_>();
-			Organization_ org = new Organization_();
-			int j = 0;
-			for (String i : infoList) {
-				char p = i.charAt(i.length()-2);
-				logger.info("Char_________" + p);
-				if (i.startsWith("0") || i.startsWith("19"))
-					org.setEngPhoneNo(i.replace(" ",""));
-				else if (i.startsWith("၀") || i.startsWith("၁၉") || i.startsWith("ဝ"))
-					org.setMyanmarPhoneNo(i.replace(" ",""));
-				else if ((i.trim().charAt(i.length()-2) >= 'a' && i.trim().charAt(i.length()-2) <= 'z') || (i.trim().charAt(i.length()-2) >= 'A' && i.trim().charAt(i.length()-2) <= 'Z'))
-					org.setEngContent(i);
-				else
-					org.setMmContent(i);
-				j++;
-				if (j > 3) {
-					oldArr.add(org);
-					org = new Organization_();
-					j = 0;
-				}
-			}
+			oldArr =new DocumentParsing().ParsingEmergencyContent(journal.getContent());
 			organization.setSeeMore(oldArr);
 			orgList.add(organization);
 		}
