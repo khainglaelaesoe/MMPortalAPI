@@ -41,11 +41,11 @@ public class Organization_ implements Serializable {
 
 	@Transient
 	@JsonView(Views.Thin.class)
-	private String engContent;
+	private String engContent = "";
 
 	@Transient
 	@JsonView(Views.Thin.class)
-	private String mmContent;
+	private String mmContent = "";
 
 	@Transient
 	@JsonView(Views.Thin.class)
@@ -129,7 +129,7 @@ public class Organization_ implements Serializable {
 
 	@Transient
 	@JsonView(Views.Summary.class)
-	private String myanmarPhoneNo;
+	private String myanmarPhoneNo = "";
 
 	@Transient
 	@JsonView(Views.Summary.class)
@@ -141,7 +141,7 @@ public class Organization_ implements Serializable {
 
 	@Transient
 	@JsonView(Views.Summary.class)
-	private String engPhoneNo;
+	private String engPhoneNo = "";
 
 	@Transient
 	@JsonView(Views.Summary.class)
