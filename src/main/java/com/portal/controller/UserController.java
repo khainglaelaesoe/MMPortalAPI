@@ -119,6 +119,26 @@ public class UserController {
 		return response;
 	}
 	
+	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject checkQuestion(@RequestParam("email") String email){
+		JSONObject response = new JSONObject();
+		User_ user = userservice.getUserbyemail("aprilthannaing1995@gmail.com");
+		if(user == null) {
+			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
+			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
+			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
+			response.put("status", "1");
+			response.put("message", "Success!");
+		}else {
+			response.put("status", "0");
+			response.put("message", "Email Not Found!");
+			return response;
+		}
+		return response;
+	}
+	
 	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -138,13 +158,8 @@ public class UserController {
 		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
 		if(otherserviceResponse.getBody().get("resetToken") != null) {
 			resToken =  otherserviceResponse.getBody().get("resetToken").toString();
-			User_ user = userservice.getUserbyemail("aprilthannaing1995@gmail.com");
-			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
 			response.put("status", "1");
 			response.put("message", "Success!");
-			response.put("userid", user.getUserid());
 			response.put("token", resToken);//atn
 		}else {
 			response.put("status", "0");
@@ -154,6 +169,39 @@ public class UserController {
 		
 		return response;
 	}
+	
+	@RequestMapping(value = "resetpasswordCode", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	private JSONObject resetpasswordCode(@RequestBody JSONObject req) {
+		JSONObject response = new JSONObject();
+		JSONObject json = new JSONObject();
+		json.put("resetToken", req.get("token").toString());
+		json.put("code", req.get("code").toString());
+		json.put("password", "");
+		HttpHeaders headers = new HttpHeaders();
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json,headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = OTHERSERVICEURL + "/reset-password";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
+		if(otherserviceResponse.getBody().get("errCode") != null) {
+			if(otherserviceResponse.getBody().get("errCode").equals("E20")) {
+				response.put("status", "0");
+				response.put("message", otherserviceResponse.getBody().get("message").toString());
+				return response;
+			}
+			response.put("status", "1");
+			response.put("message", "Success!");
+		}
+		return response;
+	}
+	
 	
 	@RequestMapping(value = "resetpassword", method = RequestMethod.POST)
 	@ResponseBody
