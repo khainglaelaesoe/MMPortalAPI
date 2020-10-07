@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	public User_ getUserbyfacebookID(String facebookID) {
-		String query = "from User_ where emailaddress="+ Long.parseLong(facebookID);
+		String query = "from User_ where facebookId="+ facebookID;
 		List<User_> users = userDao.getAll(query);
 		if(users.size() > 0) 
 			 return userDao.getAll(query).get(0);

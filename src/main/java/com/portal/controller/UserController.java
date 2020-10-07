@@ -86,34 +86,40 @@ public class UserController {
 	@JsonView(Views.Summary.class)
 	public JSONObject facebookLogin(@RequestHeader("Authorization") String fbtoken,@RequestHeader("facebookID") String facebookID){
 		JSONObject response = new JSONObject();
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", fbtoken);
-		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
-		logger.info("Request is: " + entityHeader);
-
-		String url = OTHERSERVICEURL + "/login-with-facebook";
-		logger.info("service url is: " + url);
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		logger.info("calling webservice..." + builder);
-		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
-		logger.info("Facebook Login Response : " + otherserviceResponse);
-		if(otherserviceResponse.getBody().get("errCode") != "") {
-			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message"));
-		}else {
-			User_ user = userservice.getUserbyfacebookID(facebookID);
-			MobileResponse mbresponse = convertoMobileResponse(user);
-			response.put("status", "1");
-			response.put("user", mbresponse);
-			response.put("message", "Login Success!");
-			response.put("profilePicture", "");
+		User_ user = new User_();
+		user = userservice.getUserbyfacebookID(facebookID);
+		if(user == null) {
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Authorization", fbtoken);
+			HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+			logger.info("Request is: " + entityHeader);
+	
+			String url = OTHERSERVICEURL + "/login-with-facebook";
+			logger.info("service url is: " + url);
+	
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+			logger.info("calling webservice..." + builder);
+			RestTemplate restTemplate = new RestTemplate();
+			HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
+			logger.info("Facebook Login Response : " + otherserviceResponse);
+			if(otherserviceResponse.getBody().get("errCode") != null) {
+				response.put("status", "0");
+				response.put("message", otherserviceResponse.getBody().get("message"));
+				return response;
+			}else {
+				user = userservice.getUserbyfacebookID(facebookID);
+			}
 		}
+		MobileResponse mbresponse = convertoMobileResponse(user);
+		response.put("status", "1");
+		response.put("user", mbresponse);
+		response.put("message", "Login Success!");
+		response.put("profilePicture", "");
+		
 		return response;
 	}
 	
-	@RequestMapping(value = "checkemail", method = RequestMethod.GET)
+	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject checkemail(@RequestParam("email") String email){
@@ -149,16 +155,17 @@ public class UserController {
 		return response;
 	}
 	
-	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
+	@RequestMapping(value = "resetpassword", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	private JSONObject resetpasswordbyToken(@RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
+		JSONObject json = new JSONObject();
+		json.put("resetToken", req.get("token").toString());
+		json.put("code", req.get("code").toString());
+		json.put("password", req.get("password").toString());
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("resetToken", req.get("token").toString());
-		headers.add("code", req.get("code").toString());
-		headers.add("password", req.get("password").toString());
-		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json,headers);
 		logger.info("Request is: " + entityHeader);
 
 		String url = OTHERSERVICEURL + "/reset-password";
