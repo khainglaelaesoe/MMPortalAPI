@@ -6,5 +6,5 @@ import com.portal.entity.User_;
 
 public interface UserService {
 	public List<User_> getAllWebUsers();
-
+	public User_ getUserbyemail(String emailaddress);
 }

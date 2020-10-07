@@ -20,4 +20,12 @@ public class UserServiceImpl implements UserService {
 		List<User_> users = userDao.getAll(query);
 		return users;
 	}
+	
+	public User_ getUserbyemail(String emailaddress) {
+		String query = "from User_ where emailaddress='"+ emailaddress +"'";
+		List<User_> users = userDao.getAll(query);
+		if(users.size() > 0) 
+			 return userDao.getAll(query).get(0);
+		else return null;
+	}
 }
