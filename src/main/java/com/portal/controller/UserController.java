@@ -84,7 +84,7 @@ public class UserController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("Authorization") String fbtoken){
+	public JSONObject facebookLogin(@RequestHeader("Authorization") String fbtoken,@RequestHeader("facebookID") String facebookID){
 		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", fbtoken);
@@ -103,7 +103,7 @@ public class UserController {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message"));
 		}else {
-			User_ user = userservice.getUserbyemail("aprilthannaing1995@gmail.com");
+			User_ user = userservice.getUserbyfacebookID(facebookID);
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
 			response.put("user", mbresponse);
@@ -139,7 +139,7 @@ public class UserController {
 			response.put("status", "1");
 			response.put("message", "Success!");
 			response.put("userid", user.getUserid());
-			response.put("userid", user.getUserid());
+			response.put("token", resToken);//atn
 		}else {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
@@ -152,12 +152,12 @@ public class UserController {
 	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	private JSONObject resetpasswordbyToken(String resToken,String password) {
+	private JSONObject resetpasswordbyToken(@RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("resetToken", resToken);
-		headers.add("code", "871616");
-		headers.add("password", password);
+		headers.add("resetToken", req.get("token").toString());
+		headers.add("code", req.get("code").toString());
+		headers.add("password", req.get("password").toString());
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
@@ -168,10 +168,11 @@ public class UserController {
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
-		if(otherserviceResponse.getBody().get("resetToken") != null) {
-			resToken =  otherserviceResponse.getBody().get("resetToken").toString();
-		}else {
+		if(otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
+			response.put("message", otherserviceResponse.getBody().get("message").toString());
+		}else {
+			response.put("status", "1");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
 			return response;
 		}
