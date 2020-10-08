@@ -18,6 +18,9 @@ public class MobileResponse {
 	@JsonView(Views.Thin.class)
 	private String profilePicture= "";
 	
+	@JsonView(Views.Thin.class)
+	private String phoneno;
+	
 	public long getUserid() {
 		return userid;
 	}
@@ -48,4 +51,11 @@ public class MobileResponse {
 	public void setProfilePicture(String profilePicture) {
 		this.profilePicture = profilePicture;
 	}
+	public String getPhoneno() {
+		return phoneno;
+	}
+	public void setPhoneno(String phoneno) {
+		this.phoneno = phoneno;
+	}
+	
 }

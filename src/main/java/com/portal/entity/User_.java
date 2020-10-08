@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -71,6 +72,19 @@ public class User_ {
 	@JsonIgnore
 	@Column(name = "reminderqueryanswer")
 	private String reminderqueryanswer;
+	
+	@JsonIgnore
+	@Transient
+	private String phone;
+
+	
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 
 	public long getUserid() {
 		return userid;

@@ -153,7 +153,8 @@ public class UserController {
 			response.put("user", mbresponse);
 			response.put("message", "Login Success!");
 			response.put("profilePicture", "");
-		} else {
+			response.put("token", otherserviceResponse.get("access_token").toString());
+		}else {
 			response.put("status", "0");
 			response.put("message", "Your email or password was incorrect. please try again");
 		}
@@ -167,6 +168,8 @@ public class UserController {
 		mbresponse.setScreenname(user.getScreenname());
 		mbresponse.setEmailaddress(user.getEmailaddress());
 		mbresponse.setName(user.getFirstname() + user.getLastname() == null ? "" : user.getLastname());
+		mbresponse.setName(user.getFirstname() + user.getLastname());
+		mbresponse.setPhoneno(user.getPhone());
 		return mbresponse;
 	}
 
@@ -208,9 +211,8 @@ public class UserController {
 	@JsonView(Views.Summary.class)
 	public JSONObject checkQuestion(@RequestParam("email") String email) {
 		JSONObject response = new JSONObject();
-		User_ user = userservice.getUserbyemail("aprilthannaing1995@gmail.com");
+		User_ user = userservice.getUserbyemail(email);
 		if (user != null) {
-
 			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
 			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
 			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");

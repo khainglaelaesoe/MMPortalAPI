@@ -23,12 +23,23 @@ public class UserServiceImpl implements UserService {
 	}
 
 	public User_ getUserbyemail(String emailaddress) {
-		String query = "from User_ where emailaddress='" + emailaddress + "'";
+		User_ res = new User_();
+		String query = "from User_ where emailaddress='"+ emailaddress +"'";
 		List<User_> users = userDao.getAll(query);
-		if (users.size() > 0)
-			return userDao.getAll(query).get(0);
-		else
-			return null;
+		if(users.size() > 0) {
+			res = userDao.getAll(query).get(0);
+			res.setPhone(getPhone(res.getUserid()));
+			return res;
+		}else return null;
+	}
+	public String getPhone(long userid) {
+		String phoneNo = "";
+		String query = "Select number_ from phone where userid=" + userid + " order by phoneId desc ";
+		List<String> strList = userDao.findByQuery(query);
+		if(strList.size() > 0 ) {
+			phoneNo = strList.get(0);
+		}
+		return phoneNo;
 	}
 
 	public User_ getUserbyfacebookID(String facebookID) {
