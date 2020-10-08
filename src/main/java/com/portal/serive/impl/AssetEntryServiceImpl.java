@@ -108,12 +108,17 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	}
 
 	public List<Long> getClassPkList(long classTypeId) {
-		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by createdate";
+		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by publishdate";
 		return assetEntryDao.findLongByQueryString(query);
 	}
 
 	public List<Long> getAssetEntryListByClassTypeIdAndOrderByPriority(long classTypeId) {
 		String query = "SELECT classpk from AssetEntry where classtypeid=" + classTypeId + " and visible = 1 order by priority desc";
+		return assetEntryDao.findLongByQueryString(query);
+	}
+
+	public List<Long> getClasspkListBySearchTerm(long classTypeId, String searchTerm) {
+		String query = "Select classpk from AssetEntry assetEntry where classtypeid=" + classTypeId + " and title LIKE '%" + searchTerm + "%' and assetEntry.visible=1 order by priority desc";
 		return assetEntryDao.findLongByQueryString(query);
 	}
 

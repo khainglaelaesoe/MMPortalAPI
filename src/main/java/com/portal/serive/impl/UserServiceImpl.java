@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.portal.dao.UserDao;
 import com.portal.entity.User_;
@@ -20,20 +21,31 @@ public class UserServiceImpl implements UserService {
 		List<User_> users = userDao.getAll(query);
 		return users;
 	}
-	
+
 	public User_ getUserbyemail(String emailaddress) {
-		String query = "from User_ where emailaddress='"+ emailaddress +"'";
+		String query = "from User_ where emailaddress='" + emailaddress + "'";
 		List<User_> users = userDao.getAll(query);
-		if(users.size() > 0) 
-			 return userDao.getAll(query).get(0);
-		else return null;
+		if (users.size() > 0)
+			return userDao.getAll(query).get(0);
+		else
+			return null;
 	}
-	
+
 	public User_ getUserbyfacebookID(String facebookID) {
 		String query = "from User_ where facebookId="+ facebookID;
+
 		List<User_> users = userDao.getAll(query);
-		if(users.size() > 0) 
-			 return userDao.getAll(query).get(0);
-		else return null;
+		if (users.size() > 0)
+			return userDao.getAll(query).get(0);
+		else
+			return null;
+	}
+
+	public Long getIdByEmail(String emailAddress) {
+		String query = "select userid from User_ u where emailAddress='" + emailAddress + "'";
+		List<Long> idList = userDao.findLongByQueryString(query);
+		if (CollectionUtils.isEmpty(idList))
+			return null;
+		return idList.get(0);
 	}
 }

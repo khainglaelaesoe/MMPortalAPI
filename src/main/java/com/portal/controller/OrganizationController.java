@@ -15,6 +15,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.Organization_;
 import com.portal.entity.Views;
 import com.portal.parsing.DocumentParsing;
+import com.portal.service.AssetCategoryService;
 import com.portal.service.AssetEntryService;
 import com.portal.service.JournalArticleService;
 
@@ -42,6 +44,12 @@ public class OrganizationController extends AbstractController {
 
 	@Autowired
 	private AssetEntryService assetEntryService;
+
+	@Autowired
+	private AssetCategoryService assetCategoryService;
+
+	@Value("${IMAGEURL}")
+	private String IMAGEURL;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 
@@ -79,15 +87,19 @@ public class OrganizationController extends AbstractController {
 		organization.setEngName(title[0]);
 		organization.setMyanmarName(title[1]);
 		organization.setEmail(getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Email", "<dynamic-content language-id=\"en_US\">"));
-		organization.setEngPhoneNo(getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"en_US\">"));
-		organization.setMyanmarPhoneNo(getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">"));
+
+		String engPhNo = getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"en_US\">");
+		organization.setEngPhoneNo(engPhNo.replaceAll(" ", ""));
+
+		String myaPhNo = getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Phone", "<dynamic-content language-id=\"my_MM\">");
+		organization.setMyanmarPhoneNo(myaPhNo.replaceAll(" ", ""));
 		organization.setEngAddress(getEngElement(journalArticle.getContent(), "OfficeAddress", "<dynamic-content language-id=\"en_US\">"));
 		organization.setMyanmarAddress(getEngElement(journalArticle.getContent(), "OfficeAddress", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "OfficeAddress", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "OfficeAddress", "<dynamic-content language-id=\"my_MM\">"));
 		for (String engPh : organization.getEngPhoneNo().split(","))
-			organization.getEngPhoneNoList().add(engPh);
+			organization.getEngPhoneNoList().add(engPh.replaceAll(" ", ""));
 
 		for (String myaPh : organization.getMyanmarPhoneNo().split("၊"))
-			organization.getMyanmarPhoneNoList().add(myaPh);
+			organization.getMyanmarPhoneNoList().add(myaPh.replaceAll(" ", ""));
 
 		organization.setEngContent(journalArticle.getContent());
 		return organization;
@@ -132,7 +144,7 @@ public class OrganizationController extends AbstractController {
 			organization.setEngName(title[0]);
 			organization.setMyanmarName(title[1]);
 			ArrayList<Organization_> oldArr = new ArrayList<Organization_>();
-			oldArr =new DocumentParsing().ParsingEmergencyContent(journal.getContent());
+			oldArr = new DocumentParsing().ParsingEmergencyContent(journal.getContent());
 			organization.setSeeMore(oldArr);
 			orgList.add(organization);
 		}
@@ -233,7 +245,7 @@ public class OrganizationController extends AbstractController {
 		if (mStart > 0) {
 			int mEnd = remainString.lastIndexOf("</dynamic-content>");
 			myanmarContent = Jsoup.parse(remainString.substring(mStart, mEnd)).text().replaceAll("value 1", "");
-			
+
 		}
 		String mm = myanmarContent.replaceAll("website", "mobile application");
 		String eng = engContent.replaceAll("website", "mobile application");
@@ -267,7 +279,7 @@ public class OrganizationController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
 		JSONObject resultJson = new JSONObject();
-		List<Long> classpks = assetEntryService.getAssetEntryListBySearchTerm(91234, searchTerm);
+		List<Long> classpks = assetEntryService.getClasspkListBySearchTerm(91234, searchTerm);
 		List<Organization_> orgs = getOrganizationList(convertToString(classpks, index));
 		Stack<Organization_> stackList = new Stack<Organization_>();
 		orgs.forEach(org -> {
@@ -279,7 +291,7 @@ public class OrganizationController extends AbstractController {
 			newArticles.add(stackList.pop());
 		}
 
-		int lastPageNo = newArticles.size() % 10 == 0 ? newArticles.size() / 10 : newArticles.size() / 10 + 1;
+		int lastPageNo = classpks.size() % 10 == 0 ? classpks.size() / 10 : classpks.size() / 10 + 1;
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("orginations", newArticles);
 		resultJson.put("totalCount", 0);
@@ -298,6 +310,18 @@ public class OrganizationController extends AbstractController {
 			OrgMyanmarName orgName = OrgMyanmarName.valueOf(input);
 			String value = orgName.getValue();
 			switch (orgName) {
+			case Ministry_of_Transport_and_Communications:
+				value = "Ministry of Transport and Communications";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Ministry_of_Construction:
+				value = "Ministry of Construction";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case Ministry_of_Agriculture_Livestocks_and_Irrigation:
+				value = "Ministry of Agriculture, Livestock and Irrigation";
+				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
 			case Napyitaw_City_Development_Committee:
 				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
 				break;
@@ -315,6 +339,11 @@ public class OrganizationController extends AbstractController {
 			case Ministry_of_Social_Welfare_Relief_Resettlement:
 				value = "Ministry of Social Welfare, Relief and Resettlement";
 				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
+				break;
+			case State_Regional_Hluttaws:
+				List<String> names = assetCategoryService.getStateNames();
+				for (String name : names)
+					classpks.addAll(assetEntryService.getAssetEntryListByKeyword(91234, name));
 				break;
 			case Chin_State_Government:
 				value = "ချင်းပြည်နယ်";
@@ -349,7 +378,6 @@ public class OrganizationController extends AbstractController {
 		JSONObject json = new JSONObject();
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
-			logger.info("name!!!!!!!!!!!!!!!!!!!!!!!!!!!" + name);
 			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance) {
 				Organization_ org = new Organization_();
 				org.setMyanmarName(name.getValue());
@@ -361,5 +389,27 @@ public class OrganizationController extends AbstractController {
 		}
 		json.put("organizationList", organizationList);
 		return json;
+	}
+
+	@RequestMapping(value = "banner", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject getBanner() {
+		JSONObject resultJson = new JSONObject();
+		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg", IMAGEURL + "banner03.png" };
+		resultJson.put("bannerList", bannerList);
+
+		JSONObject[] array = new JSONObject[3];
+		JSONObject object1 = new JSONObject();
+		object1.put("banner", IMAGEURL + "banner01.jpg");
+		JSONObject object2 = new JSONObject();
+		object2.put("banner", IMAGEURL + "banner02.jpg");
+		JSONObject object3 = new JSONObject();
+		object3.put("banner", IMAGEURL + "banner03.png");
+		array[0] = object1;
+		array[1] = object2;
+		array[2] = object3;
+		resultJson.put("bannerObjects", array);
+		return resultJson;
 	}
 }

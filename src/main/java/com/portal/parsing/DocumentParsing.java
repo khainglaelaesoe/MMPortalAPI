@@ -102,6 +102,19 @@ public class DocumentParsing {
 		return imagepath;
 	}
 
+	public String parseImageForLatestNews(String input) {
+		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
+		Elements elements = doc.select("dynamic-element");
+		for (Element element : elements) {
+			if (element.attr("type").equals("image")) {
+				if (element.hasText() == true) {
+					return SourceChange2(element.text().split(" ")[0]);
+				}
+			}
+		}
+		return "";
+	}
+
 	public List<String> ParsingEngImage(String input) {
 		String imagepath = "";
 		List images = new ArrayList<String>();
@@ -317,12 +330,11 @@ public class DocumentParsing {
 			content = "<img src=" + "\"https://myanmar.gov.mm" + content + "\">";
 		} else
 			content = "<img src=" + content + ">";
-
 		return content;
 	}
 
 	public String SourceChange2(String content) {
-		content = "https://myanmar.gov.mm" + content;
+		content = !content.contains("http") ? "https://myanmar.gov.mm" + content : content;
 		return content;
 	}
 

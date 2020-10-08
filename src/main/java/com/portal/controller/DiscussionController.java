@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import javax.print.attribute.standard.JobKOctets;
+
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,12 +65,15 @@ public class DiscussionController extends AbstractController {
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
-		newJournal.setDisplaydate(resultDateString);
-
+		newJournal.setDisplaydate(resultDateString);		
+		newJournal.setContent(journalArticle.getContent());
+		
 		DocumentParsing dp = new DocumentParsing();
-		List<String> contentList = dp.ParsingAllContent2(journalArticle.getContent());
-		newJournal.setEngContent(contentList.get(0).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span style=\"color:#0000ff;\">", ""));
-		newJournal.setMyanmarContent(contentList.get(1).replaceAll("<html>", "").replaceAll("</html>", "").replaceAll("<head>", "").replaceAll("</head>", "").replaceAll("<body>", "").replaceAll("</body>", "").replaceAll("\n \n \n", "").replaceAll("<span style=\"color:#0000ff;\">", ""));
+		String engContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"en_US\">");
+		String myaContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">");
+
+		newJournal.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
+		newJournal.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));		
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
 		newJournal.setpKString(journalArticle.getpKString());
 		newJournal.setMessageList(journalArticle.getMessageList());

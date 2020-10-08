@@ -67,10 +67,8 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setEngTitle(title[0]);
 		newArticle.setMynamrTitle(title[1]);
 
-		String imageUrl = "";
-		imageUrl = imageUrl.isEmpty() ? getDocumentImage(journalArticle.getContent()) : imageUrl;
-		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
-		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getImage(journalArticle.getContent()) : newArticle.getImageUrl());
+		String image = dp.parseImageForLatestNews(journalArticle.getContent());
+		newArticle.setImageUrl(image);
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");

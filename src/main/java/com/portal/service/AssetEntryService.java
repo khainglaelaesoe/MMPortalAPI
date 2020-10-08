@@ -77,4 +77,5 @@ public interface AssetEntryService {
 
 	public List<Long> getAssetEntryListBySearchTerm(long classTypeId, String searchTerm);
 
+	public List<Long> getClasspkListBySearchTerm(long classTypeId, String searchTerm);
 }

@@ -58,14 +58,14 @@ public class UpcomingController {
 			String mmTitle = title[1];
 			// StartDate
 			Date startDate = new Date(cl.getStarttime());
-			SimpleDateFormat simpleformat = new SimpleDateFormat("MMMM YYYY");
+			SimpleDateFormat simpleformat = new SimpleDateFormat("MMMM yyyy");
 			String strMonthYear = simpleformat.format(startDate);
 			SimpleDateFormat simpleformat1 = new SimpleDateFormat("dd MMM");
 			String strDayMonth = simpleformat1.format(startDate);
 			// endDate
 			Date endDate1 = new Date(cl.getEndtime());
 			Date endDate = subtractDays(endDate1);
-			SimpleDateFormat simpleformat2 = new SimpleDateFormat("MMMM YYYY");
+			SimpleDateFormat simpleformat2 = new SimpleDateFormat("MMMM yyyy");
 			String strMonthYearEndDate = simpleformat2.format(endDate);
 			SimpleDateFormat simpleformat3 = new SimpleDateFormat("dd MMM");
 			String strDayMonthEndDate = simpleformat3.format(endDate);

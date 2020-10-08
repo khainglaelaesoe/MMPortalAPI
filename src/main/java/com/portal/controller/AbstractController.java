@@ -794,7 +794,9 @@ public class AbstractController {
 				msg.getReplyList().addAll(parse(replyList, userId));
 
 				MobileResult json = getMbData(msg.getMessageid(), userId, 0);
+
 				String checklikemb = json.getChecklike();
+
 				if (checklikemb == "0.0") {
 					if (messageService.likebyuserid(msg.getMessageid(), json.getWebuserid(), 1)) {// check web like
 						checklikemb = "1.0";
@@ -802,8 +804,10 @@ public class AbstractController {
 						checklikemb = "2.0";
 					}
 				}
+
 				long likecount = json.getLikecount();
 				long totallikecount = msg.getLikecount() + likecount;
+
 				msg.setLikecount(totallikecount);
 				msg.setDislikecount(json.getDislikecount());
 				msg.setChecklike(checklikemb);
@@ -812,6 +816,7 @@ public class AbstractController {
 			journalArticle.setMessageList(messageList);
 			journalArticle.setpKString(classpk);
 		}
+
 		return journalArticle;
 	}
 

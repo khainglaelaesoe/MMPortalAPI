@@ -51,13 +51,9 @@ public class MessageServiceImpl implements MessageService {
 		return messageDao.findCountByQueryString(querycount);
 	}
 
-	public boolean likebyuserid(Long messageid, Long webuserid, long score) {
-		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid + " And userid=" + webuserid + " And score= " + score;
-		if (messageDao.findCountByQueryString(querycount) > 0) {
-			return true;
-		} else
-			return false;
-
+	public boolean likebyuserid(Long messageid, Long webuserid, long score) {		
+		String querycount = "Select count(*) from RatingsEntry where classPk=" + messageid + " And userid=" + webuserid + " And score= " + score;		
+		return messageDao.findCountByQueryString(querycount) > 0;
 	}
 
 	public List<MBMessage> byClassPKbymessageid(List<Long> messageidList) {

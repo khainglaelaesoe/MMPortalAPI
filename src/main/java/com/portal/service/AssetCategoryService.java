@@ -7,7 +7,6 @@ import com.portal.entity.AssetCategory;
 public interface AssetCategoryService {
 	public AssetCategory getAssetCategoryById(long id);
 
-	// KLLS
 	List<AssetCategory> getAssetCategoryNameExceptionByVocalbularyId(long id);
 
 	public List<AssetCategory> getAssetCategoryByParentCategoryId(long id);
@@ -19,6 +18,6 @@ public interface AssetCategoryService {
 	public List<Long> getIdListByParentCategoryIdMinistry(long id);
 
 	public AssetCategory getAssetCategoryByParentCategoryIdMinistryName(long id, String name);
-
-
+	
+	public List<String> getStateNames();
 }

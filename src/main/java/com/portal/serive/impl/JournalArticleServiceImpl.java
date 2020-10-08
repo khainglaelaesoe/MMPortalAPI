@@ -82,7 +82,7 @@ public class JournalArticleServiceImpl implements JournalArticleService {
 	public List<JournalArticle> getEmergenyContact() {
 		List<JournalArticle> journallist = new ArrayList<JournalArticle>();
 		//String[] articleidlist = { "53269", "53276", "53283", "53262" };
-		String querydistnct = "select distinct(articleid) from JournalArticle where folderId=53239 order by version desc;";
+		String querydistnct = "select distinct(articleid) from JournalArticle where folderId=53239";
 		List<String> strlist = journalDao.findByQuery(querydistnct);
 		if(strlist.size() > 0) {
 			for (String articleid : strlist) {
