@@ -118,14 +118,14 @@ public class UserController {
 		
 		return response;
 	}
-	
+	//1
 	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject checkQuestion(@RequestParam("email") String email){
 		JSONObject response = new JSONObject();
 		User_ user = userservice.getUserbyemail("aprilthannaing1995@gmail.com");
-		if(user == null) {
+		if(user != null) {
 			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
 			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
 			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
@@ -138,7 +138,7 @@ public class UserController {
 		}
 		return response;
 	}
-	
+	//2
 	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -169,7 +169,7 @@ public class UserController {
 		
 		return response;
 	}
-	
+	//3
 	@RequestMapping(value = "resetpasswordCode", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
@@ -191,7 +191,7 @@ public class UserController {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
 		if(otherserviceResponse.getBody().get("errCode") != null) {
-			if(otherserviceResponse.getBody().get("errCode").equals("E20")) {
+			if(otherserviceResponse.getBody().get("errCode").equals("E20") || otherserviceResponse.getBody().get("errCode").equals("E21")) {
 				response.put("status", "0");
 				response.put("message", otherserviceResponse.getBody().get("message").toString());
 				return response;
@@ -202,7 +202,7 @@ public class UserController {
 		return response;
 	}
 	
-	
+	//4
 	@RequestMapping(value = "resetpassword", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
