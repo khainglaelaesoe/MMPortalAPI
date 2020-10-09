@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.MobileResponse;
 import com.portal.entity.User_;
 import com.portal.entity.Views;
+import com.portal.entity.mobileuser;
 import com.portal.service.UserService;
 
 @Controller
@@ -45,7 +46,7 @@ public class UserController {
 	@RequestMapping(value = "update", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject update(@RequestHeader("Authorization") String token, @RequestBody JSONObject json) throws Exception {
+	public JSONObject update(@RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
 		JSONObject resultJson = new JSONObject();
 		String serviceUrl = OTHERSERVICEURL + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
@@ -72,6 +73,7 @@ public class UserController {
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
 		resultJson.put("status", 1);
 		resultJson.put("message", "success");
+		resultJson.put("phone", j.get("phone").toString());
 		return resultJson;
 	}
 
@@ -154,7 +156,7 @@ public class UserController {
 			response.put("message", "Login Success!");
 			response.put("profilePicture", "");
 			response.put("token", otherserviceResponse.get("access_token").toString());
-		}else {
+		} else {
 			response.put("status", "0");
 			response.put("message", "Your email or password was incorrect. please try again");
 		}
@@ -167,8 +169,7 @@ public class UserController {
 		mbresponse.setUserid(user.getUserid());
 		mbresponse.setScreenname(user.getScreenname());
 		mbresponse.setEmailaddress(user.getEmailaddress());
-		mbresponse.setName(user.getFirstname() + user.getLastname() == null ? "" : user.getLastname());
-		mbresponse.setName(user.getFirstname() + user.getLastname());
+		mbresponse.setName(user.getFirstname() + (user.getLastname() == null ? "" : user.getLastname()));
 		mbresponse.setPhoneno(user.getPhone());
 		return mbresponse;
 	}
@@ -176,7 +177,7 @@ public class UserController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("Authorization") String fbtoken, @RequestHeader("facebookID") String facebookID) {
+	public JSONObject facebookLogin(@RequestHeader("token") String fbtoken, @RequestHeader("facebookID") String facebookID) {
 
 		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
@@ -236,7 +237,7 @@ public class UserController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "/reset-password";
+		String url = OTHERSERVICEURL + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
@@ -270,7 +271,7 @@ public class UserController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "/reset-password";
+		String url = OTHERSERVICEURL + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -302,7 +303,7 @@ public class UserController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "/reset-password";
+		String url = OTHERSERVICEURL + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -318,6 +319,44 @@ public class UserController {
 			return response;
 		}
 		return response;
+	}
+
+	@RequestMapping(value = "appleidlogin", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject appleLogin(@RequestBody JSONObject json) throws Exception {
+		JSONObject resultJson = new JSONObject();
+
+		Object email = json.get("email");
+		if (email == null || email.toString().isEmpty()) {
+			resultJson.put("message", "Email must not be empty!");
+			resultJson.put("status", "0");
+			return resultJson;
+		}
+		
+		// if new
+		//generate password
+		//call register
+		//save password
+		
+		
+
+//		mobileuser mobileuser = mobileUserService.getUserByEmail(email.toString().trim(), facebookid.toString());
+//		if (mobileuser != null) {
+//			resultJson.put("user", mobileuser);
+//			resultJson.put("message", "Exiting email");
+//			resultJson.put("status", "2");
+//			resultJson.put("profilePicture", mobileuser.getProfilePicture() == null || mobileuser.getProfilePicture().isEmpty() ? "" : IMAGEURL + mobileuser.getProfilePicture());
+//			return resultJson;
+//		} else {
+//			mobileuser user = parsefacebookUser(json);
+//			mobileUserService.saveUser(user);
+//			resultJson.put("userId", user.getUserid());
+//			resultJson.put("message", "New email");
+//			resultJson.put("status", "1");
+//			resultJson.put("profilePicture", "");
+//		}
+		return resultJson;
 	}
 
 }

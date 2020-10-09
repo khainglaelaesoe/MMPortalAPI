@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 	}
 	public String getPhone(long userid) {
 		String phoneNo = "";
-		String query = "Select number_ from phone where userid=" + userid + " order by phoneId desc ";
+		String query = "Select number_ from Phone where userid=" + userid + " order by phoneId desc ";
 		List<String> strList = userDao.findByQuery(query);
 		if(strList.size() > 0 ) {
 			phoneNo = strList.get(0);
