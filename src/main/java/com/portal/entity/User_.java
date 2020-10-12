@@ -7,73 +7,74 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "User_")
 public class User_ {
 
 	@Id
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "userid", unique = true, nullable = false)
 	private long userid;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "emailaddress")
 	private String emailaddress;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "companyid")
 	private String companyid;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "createdate")
 	private String createdate;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "modifieddate")
 	private String modifieddate;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "password_")
 	private String password_;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "passwordreset")
 	private String passwordreset;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "screenname")
 	private String screenname;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "jobtitle")
 	private String jobtitle;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "firstname")
 	private String firstname;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "middlename")
 	private String middlename;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "lastname")
 	private String lastname;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "facebookid")
 	private long facebookid;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "reminderqueryquestion")
 	private String reminderqueryquestion;
 
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Column(name = "reminderqueryanswer")
 	private String reminderqueryanswer;
 	
-	@JsonIgnore
+	@JsonView(Views.Thin.class)
 	@Transient
 	private String phone;
 

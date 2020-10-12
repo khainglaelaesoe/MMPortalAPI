@@ -17,10 +17,11 @@ import com.mchange.rmi.ServiceUnavailableException;
 import com.portal.dao.MobileUserDao;
 import com.portal.encryption.PBKDF2PasswordEncryptor;
 import com.portal.entity.Result;
+import com.portal.entity.User_;
 import com.portal.entity.mobileuser;
 import com.portal.service.MobileUserService;
 
-@Service("mobileUserServiceImpl")
+@Service("mobileUserService")
 public class MobileUserServiceImpl implements MobileUserService {
 
 	@Autowired
@@ -165,6 +166,8 @@ public class MobileUserServiceImpl implements MobileUserService {
 			return null;
 		return mobileUserList.get(0);
 	}
+	
+
 
 	public mobileuser getUserByPhone(String phoneno) {
 		String query = "from mobileuser where phoneno='" + phoneno + "'";

@@ -12,5 +12,10 @@ public interface UserService {
 	public User_ getUserbyfacebookID(String facebookID);
 
 	public Long getIdByEmail(String emailAddress);
-
+	
+	public User_ getMNPUserByEmail(String email);
+	
+	public User_ getMNPUserByUserId(String userId);
+	
+	public String getPhoneByUserId(String userId);
 }

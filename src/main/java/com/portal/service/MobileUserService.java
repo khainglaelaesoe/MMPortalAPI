@@ -28,6 +28,5 @@ public interface MobileUserService {
 
 	public mobileuser validUserid(long userid);
 
-	public mobileuser getUserByUserId(Long userId);
-
+	public mobileuser getUserByUserId(Long userId);	
 }

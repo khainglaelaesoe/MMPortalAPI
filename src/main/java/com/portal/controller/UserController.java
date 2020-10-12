@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.MobileResponse;
 import com.portal.entity.User_;
 import com.portal.entity.Views;
-import com.portal.entity.mobileuser;
 import com.portal.service.UserService;
 
 @Controller
@@ -36,7 +35,7 @@ import com.portal.service.UserService;
 public class UserController {
 
 	@Autowired
-	private UserService userservice;
+	private UserService userService;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 
@@ -48,12 +47,43 @@ public class UserController {
 	@JsonView(Views.Summary.class)
 	public JSONObject update(@RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
 		JSONObject resultJson = new JSONObject();
+		Object userId = json.get("userId");
+		if (userId == null || userId.toString().isEmpty()) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "User Id must not be empty.");
+			return resultJson;
+		}
+
+		User_ mnpUser = userService.getMNPUserByUserId(userId.toString());
+		Object oldPasswordObject = json.get("oldPassword");
+		if (oldPasswordObject == null || oldPasswordObject.toString().isEmpty()) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Please insert old password.");
+			return resultJson;
+		}
+		String oldPassword = oldPasswordObject.toString();
+		String newPassword = json.get("newPassword").toString();
+		String email = json.get("email").toString();
+		String phone = json.get("phone").toString();
+		String userName = json.get("userName").toString();
+		String portrait = json.get("portrait").toString();
+
+		String phoneNo = userService.getPhoneByUserId(userId.toString());
+		JSONObject request = new JSONObject();
+		request.put("email", email.isEmpty() ? mnpUser.getEmailaddress() : email);
+		request.put("password", newPassword.isEmpty() ? oldPassword : newPassword);
+		request.put("phone", phone.isEmpty() ? phoneNo : phone);
+		request.put("portrait", portrait);
+		request.put("userName", userName.isEmpty() ? mnpUser.getScreenname() : userName);
+		request.put("securityQuestion", mnpUser.getReminderqueryquestion());
+		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
+
 		String serviceUrl = OTHERSERVICEURL + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("Authorization", token);
 
-		HttpEntity<String> entity = new HttpEntity<String>(json.toString(), headers);
+		HttpEntity<String> entity = new HttpEntity<String>(request.toString(), headers);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
 		HttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(new LaxRedirectStrategy()).build();
@@ -73,7 +103,9 @@ public class UserController {
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
 		resultJson.put("status", 1);
 		resultJson.put("message", "success");
-		resultJson.put("phone", j.get("phone").toString());
+		resultJson.put("phone", request.get("phone"));
+		resultJson.put("userName", request.get("userName"));
+		resultJson.put("email", request.get("email"));
 		return resultJson;
 	}
 
@@ -115,7 +147,7 @@ public class UserController {
 			resultJson.put("message", j.get("message"));
 		}
 
-		Long userId = userservice.getIdByEmail(email);
+		Long userId = userService.getIdByEmail(email);
 		if (j.get("message").toString().equals("success")) {
 			resultJson.put("userId", userId);
 			resultJson.put("status", 1);
@@ -123,6 +155,14 @@ public class UserController {
 		}
 
 		return resultJson;
+	}
+
+	@RequestMapping(value = "userId", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public User_ getUserId(@RequestBody JSONObject json) {
+
+		return userService.getMNPUserByEmail(json.get("email").toString());
 	}
 
 	@RequestMapping(value = "login", method = RequestMethod.POST)
@@ -149,7 +189,7 @@ public class UserController {
 		JSONObject otherserviceResponse = restTemplate.postForObject(url, entityHeader, JSONObject.class);
 		logger.info("Login Response : " + otherserviceResponse);
 		if (otherserviceResponse.get("access_token") != null) {
-			User_ user = userservice.getUserbyemail(email);
+			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
 			response.put("user", mbresponse);
@@ -197,7 +237,7 @@ public class UserController {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message"));
 		} else {
-			User_ user = userservice.getUserbyfacebookID(facebookID);
+			User_ user = userService.getUserbyfacebookID(facebookID);
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
 			response.put("user", mbresponse);
@@ -212,7 +252,7 @@ public class UserController {
 	@JsonView(Views.Summary.class)
 	public JSONObject checkQuestion(@RequestParam("email") String email) {
 		JSONObject response = new JSONObject();
-		User_ user = userservice.getUserbyemail(email);
+		User_ user = userService.getUserbyemail(email);
 		if (user != null) {
 			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
 			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
@@ -319,44 +359,6 @@ public class UserController {
 			return response;
 		}
 		return response;
-	}
-
-	@RequestMapping(value = "appleidlogin", method = RequestMethod.POST)
-	@ResponseBody
-	@JsonView(Views.Summary.class)
-	public JSONObject appleLogin(@RequestBody JSONObject json) throws Exception {
-		JSONObject resultJson = new JSONObject();
-
-		Object email = json.get("email");
-		if (email == null || email.toString().isEmpty()) {
-			resultJson.put("message", "Email must not be empty!");
-			resultJson.put("status", "0");
-			return resultJson;
-		}
-		
-		// if new
-		//generate password
-		//call register
-		//save password
-		
-		
-
-//		mobileuser mobileuser = mobileUserService.getUserByEmail(email.toString().trim(), facebookid.toString());
-//		if (mobileuser != null) {
-//			resultJson.put("user", mobileuser);
-//			resultJson.put("message", "Exiting email");
-//			resultJson.put("status", "2");
-//			resultJson.put("profilePicture", mobileuser.getProfilePicture() == null || mobileuser.getProfilePicture().isEmpty() ? "" : IMAGEURL + mobileuser.getProfilePicture());
-//			return resultJson;
-//		} else {
-//			mobileuser user = parsefacebookUser(json);
-//			mobileUserService.saveUser(user);
-//			resultJson.put("userId", user.getUserid());
-//			resultJson.put("message", "New email");
-//			resultJson.put("status", "1");
-//			resultJson.put("profilePicture", "");
-//		}
-		return resultJson;
 	}
 
 }
