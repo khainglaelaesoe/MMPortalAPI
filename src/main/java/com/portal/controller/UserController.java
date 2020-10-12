@@ -61,8 +61,16 @@ public class UserController {
 			resultJson.put("message", "Please insert old password.");
 			return resultJson;
 		}
+		
+	
 		String oldPassword = oldPasswordObject.toString();
 		String newPassword = json.get("newPassword").toString();
+		
+		if (oldPassword.equals(newPassword)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Your new password cannot be the same as your old password. Please enter a different password.");
+			return resultJson;
+		}
 		String email = json.get("email").toString();
 		String phone = json.get("phone").toString();
 		String userName = json.get("userName").toString();
