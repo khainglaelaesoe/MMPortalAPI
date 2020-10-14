@@ -121,10 +121,16 @@ public class UserController extends AbstractController {
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject registration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
-		String decryptedString = AES.decrypt(encryptedString, secretKey);
 		JSONObject resultJson = new JSONObject();
 
-		if (isAuthorize(decryptedString)) {
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
@@ -160,6 +166,7 @@ public class UserController extends AbstractController {
 		if (j.get("errCode") != null) {
 			resultJson.put("status", 0);
 			resultJson.put("message", j.get("message"));
+			return resultJson;
 		}
 
 		Long userId = userService.getIdByEmail(email);
