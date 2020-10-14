@@ -57,8 +57,14 @@ public class AbstractController {
 	@Autowired
 	private MessageService messageService;
 
+	public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBOVWMMGIVA";
+
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
+
+	public boolean isAuthorize(String decryptedString) {
+		return decryptedString.contains("Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+	}
 
 	public String getMyanmarElement(String content, String element, String remover) {
 		int begin = content.indexOf(element);

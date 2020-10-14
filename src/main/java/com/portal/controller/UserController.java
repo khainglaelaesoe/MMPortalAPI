@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.MobileResponse;
 import com.portal.entity.User_;
 import com.portal.entity.Views;
@@ -32,7 +33,7 @@ import com.portal.service.UserService;
 
 @Controller
 @RequestMapping("user")
-public class UserController {
+public class UserController extends AbstractController {
 
 	@Autowired
 	private UserService userService;
@@ -61,11 +62,10 @@ public class UserController {
 			resultJson.put("message", "Please insert old password.");
 			return resultJson;
 		}
-		
-	
+
 		String oldPassword = oldPasswordObject.toString();
 		String newPassword = json.get("newPassword").toString();
-		
+
 		if (oldPassword.equals(newPassword)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Your new password cannot be the same as your old password. Please enter a different password.");
@@ -120,8 +120,15 @@ public class UserController {
 	@RequestMapping(value = "register", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject registration(@RequestBody JSONObject request) throws Exception {
+	public JSONObject registration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
+		String decryptedString = AES.decrypt(encryptedString, secretKey);
 		JSONObject resultJson = new JSONObject();
+
+		if (isAuthorize(decryptedString)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 
 		String serviceUrl = OTHERSERVICEURL + "auth/register";
 		HttpHeaders headers = new HttpHeaders();
