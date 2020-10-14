@@ -18,4 +18,7 @@ public interface UserService {
 	public User_ getMNPUserByUserId(String userId);
 	
 	public String getPhoneByUserId(String userId);
+	
+	public User_ getScreenName(String screenname);
+
 }

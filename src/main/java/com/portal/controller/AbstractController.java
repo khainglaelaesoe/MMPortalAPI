@@ -1,5 +1,7 @@
 package com.portal.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,6 +41,8 @@ import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.PollsChoice;
 import com.portal.entity.Reply;
 import com.portal.entity.RequestVote;
+import com.portal.entity.User_;
+import com.portal.entity.mobileuser;
 import com.portal.parsing.DocumentParsing;
 import com.portal.service.JournalArticleService;
 import com.portal.service.JournalFolderService;
@@ -976,6 +981,47 @@ public class AbstractController {
 			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
 		}
 		return response.getBody();
+	}
+	
+	public String saveUser(User_ user) {
+		mobileuser mbuser = new mobileuser();
+		mbuser = convertMobileUser(user);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<mobileuser> entityHeader = new HttpEntity<>(mbuser, headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/mbuser/saveuser";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject res = restTemplate.postForObject(url, entityHeader, JSONObject.class);
+		logger.info(res.get("message").toString());
+		return res.get("message").toString();
+	}
+	
+	public mobileuser convertMobileUser(User_ user) {
+		mobileuser mbuser = new mobileuser();
+		try {
+			mbuser.setWebuserid(user.getUserid());
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+			mbuser.setCreatedate(formatter.parse(user.getCreatedate()));
+			mbuser.setModifieddate(formatter.parse(user.getModifieddate()));
+			mbuser.setScreenname(user.getScreenname());
+			mbuser.setEmailaddress(user.getEmailaddress());
+			mbuser.setFacebookid(user.getFacebookid());
+			mbuser.setName(user.getFirstname());
+			mbuser.setPhoneno(user.getPhone());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return mbuser;
+
 	}
 
 }

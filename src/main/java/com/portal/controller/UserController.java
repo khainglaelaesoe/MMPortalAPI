@@ -1,5 +1,9 @@
 package com.portal.controller;
 
+import java.util.function.IntPredicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -32,7 +36,7 @@ import com.portal.service.UserService;
 
 @Controller
 @RequestMapping("user")
-public class UserController {
+public class UserController extends AbstractController {
 
 	@Autowired
 	private UserService userService;
@@ -107,7 +111,9 @@ public class UserController {
 			resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
-
+		User_ user = userService.getUserbyemail(j.get("email").toString());
+		// String mbmessage = saveUser(user);////save mbuser
+		// resultJson.put("mbmessage", mbmessage);
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
 		resultJson.put("status", 1);
 		resultJson.put("message", "success");
@@ -155,9 +161,11 @@ public class UserController {
 			resultJson.put("message", j.get("message"));
 		}
 
-		Long userId = userService.getIdByEmail(email);
 		if (j.get("message").toString().equals("success")) {
-			resultJson.put("userId", userId);
+			User_ user = userService.getUserbyemail(email);
+			// String mbmessage = saveUser(user);////save mbuser
+			// resultJson.put("mbmessage", mbmessage);
+			resultJson.put("userId", user.getUserid());
 			resultJson.put("status", 1);
 			resultJson.put("message", j.get("message"));
 		}
@@ -202,7 +210,7 @@ public class UserController {
 			response.put("status", "1");
 			response.put("user", mbresponse);
 			response.put("message", "Login Success!");
-			response.put("profilePicture", "");
+			response.put("profilePicture", otherserviceResponse.get("portrait").toString());
 			response.put("token", otherserviceResponse.get("access_token").toString());
 		} else {
 			response.put("status", "0");
@@ -225,7 +233,8 @@ public class UserController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("token") String fbtoken, @RequestHeader("facebookID") String facebookID) {
+	public JSONObject facebookLogin(@RequestHeader("token") String fbtoken,
+			@RequestHeader("email") String email) {
 
 		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
@@ -239,74 +248,108 @@ public class UserController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+				HttpMethod.GET, entityHeader, JSONObject.class);
 		logger.info("Facebook Login Response : " + otherserviceResponse);
-		if (otherserviceResponse.getBody().get("errCode") != "") {
-			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message"));
-		} else {
-			User_ user = userService.getUserbyfacebookID(facebookID);
+		if (otherserviceResponse.getBody().get("access_token") != null) {
+			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
 			response.put("user", mbresponse);
 			response.put("message", "Login Success!");
-			response.put("profilePicture", "");
-		}
-		return response;
-	}
-
-	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
-	@ResponseBody
-	@JsonView(Views.Summary.class)
-	public JSONObject checkQuestion(@RequestParam("email") String email) {
-		JSONObject response = new JSONObject();
-		User_ user = userService.getUserbyemail(email);
-		if (user != null) {
-			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
-			response.put("status", "1");
-			response.put("message", "Success!");
+			response.put("profilePicture", otherserviceResponse.getBody().get("portrait").toString());
+			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
 		} else {
 			response.put("status", "0");
-			response.put("message", "Email Not Found!");
-			return response;
+			response.put("message", otherserviceResponse.getBody().get("message"));
+			response.put("token", "");
 		}
 		return response;
 	}
 
-	@RequestMapping(value = "resetpassword", method = RequestMethod.GET)
+//	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
+//	@ResponseBody
+//	@JsonView(Views.Summary.class)
+//	public JSONObject checkQuestion(@RequestParam("email") String email) {
+//		JSONObject response = new JSONObject();
+//		User_ user = userService.getUserbyemail(email);
+//		if (user != null) {
+//			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
+//			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
+//			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
+//			response.put("status", "1");
+//			response.put("message", "Success!");
+//		} else {
+//			response.put("status", "0");
+//			response.put("message", "Email Not Found!");
+//			return response;
+//		}
+//		return response;
+//	}
+	// 1
+		@RequestMapping(value = "resetpassword1", method = RequestMethod.GET)
+		@ResponseBody
+		@JsonView(Views.Summary.class)
+		public JSONObject resetpassword1(@RequestParam("email") String email) {
+			JSONObject response = new JSONObject();
+			HttpHeaders headers = new HttpHeaders();
+			HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+			logger.info("Request is: " + entityHeader);
+
+			String url = OTHERSERVICEURL + "auth/reset-password";
+			logger.info("service url is: " + url);
+
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
+			logger.info("calling webservice..." + builder);
+			RestTemplate restTemplate = new RestTemplate();
+			HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+					HttpMethod.GET, entityHeader, JSONObject.class);
+			if (otherserviceResponse.getBody().get("errCode") != null) {
+				response.put("status", "0");
+				response.put("message", otherserviceResponse.getBody().get("message").toString());
+				return response;
+
+			}
+			response.put("status", "1");
+			response.put("message", "Success!");
+			response.put("securityQuestion", otherserviceResponse.getBody().get("securityQuestion").toString());
+
+			return response;
+		}
+
+	// 2
+	@RequestMapping(value = "resetpassword2", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject checkemail(@RequestParam("email") String email) {
-		String resToken = "";
+	private JSONObject resetpassword2(@RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
+		JSONObject json = new JSONObject();
+		json.put("email", req.get("email").toString());
+		json.put("securityAnswer", req.get("securityAnswer").toString());
 		HttpHeaders headers = new HttpHeaders();
-		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
-
-		String url = OTHERSERVICEURL + "auth/reset-password";
+		String url = OTHERSERVICEURL + "auth/request-reset-password";
 		logger.info("service url is: " + url);
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+				HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("resetToken") != null) {
-			resToken = otherserviceResponse.getBody().get("resetToken").toString();
 			response.put("status", "1");
 			response.put("message", "Success!");
-			response.put("token", resToken);
-		} else {
-			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message").toString());
+			response.put("token", otherserviceResponse.getBody().get("resetToken").toString());
 			return response;
 		}
+		response.put("status", "0");
+		response.put("message", otherserviceResponse.getBody().get("message").toString());
 
 		return response;
 	}
 
-	@RequestMapping(value = "resetpasswordCode", method = RequestMethod.POST)
+	@RequestMapping(value = "resetpassword3", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	private JSONObject resetpasswordCode(@RequestBody JSONObject req) {
@@ -325,9 +368,11 @@ public class UserController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+				HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("errCode") != null) {
-			if (otherserviceResponse.getBody().get("errCode").equals("E20") || otherserviceResponse.getBody().get("errCode").equals("E21")) {
+			if (otherserviceResponse.getBody().get("errCode").equals("E20")
+					|| otherserviceResponse.getBody().get("errCode").equals("E21")) {
 				response.put("status", "0");
 				response.put("message", otherserviceResponse.getBody().get("message").toString());
 				return response;
@@ -338,7 +383,7 @@ public class UserController {
 		return response;
 	}
 
-	@RequestMapping(value = "resetpassword", method = RequestMethod.POST)
+	@RequestMapping(value = "resetpassword4", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	private JSONObject resetpasswordbyToken(@RequestBody JSONObject req) {
@@ -357,7 +402,8 @@ public class UserController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+				HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
@@ -369,4 +415,155 @@ public class UserController {
 		return response;
 	}
 
+	@RequestMapping(value = "appleidlogin", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject appleLogin(@RequestBody JSONObject json) throws Exception {
+		JSONObject resultJson = new JSONObject();
+
+		Object email = json.get("email");
+		if (email == null || email.toString().isEmpty()) {
+			resultJson.put("message", "Email must not be empty!");
+			resultJson.put("status", "0");
+			return resultJson;
+		}
+
+		// if new
+		// generate password
+		// call register
+		// save password
+
+//		mobileuser mobileuser = mobileUserService.getUserByEmail(email.toString().trim(), facebookid.toString());
+//		if (mobileuser != null) {
+//			resultJson.put("user", mobileuser);
+//			resultJson.put("message", "Exiting email");
+//			resultJson.put("status", "2");
+//			resultJson.put("profilePicture", mobileuser.getProfilePicture() == null || mobileuser.getProfilePicture().isEmpty() ? "" : IMAGEURL + mobileuser.getProfilePicture());
+//			return resultJson;
+//		} else {
+//			mobileuser user = parsefacebookUser(json);
+//			mobileUserService.saveUser(user);
+//			resultJson.put("userId", user.getUserid());
+//			resultJson.put("message", "New email");
+//			resultJson.put("status", "1");
+//			resultJson.put("profilePicture", "");
+//		}
+		return resultJson;
+	}
+
+	@RequestMapping(value = "ValidateRegistration", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject ValidateRegistration(@RequestBody JSONObject request) throws Exception {
+		JSONObject resultJson = new JSONObject();
+		if (request.get("name").toString().equals("") || request.get("name").toString().equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! Name cannot be null or empty");
+			return resultJson;
+		}
+		if (request.get("screenname").toString().equals("") || request.get("screenname").toString().equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user!Screen Name cannot be null or empty");
+			return resultJson;
+		}
+
+		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! emailAddress cannot be null or empty");
+			return resultJson;
+		}
+
+		if (request.get("password").toString().equals("") || request.get("password").toString().equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! password cannot be null or empty");
+			return resultJson;
+		}
+
+		User_ user = userService.getUserbyemail(request.get("email").toString());
+		if (user != null) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! This email is already registered!");
+			return resultJson;
+		}
+
+		User_ user1 = userService.getScreenName(request.get("screenname").toString());
+		if (user1 != null) {
+			resultJson.put("status", 0);
+			resultJson.put("message","Can not create user! Screen name " + request.get("screenname").toString() + " must not be duplicate but is already used.");
+			return resultJson;
+		}
+		String password = request.get("password").toString();
+		if (password.length() < 8) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! Password for user must be at least 8 characters");
+			return resultJson;
+		} else {
+			
+			if (!containsUpperCase(password)) {
+				resultJson.put("status", 0);
+				resultJson.put("message","Can not create user! Password must have at least 1 uppercase characters");
+				return resultJson;
+			}
+			if (!containsLowerCase(password)) {
+				resultJson.put("status", 0);
+				resultJson.put("message","Can not create user! Password must have at least 1 lowercase characters");
+				return resultJson;
+			}
+			
+			if (!containsNumber(password)) {
+				resultJson.put("status", 0);
+				resultJson.put("message","Can not create user! Password must have at least 1 numbers");
+				return resultJson;
+			}
+			if (!containsSpecial(password)) {
+				resultJson.put("status", 0);
+				resultJson.put("message","Can not create user! Password must have at least 1 specital characters");
+				return resultJson;
+			}
+		}
+		resultJson.put("status", 1);
+		resultJson.put("message","Success");
+		return resultJson;
+	}
+	@RequestMapping(value = "ValidateEmail", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject ValidateEmail(@RequestBody JSONObject request) throws Exception {
+		JSONObject resultJson = new JSONObject();
+
+		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! emailAddress cannot be null or empty");
+			return resultJson;
+		}
+
+		User_ user = userService.getUserbyemail(request.get("email").toString());
+		if (user != null) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Can not create user! This email is already registered!");
+			return resultJson;
+		}
+
+		resultJson.put("status", 1);
+		resultJson.put("message","Success");
+		return resultJson;
+	}
+	private boolean contains(String value, IntPredicate predicate) {
+	    return value.chars().anyMatch(predicate);
+	}
+	private boolean containsLowerCase(String value) {
+	    return contains(value, i -> Character.isLetter(i) && Character.isLowerCase(i));
+	}
+	private boolean containsUpperCase(String value) {
+	    return contains(value, i -> Character.isLetter(i) && Character.isUpperCase(i));
+	}
+	private boolean containsNumber(String value) {
+	    return contains(value, Character::isDigit);
+	}
+	
+	private boolean containsSpecial(String value) {
+		Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+		Matcher hasSpecial = special.matcher(value);
+		return hasSpecial.find();
+	}
 }

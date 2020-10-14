@@ -24,6 +24,10 @@ public class mobileuser extends AbstractEntity implements Serializable {
 	@JsonView(Views.Thin.class)
 	@Column(name = "userid", unique = true, nullable = false)
 	private long userid;
+	
+	@JsonView(Views.Thin.class)
+	@Column(name = "webuserid")
+	private long webuserid;
 
 	@JsonView(Views.Thin.class)
 	@Column(name = "createdate")
@@ -258,6 +262,14 @@ public class mobileuser extends AbstractEntity implements Serializable {
 
 	public void setReminderqueryanswer(String reminderqueryanswer) {
 		this.reminderqueryanswer = reminderqueryanswer;
+	}
+
+	public long getWebuserid() {
+		return webuserid;
+	}
+
+	public void setWebuserid(long webuserid) {
+		this.webuserid = webuserid;
 	}
 
 }

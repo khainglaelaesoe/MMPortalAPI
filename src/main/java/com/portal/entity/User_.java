@@ -77,6 +77,10 @@ public class User_ {
 	@JsonView(Views.Thin.class)
 	@Transient
 	private String phone;
+	
+	@JsonIgnore
+	@Transient
+	private String name;
 
 	
 	public String getPhone() {
@@ -205,6 +209,14 @@ public class User_ {
 
 	public void setReminderqueryanswer(String reminderqueryanswer) {
 		this.reminderqueryanswer = reminderqueryanswer;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

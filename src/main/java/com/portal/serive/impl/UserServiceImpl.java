@@ -86,4 +86,15 @@ public class UserServiceImpl implements UserService {
 		return phoneList.get(0);
 	}
 
+	
+	public User_ getScreenName(String screenname) {
+		User_ res = new User_();
+		String query = "from User_ where screenname='"+ screenname +"'";
+		List<User_> users = userDao.getAll(query);
+		if(users.size() > 0) {
+			res = userDao.getAll(query).get(0);
+			res.setPhone(getPhone(res.getUserid()));
+			return res;
+		}else return null;
+	}
 }
