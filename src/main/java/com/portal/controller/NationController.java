@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.NationType;
 import com.portal.entity.Views;
+import com.portal.entity.AES;
 import com.portal.entity.AssetCategory;
 import com.portal.entity.AssetCategoryProperty;
 import com.portal.entity.AssetEntry;
@@ -270,7 +272,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "home", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getNation() {
+	public JSONObject getNation(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 80624
 		return getAssetCategoryByParentCategoryId(80624);
 	}
@@ -278,7 +293,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "hluttaw", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getHluttaw() {
+	public JSONObject getHluttaw(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 8248752
 		return getAssetCategoryByParentCategoryId(8248752);
 	}
@@ -286,7 +314,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "government", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getGov() {
+	public JSONObject getGov(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 80624
 		return getAssetCategoryByParentCategoryId(80624);
 	}
@@ -294,7 +335,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "uniongovernment", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getUnionGov() {
+	public JSONObject getUnionGov(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 80624
 		return getAssetCategoryByParentCategoryId(8251623);
 	}
@@ -302,7 +356,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "judices", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJudices() {
+	public JSONObject getJudices(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 80625
 		return getAssetCategoryByParentCategoryId(80625);
 	}
@@ -310,7 +377,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "commission", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getCommission() {
+	public JSONObject getCommission(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 80626
 		return getAssetCategoryByParentCategoryId(80626);
 	}
@@ -318,7 +398,20 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "ngo", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getNgo() {
+	public JSONObject getNgo(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 9590639
 		return getAssetCategoryByParentCategoryId(9590639);
 	}
@@ -326,24 +419,61 @@ public class NationController extends AbstractController {
 	@RequestMapping(value = "srgovernment", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getSRGovernment() {
+	public JSONObject getSRGovernment(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 9590639
 		return getAssetCategoryByParentCategoryId(87195);
 	}
 
 	@RequestMapping(value = "srhluttaw", method = RequestMethod.GET)
-
 	@ResponseBody
-
 	@JsonView(Views.Summary.class)
-	public JSONObject getSRHluttaw() { // 8249564
+	public JSONObject getSRHluttaw(@RequestHeader("Authorization") String encryptedString) { // 8249564
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		return getAssetCategoryByParentCategoryId(8249564);
 	}
 
 	@RequestMapping(value = "ministry", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getMinistry() {
+	public JSONObject getMinistry(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 9590639
 		return getAssetCategoryByParentCategoryMinistry(87166, NationType.MINISTRY);
 		//return getAssetCategoryByParentCategoryId(87166);

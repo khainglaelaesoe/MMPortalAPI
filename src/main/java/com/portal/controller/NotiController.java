@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portal.entity.AES;
 import com.portal.entity.CategoryType;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
@@ -171,7 +172,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "count", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getCount(@RequestHeader(value = "userid") String userid) {
+	public JSONObject getCount(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 36208,
 		JSONObject resultJson = new JSONObject();
 		Long commentcount = getCommentCount(userid);
@@ -187,8 +201,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "announcements", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAnnouncements() {
+	public JSONObject getAnnouncements(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("announcements", getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT));
 		return resultJson;
 	}
@@ -196,8 +222,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "tenders", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getTenders() {
+	public JSONObject getTenders(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("tenders", getEntities(resultJson, Long.parseLong(85086 + ""), CategoryType.TENDER));
 		return resultJson;
 	}
@@ -205,8 +243,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "jobs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJobs() {
+	public JSONObject getJobs(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("jobs", getEntities(resultJson, Long.parseLong(85090 + ""), CategoryType.JOBANDVACANCY));
 		return resultJson;
 	}
@@ -214,8 +264,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "comments", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getReplies(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "messageid") String messageid) {
+	public JSONObject getReplies(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		RequestVote notidata = getReplyList(userid);
 		resultJson.put("comments", notidata.getMbmessagelist());
 		return resultJson;
@@ -224,8 +286,20 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "blogs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getComments(@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk, @RequestHeader(value = "messageid") String messageid) {
+	public JSONObject getComments(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("blogs", parseJournalArticle(getArticle(classpk, userid)));
 		resultJson.put("message", setVisibleStatus(messageid));
 		return resultJson;
@@ -234,9 +308,21 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAnnouncementsByLimit(@RequestHeader(value = "date") String date, @RequestHeader(value = "userid") String userid) {
+	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "date") String date, @RequestHeader(value = "userid") String userid) {
 		// 36208,
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		RequestVote notidata = getReplyList(userid);
 		RequestVote blog = getBlogs(userid);
 		List<JournalArticle> announcements = getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT); // announcements

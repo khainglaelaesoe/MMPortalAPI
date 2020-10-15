@@ -15,12 +15,14 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.CategoryType;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
@@ -268,7 +270,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "latestNews", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getLatestNewsByLimit(@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+	public JSONObject getLatestNewsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json =new  JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 36205,
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
@@ -284,7 +299,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "announcements", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAnnouncementsByLimit(@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json =new  JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 36208,
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
@@ -300,7 +328,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "mediavideos", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getMediaVideosByLimit(@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+	public JSONObject getMediaVideosByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 36211,
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
@@ -316,7 +357,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "newspapers", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getNewspaperByLimit(@RequestParam("input") String input) {
+	public JSONObject getNewspaperByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		// 86242,
 		return getJournalArticleByClassTypeIdAndLatest(input, 86242, CategoryType.NEWSPAPER);
 	}
@@ -413,9 +467,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "overallsearch", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject overallsearch(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input) {
+	public JSONObject overallsearch(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input) {
 		JSONObject resultJson = new JSONObject();
-
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
 		List<Long> resourcePrimKeys = journalArticleService.getJournalsByOverallSearch(searchTerm);
 		if (CollectionUtils.isEmpty(resourcePrimKeys)) {
@@ -449,8 +514,20 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJournals(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
+	public JSONObject getJournals(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		CategoryType categoryType = CategoryType.valueOf(categorytype.toUpperCase().trim());
 		switch (categoryType) {
 		case NEW:

@@ -15,12 +15,14 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgEngName;
@@ -46,8 +48,20 @@ public class ImageController extends AbstractController {
 	@RequestMapping(value = "getImages", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationByName() throws UnsupportedEncodingException {
+	public JSONObject getOrganizationByName(@RequestHeader("Authorization") String encryptedString) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Organization_> orgList = new ArrayList<Organization_>();
 		orgList =parseImages( jornalService.getImagebyClassuuid());
 		resultJson.put("images",orgList);

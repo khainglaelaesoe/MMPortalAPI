@@ -18,12 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgEngName;
@@ -117,8 +119,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "getContactUs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getContactUs() {
+	public JSONObject getContactUs(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		organizationList.add(parseContactUs(journalArticleService.getContactUsbyArticleAndVersion()));
 		resultJson.put("contactInfo", organizationList);
@@ -128,8 +142,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "getEmergencyContacts", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getEmergencyContact() {
+	public JSONObject getEmergencyContact(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		organizationList = parseEmergencyContact(journalArticleService.getEmergenyContact());
 		resultJson.put("emergencyContent", organizationList);
@@ -213,8 +239,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "getTerms", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getTerms() {
+	public JSONObject getTerms(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		organizationList.add(parseTerms(journalArticleService.getTermsbyVersion()));
 		resultJson.put("termsInfo", organizationList);
@@ -277,8 +315,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationBySearchTerms(@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
+	public JSONObject getOrganizationBySearchTerms(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Long> classpks = assetEntryService.getClasspkListBySearchTerm(91234, searchTerm);
 		List<Organization_> orgs = getOrganizationList(convertToString(classpks, index));
 		Stack<Organization_> stackList = new Stack<Organization_>();
@@ -301,8 +351,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "byname", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationByName(@RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
+	public JSONObject getOrganizationByName(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Long> classpks = new ArrayList<Long>();
 		if (input.equals("all"))
 			classpks = assetEntryService.getAssetEntryListByClassTypeIdAndOrderByPriority(91234);
@@ -374,8 +436,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "names", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getOrganizationName() {
+	public JSONObject getOrganizationName(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
 			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance) {
@@ -394,8 +468,20 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "banner", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getBanner() {
+	public JSONObject getBanner(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg", IMAGEURL + "banner03.png" };
 		resultJson.put("bannerList", bannerList);
 

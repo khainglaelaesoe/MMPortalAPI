@@ -11,12 +11,14 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.CategoryType;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgMyanmarName;
@@ -119,8 +121,20 @@ public class JobAndVacancyController extends AbstractController {
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJobsBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
+	public JSONObject getJobsBySearchTerm(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		List<Long> classpks = new ArrayList<Long>();
 		List<JournalArticle> journalArticles = new ArrayList<JournalArticle>();
 
@@ -543,8 +557,20 @@ public class JobAndVacancyController extends AbstractController {
 	@RequestMapping(value = "topic", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getServices(@RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
-
+	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString,@RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
 		case LATEST:
