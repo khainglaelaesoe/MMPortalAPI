@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.CategoryType;
 import com.portal.entity.DDMStructure;
 import com.portal.entity.DateUtil;
@@ -192,8 +194,22 @@ public class SurveyController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getSurvey(@RequestParam("input") String input, @RequestParam("userid") String userid) {
+	public JSONObject getSurvey(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getAllArticles(classPKList, input), userid);
@@ -218,8 +234,22 @@ public class SurveyController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getSurerys(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
+	public JSONObject getSurerys(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		List<JournalArticle> resultList = new ArrayList<JournalArticle>();
 		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));

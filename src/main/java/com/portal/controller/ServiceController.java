@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgMyanmarName;
@@ -250,8 +251,22 @@ public class ServiceController extends AbstractController {
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getServicesBySearchTerm(@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic, @RequestParam("userid") String userId) {
+	public JSONObject getServicesBySearchTerm(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic, @RequestParam("userid") String userId) {
 		JSONObject json = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
+
 		List<Long> classpks = new ArrayList<Long>();
 
 		if (topic.equals("all")) {
@@ -658,7 +673,22 @@ public class ServiceController extends AbstractController {
 	@RequestMapping(value = "topic", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getServices(@RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby, @RequestParam("userid") String userId) {
+	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString, @RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby, @RequestParam("userid") String userId) {
+
+		JSONObject json = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				json.put("status", 0);
+				json.put("message", "Authorization failure!");
+				return json;
+			}
+		} catch (Exception e) {
+			json.put("status", 0);
+			json.put("message", "Authorization failure!");
+			return json;
+		}
+
 		ViewBy viewType = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewType) {
 		case LATEST:

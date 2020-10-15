@@ -12,10 +12,12 @@ import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.CalendarBooking;
 import com.portal.entity.Views;
 import com.portal.parsing.DocumentParsing;
@@ -23,7 +25,7 @@ import com.portal.service.CalenderBookingService;
 
 @Controller
 @RequestMapping("upcoming")
-public class UpcomingController {
+public class UpcomingController extends AbstractController{
 
 	@Autowired
 	private CalenderBookingService calendarService;
@@ -33,8 +35,20 @@ public class UpcomingController {
 	@RequestMapping(value = "upcomingholidays", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject upcomingholidays() {
+	public JSONObject upcomingholidays(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("Holiday", parseHoliday(calendarService.getCalendarbookingforHoliday()));
 		return resultJson;
 	}
@@ -42,8 +56,20 @@ public class UpcomingController {
 	@RequestMapping(value = "getUpcomingholid‌ays", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getUpcomingholidays() {
+	public JSONObject getUpcomingholidays(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("Holiday", parseHoliday(calendarService.getCalendarbookingforHoliday()));
 		return resultJson;
 	}
@@ -84,8 +110,20 @@ public class UpcomingController {
 	@RequestMapping(value = "getUpcomingEvents", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getUpcomingEvent() {
+	public JSONObject getUpcomingEvent(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		resultJson.put("Holiday", parseHoliday(calendarService.getCalendarbookingforEvent()));
 		return resultJson;
 	}

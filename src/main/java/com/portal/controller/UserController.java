@@ -108,6 +108,7 @@ public class UserController extends AbstractController {
 		String phone = json.get("phone").toString();
 		String userName = json.get("userName").toString();
 		String portrait = json.get("portrait").toString();
+		String name = json.get("name").toString();
 
 		String phoneNo = userService.getPhoneByUserId(userId.toString());
 		JSONObject request = new JSONObject();
@@ -119,7 +120,10 @@ public class UserController extends AbstractController {
 		request.put("securityQuestion", mnpUser.getReminderqueryquestion());
 		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
 
-		String serviceUrl = OTHERSERVICEURL + "user/update-user-info";
+		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getMiddlename() == null ? "" : " " + mnpUser.getMiddlename()) + (mnpUser.getLastname() == null ? "" : mnpUser.getLastname());
+		request.put("name", name.isEmpty() ? dbName : name);
+
+		String serviceUrl = OTHERSERVICEURL.trim() + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add("Authorization", token);
@@ -140,10 +144,8 @@ public class UserController extends AbstractController {
 			resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
-		User_ user = userService.getUserbyemail(j.get("email").toString());
-		// String mbmessage = saveUser(user);////save mbuser
-		// resultJson.put("mbmessage", mbmessage);
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
+		resultJson.put("name", j.get("name").toString());
 		resultJson.put("status", 1);
 		resultJson.put("message", "success");
 		resultJson.put("phone", request.get("phone"));
@@ -171,11 +173,12 @@ public class UserController extends AbstractController {
 			return resultJson;
 		}
 
-		String serviceUrl = OTHERSERVICEURL + "auth/register";
+		String serviceUrl = OTHERSERVICEURL.trim() + "auth/register";
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		String email = request.get("email").toString();
+		logger.info("serviceUrl !!!!!!!!!!!!!!!!!!!!!!" + serviceUrl);
 
 		JSONObject json = new JSONObject();
 		json.put("name", request.get("name").toString());
@@ -206,9 +209,7 @@ public class UserController extends AbstractController {
 
 		if (j.get("message").toString().equals("success")) {
 			User_ user = userService.getUserbyemail(email);
-			// String mbmessage = saveUser(user);////save mbuser
-			// resultJson.put("mbmessage", mbmessage);
-			resultJson.put("userId", user.getUserid());
+			resultJson.put("userId", user != null ? user.getUserid() : "");
 			resultJson.put("status", 1);
 			resultJson.put("message", j.get("message"));
 		}
@@ -252,7 +253,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "auth/login";
+		String url = OTHERSERVICEURL.trim() + "auth/login";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -309,7 +310,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "auth/login-with-facebook";
+		String url = OTHERSERVICEURL.trim() + "auth/login-with-facebook";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -376,7 +377,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "auth/reset-password";
+		String url = OTHERSERVICEURL.trim() + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
@@ -422,7 +423,7 @@ public class UserController extends AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
-		String url = OTHERSERVICEURL + "auth/request-reset-password";
+		String url = OTHERSERVICEURL.trim() + "auth/request-reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -467,7 +468,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "auth/reset-password";
+		String url = OTHERSERVICEURL.trim() + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -512,7 +513,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL + "auth/reset-password";
+		String url = OTHERSERVICEURL.trim() + "auth/reset-password";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

@@ -39,7 +39,6 @@ public class WeatherController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getWeather(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
-
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
