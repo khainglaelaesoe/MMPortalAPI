@@ -12,10 +12,12 @@ import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.CalendarBooking;
 import com.portal.entity.Views;
 import com.portal.entity.Weather;
@@ -25,7 +27,7 @@ import com.portal.service.WeatherService;
 
 @Controller
 @RequestMapping("weather")
-public class WeatherController {
+public class WeatherController extends AbstractController {
 
 	@Autowired
 	private WeatherService weatherService;
@@ -35,8 +37,22 @@ public class WeatherController {
 	@RequestMapping(value = "getWeather", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getWeather() {
+	public JSONObject getWeather(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		Weather weather = new Weather();
 
 		weatherService.getPageLinks("https://www.moezala.gov.mm/my/daily-weather-forecast%20");
@@ -50,8 +66,7 @@ public class WeatherController {
 		weather.setEngcontent(engoutput[1]);
 		resultJson.put("DailyWeather", weather);
 
-		
-		Weather tenday=new Weather();
+		Weather tenday = new Weather();
 		System.out.println("========================10day Myanmar=========================");
 		weatherService.getPageLinks("https://moezala.gov.mm/my/10-days-weather-forecast%20");
 		String[] tenmyanoutput = weatherService.parseArticle();

@@ -142,7 +142,7 @@ public class BlogController extends AbstractController {
 		return resultJson;
 	}
 
-	@RequestMapping(value = "likecount", method = RequestMethod.GET)
+	@RequestMapping(value = "likecount", method = RequestMethod.GET)  // no need
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public String getlikecount(@RequestParam("messageid") String messageid) {
@@ -150,7 +150,7 @@ public class BlogController extends AbstractController {
 		return likecount;
 	}
 
-	@RequestMapping(value = "title", method = RequestMethod.GET)
+	@RequestMapping(value = "title", method = RequestMethod.GET) // no need
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public String getTitle(@RequestHeader("classpk") String classpk) {

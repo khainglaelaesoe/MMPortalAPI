@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,11 +48,39 @@ public class UserController extends AbstractController {
 	@Value("${OTHERSERVICEURL}")
 	private String OTHERSERVICEURL;
 
+	@PostMapping("encrypt")
+	public JSONObject encrypt(@RequestParam String encryptedString) throws Exception {
+		JSONObject json = new JSONObject();
+		encryptedString = encryptedString.replaceAll(" ", "+");
+		String decryptedString = AES.decrypt(encryptedString, secretKey);
+		json.put("encryptedString", encryptedString);
+		json.put("decryptedString", decryptedString);
+		if (isAuthorize(decryptedString))
+			json.put("Authorization", "Authorization Success.");
+		else
+			json.put("Authorization", "Authorization Failure.");
+		return json;
+	}
+
 	@RequestMapping(value = "update", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject update(@RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
+	public JSONObject update(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
 		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		Object userId = json.get("userId");
 		if (userId == null || userId.toString().isEmpty()) {
 			resultJson.put("status", 0);
@@ -191,17 +220,30 @@ public class UserController extends AbstractController {
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public User_ getUserId(@RequestBody JSONObject json) {
-
 		return userService.getMNPUserByEmail(json.get("email").toString());
 	}
 
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject login(@RequestBody JSONObject req) {
+	public JSONObject login(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject req) {
+		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		String email = req.get("email").toString();
 		String password = req.get("password").toString();
-		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
 		JSONObject json = new JSONObject();
 		json.put("companyId", "20116");
@@ -221,17 +263,17 @@ public class UserController extends AbstractController {
 		if (otherserviceResponse.get("access_token") != null) {
 			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
-			response.put("status", "1");
-			response.put("user", mbresponse);
-			response.put("message", "Login Success!");
-			response.put("profilePicture", otherserviceResponse.get("portrait").toString());
-			response.put("token", otherserviceResponse.get("access_token").toString());
+			resultJson.put("status", "1");
+			resultJson.put("user", mbresponse);
+			resultJson.put("message", "Login Success!");
+			resultJson.put("profilePicture", "");
+			resultJson.put("token", otherserviceResponse.get("access_token").toString());
 		} else {
-			response.put("status", "0");
-			response.put("message", "Your email or password was incorrect. please try again");
+			resultJson.put("status", "0");
+			resultJson.put("message", "Your email or password was incorrect. please try again");
 		}
 
-		return response;
+		return resultJson;
 	}
 
 	private MobileResponse convertoMobileResponse(User_ user) {
@@ -247,10 +289,21 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("token") String fbtoken,
-			@RequestHeader("email") String email) {
+	public JSONObject facebookLogin(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String fbtoken, @RequestHeader("facebookID") String facebookID) {
+		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 
-		JSONObject response = new JSONObject();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", fbtoken);
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
@@ -262,23 +315,21 @@ public class UserController extends AbstractController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-				HttpMethod.GET, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
 		logger.info("Facebook Login Response : " + otherserviceResponse);
-		if (otherserviceResponse.getBody().get("access_token") != null) {
-			User_ user = userService.getUserbyemail(email);
-			MobileResponse mbresponse = convertoMobileResponse(user);
-			response.put("status", "1");
-			response.put("user", mbresponse);
-			response.put("message", "Login Success!");
-			response.put("profilePicture", otherserviceResponse.getBody().get("portrait").toString());
-			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
+
+		if (otherserviceResponse.getBody().get("errCode") != "") {
+			resultJson.put("status", "0");
+			resultJson.put("message", otherserviceResponse.getBody().get("message"));
 		} else {
-			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message"));
-			response.put("token", "");
+			User_ user = userService.getUserbyfacebookID(facebookID);
+			MobileResponse mbresponse = convertoMobileResponse(user);
+			resultJson.put("status", "1");
+			resultJson.put("user", mbresponse);
+			resultJson.put("message", "Login Success!");
+			resultJson.put("profilePicture", "");
 		}
-		return response;
+		return resultJson;
 	}
 
 //	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
@@ -300,43 +351,71 @@ public class UserController extends AbstractController {
 //		}
 //		return response;
 //	}
+
 	// 1
-		@RequestMapping(value = "resetpassword1", method = RequestMethod.GET)
-		@ResponseBody
-		@JsonView(Views.Summary.class)
-		public JSONObject resetpassword1(@RequestParam("email") String email) {
-			JSONObject response = new JSONObject();
-			HttpHeaders headers = new HttpHeaders();
-			HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
-			logger.info("Request is: " + entityHeader);
+	@RequestMapping(value = "resetpassword1", method = RequestMethod.GET)
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject resetpassword1(@RequestHeader("Authorization") String encryptedString, @RequestParam("email") String email) {
+		JSONObject response = new JSONObject();
 
-			String url = OTHERSERVICEURL + "auth/reset-password";
-			logger.info("service url is: " + url);
-
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
-			logger.info("calling webservice..." + builder);
-			RestTemplate restTemplate = new RestTemplate();
-			HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-					HttpMethod.GET, entityHeader, JSONObject.class);
-			if (otherserviceResponse.getBody().get("errCode") != null) {
-				response.put("status", "0");
-				response.put("message", otherserviceResponse.getBody().get("message").toString());
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				response.put("status", 0);
+				response.put("message", "Authorization failure!");
 				return response;
-
 			}
-			response.put("status", "1");
-			response.put("message", "Success!");
-			response.put("securityQuestion", otherserviceResponse.getBody().get("securityQuestion").toString());
-
+		} catch (Exception e) {
+			response.put("status", 0);
+			response.put("message", "Authorization failure!");
 			return response;
 		}
+
+		HttpHeaders headers = new HttpHeaders();
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = OTHERSERVICEURL + "auth/reset-password";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("email", email);
+		logger.info("calling webservice..." + builder);
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
+		if (otherserviceResponse.getBody().get("errCode") != null) {
+			response.put("status", "0");
+			response.put("message", otherserviceResponse.getBody().get("message").toString());
+			return response;
+
+		}
+		response.put("status", "1");
+		response.put("message", "Success!");
+		response.put("securityQuestion", otherserviceResponse.getBody().get("securityQuestion").toString());
+
+		return response;
+	}
 
 	// 2
 	@RequestMapping(value = "resetpassword2", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	private JSONObject resetpassword2(@RequestBody JSONObject req) {
+	private JSONObject resetpassword2(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				response.put("status", 0);
+				response.put("message", "Authorization failure!");
+				return response;
+			}
+		} catch (Exception e) {
+			response.put("status", 0);
+			response.put("message", "Authorization failure!");
+			return response;
+		}
+
 		JSONObject json = new JSONObject();
 		json.put("email", req.get("email").toString());
 		json.put("securityAnswer", req.get("securityAnswer").toString());
@@ -349,8 +428,7 @@ public class UserController extends AbstractController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-				HttpMethod.POST, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("resetToken") != null) {
 			response.put("status", "1");
 			response.put("message", "Success!");
@@ -366,8 +444,21 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "resetpassword3", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	private JSONObject resetpasswordCode(@RequestBody JSONObject req) {
+	private JSONObject resetpasswordCode(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				response.put("status", 0);
+				response.put("message", "Authorization failure!");
+				return response;
+			}
+		} catch (Exception e) {
+			response.put("status", 0);
+			response.put("message", "Authorization failure!");
+			return response;
+		}
+
 		JSONObject json = new JSONObject();
 		json.put("resetToken", req.get("token").toString());
 		json.put("code", req.get("code").toString());
@@ -382,11 +473,9 @@ public class UserController extends AbstractController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-				HttpMethod.POST, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("errCode") != null) {
-			if (otherserviceResponse.getBody().get("errCode").equals("E20")
-					|| otherserviceResponse.getBody().get("errCode").equals("E21")) {
+			if (otherserviceResponse.getBody().get("errCode").equals("E20") || otherserviceResponse.getBody().get("errCode").equals("E21")) {
 				response.put("status", "0");
 				response.put("message", otherserviceResponse.getBody().get("message").toString());
 				return response;
@@ -400,8 +489,21 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "resetpassword4", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	private JSONObject resetpasswordbyToken(@RequestBody JSONObject req) {
+	private JSONObject resetpasswordbyToken(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject req) {
 		JSONObject response = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				response.put("status", 0);
+				response.put("message", "Authorization failure!");
+				return response;
+			}
+		} catch (Exception e) {
+			response.put("status", 0);
+			response.put("message", "Authorization failure!");
+			return response;
+		}
+
 		JSONObject json = new JSONObject();
 		json.put("resetToken", req.get("token").toString());
 		json.put("code", req.get("code").toString());
@@ -416,8 +518,7 @@ public class UserController extends AbstractController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-				HttpMethod.POST, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
@@ -429,47 +530,24 @@ public class UserController extends AbstractController {
 		return response;
 	}
 
-	@RequestMapping(value = "appleidlogin", method = RequestMethod.POST)
-	@ResponseBody
-	@JsonView(Views.Summary.class)
-	public JSONObject appleLogin(@RequestBody JSONObject json) throws Exception {
-		JSONObject resultJson = new JSONObject();
-
-		Object email = json.get("email");
-		if (email == null || email.toString().isEmpty()) {
-			resultJson.put("message", "Email must not be empty!");
-			resultJson.put("status", "0");
-			return resultJson;
-		}
-
-		// if new
-		// generate password
-		// call register
-		// save password
-
-//		mobileuser mobileuser = mobileUserService.getUserByEmail(email.toString().trim(), facebookid.toString());
-//		if (mobileuser != null) {
-//			resultJson.put("user", mobileuser);
-//			resultJson.put("message", "Exiting email");
-//			resultJson.put("status", "2");
-//			resultJson.put("profilePicture", mobileuser.getProfilePicture() == null || mobileuser.getProfilePicture().isEmpty() ? "" : IMAGEURL + mobileuser.getProfilePicture());
-//			return resultJson;
-//		} else {
-//			mobileuser user = parsefacebookUser(json);
-//			mobileUserService.saveUser(user);
-//			resultJson.put("userId", user.getUserid());
-//			resultJson.put("message", "New email");
-//			resultJson.put("status", "1");
-//			resultJson.put("profilePicture", "");
-//		}
-		return resultJson;
-	}
-
 	@RequestMapping(value = "ValidateRegistration", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject ValidateRegistration(@RequestBody JSONObject request) throws Exception {
+	public JSONObject ValidateRegistration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+
 		if (request.get("name").toString().equals("") || request.get("name").toString().equals(null)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Can not create user! Name cannot be null or empty");
@@ -503,7 +581,7 @@ public class UserController extends AbstractController {
 		User_ user1 = userService.getScreenName(request.get("screenname").toString());
 		if (user1 != null) {
 			resultJson.put("status", 0);
-			resultJson.put("message","Can not create user! Screen name " + request.get("screenname").toString() + " must not be duplicate but is already used.");
+			resultJson.put("message", "Can not create user! Screen name " + request.get("screenname").toString() + " must not be duplicate but is already used.");
 			return resultJson;
 		}
 		String password = request.get("password").toString();
@@ -512,38 +590,51 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Can not create user! Password for user must be at least 8 characters");
 			return resultJson;
 		} else {
-			
+
 			if (!containsUpperCase(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message","Can not create user! Password must have at least 1 uppercase characters");
+				resultJson.put("message", "Can not create user! Password must have at least 1 uppercase characters");
 				return resultJson;
 			}
 			if (!containsLowerCase(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message","Can not create user! Password must have at least 1 lowercase characters");
+				resultJson.put("message", "Can not create user! Password must have at least 1 lowercase characters");
 				return resultJson;
 			}
-			
+
 			if (!containsNumber(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message","Can not create user! Password must have at least 1 numbers");
+				resultJson.put("message", "Can not create user! Password must have at least 1 numbers");
 				return resultJson;
 			}
 			if (!containsSpecial(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message","Can not create user! Password must have at least 1 specital characters");
+				resultJson.put("message", "Can not create user! Password must have at least 1 specital characters");
 				return resultJson;
 			}
 		}
 		resultJson.put("status", 1);
-		resultJson.put("message","Success");
+		resultJson.put("message", "Success");
 		return resultJson;
 	}
+
 	@RequestMapping(value = "ValidateEmail", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject ValidateEmail(@RequestBody JSONObject request) throws Exception {
+	public JSONObject ValidateEmail(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 
 		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
 			resultJson.put("status", 0);
@@ -559,22 +650,26 @@ public class UserController extends AbstractController {
 		}
 
 		resultJson.put("status", 1);
-		resultJson.put("message","Success");
+		resultJson.put("message", "Success");
 		return resultJson;
 	}
+
 	private boolean contains(String value, IntPredicate predicate) {
-	    return value.chars().anyMatch(predicate);
+		return value.chars().anyMatch(predicate);
 	}
+
 	private boolean containsLowerCase(String value) {
-	    return contains(value, i -> Character.isLetter(i) && Character.isLowerCase(i));
+		return contains(value, i -> Character.isLetter(i) && Character.isLowerCase(i));
 	}
+
 	private boolean containsUpperCase(String value) {
-	    return contains(value, i -> Character.isLetter(i) && Character.isUpperCase(i));
+		return contains(value, i -> Character.isLetter(i) && Character.isUpperCase(i));
 	}
+
 	private boolean containsNumber(String value) {
-	    return contains(value, Character::isDigit);
+		return contains(value, Character::isDigit);
 	}
-	
+
 	private boolean containsSpecial(String value) {
 		Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
 		Matcher hasSpecial = special.matcher(value);
