@@ -58,7 +58,7 @@ public class BreakingNewController extends AbstractController{
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-		JournalArticle ja = new JournalArticle();
+
 		long classPK = assetEntryService.getClassPK();
 		JournalArticle journal = journalArticleService.getJournalArticleByClassPK(classPK);
 		List<Map<String, String>> contentlist  = new DocumentParsing().ParsingImageTextTextArea(journal.getContent());
