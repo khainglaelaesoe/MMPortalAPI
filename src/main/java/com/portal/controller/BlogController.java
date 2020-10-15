@@ -27,6 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
@@ -105,8 +106,20 @@ public class BlogController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getBlogs(@RequestParam("input") String input, @RequestParam("userid") String userId) {
+	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		// classTypeId=129731;
 		List<Long> classPKList = assetEntryService.getClassPkList(129731);
 		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
@@ -131,8 +144,20 @@ public class BlogController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getBlogs(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
+	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Long> classPkList = assetEntryService.getClassPkList(129731);
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPkList, userId, searchterm));
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;

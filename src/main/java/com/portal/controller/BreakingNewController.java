@@ -12,11 +12,13 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgMyanmarName;
@@ -41,8 +43,21 @@ public class BreakingNewController extends AbstractController{
 	@RequestMapping(value = "getBreakingNews", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getBreakingNews() {
+	public JSONObject getBreakingNews(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		JournalArticle ja = new JournalArticle();
 		long classPK = assetEntryService.getClassPK();
 		JournalArticle journal = journalArticleService.getJournalArticleByClassPK(classPK);
@@ -59,8 +74,20 @@ public class BreakingNewController extends AbstractController{
 	@RequestMapping(value = "getBreakingNewsUpdate", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getBreakingNewsUpdate() {
+	public JSONObject getBreakingNewsUpdate(@RequestHeader("Authorization") String encryptedString) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Long> classPKList = assetEntryService.getClassPKListbyCatagoryId();
 		List<JournalArticle> jrList = journalArticleService.getJournalArticlebyRprimekey(classPKList);
 		if(jrList.size() > 0) {

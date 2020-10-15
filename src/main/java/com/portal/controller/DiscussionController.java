@@ -13,12 +13,14 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.OrgMyanmarName;
@@ -94,8 +96,21 @@ public class DiscussionController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getBlogs(@RequestParam("input") String input, @RequestParam("userid") String userId) {
+	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		// classTypeId=129731;
 		List<Long> classPKList = assetEntryService.getClassPkList(129739);
 		int lastPageNo = classPKList.size() % 10 == 0 ? classPKList.size() / 10 : classPKList.size() / 10 + 1;
@@ -119,8 +134,20 @@ public class DiscussionController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getDiscussion(@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
+	public JSONObject getDiscussion(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		List<Long> classPKList = assetEntryService.getClassPkList(129739);
 		List<JournalArticle> journalArticleList = parseJournalArticleList(getArticles(classPKList, userId, searchterm));
 		int lastPageNo = journalArticleList.size() % 10 == 0 ? journalArticleList.size() / 10 : journalArticleList.size() / 10 + 1;

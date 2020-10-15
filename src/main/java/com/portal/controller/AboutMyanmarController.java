@@ -17,12 +17,14 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.portal.entity.AES;
 import com.portal.entity.AboutMyanmarType;
 import com.portal.entity.AssetCategory;
 import com.portal.entity.AssetCategoryProperty;
@@ -524,7 +526,21 @@ public class AboutMyanmarController extends AbstractController {
 	@RequestMapping(value = "home", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAboutMyanmar() {
+	public JSONObject getAboutMyanmar(@RequestHeader("Authorization") String encryptedString) {
+		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		// 80289
 		return getAssetCategoryByVocabularyId(80289, AboutMyanmarType.ABOUT);
 	}
@@ -532,8 +548,22 @@ public class AboutMyanmarController extends AbstractController {
 	@RequestMapping(value = "travel", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getTravel() {
+	public JSONObject getTravel(@RequestHeader("Authorization") String encryptedString) {
 		// 36017
+		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 		return getJournalArticlesTravel(AboutMyanmarType.TRAVEL);
 	}
 
