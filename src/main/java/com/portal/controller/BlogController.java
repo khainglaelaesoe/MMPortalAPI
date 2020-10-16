@@ -92,6 +92,12 @@ public class BlogController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		if(!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+		
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -130,6 +136,12 @@ public class BlogController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		if(!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+		
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

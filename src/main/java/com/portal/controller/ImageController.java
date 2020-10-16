@@ -67,6 +67,7 @@ public class ImageController extends AbstractController {
 		resultJson.put("images",orgList);
 		return resultJson;
 	}
+	
 	private List<Organization_> parseImages(List<JournalArticle> journalList) {
 		List<Organization_> orgList = new ArrayList<Organization_>();
 		for(JournalArticle journalArticle : journalList) {

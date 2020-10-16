@@ -121,8 +121,27 @@ public class JobAndVacancyController extends AbstractController {
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJobsBySearchTerm(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
+	public JSONObject getJobsBySearchTerm(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
+		if (!isValidSearchTerm(searchTerm)) {
+			json.put("status", 0);
+			json.put("message", "Avoid too many keywords!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -405,7 +424,7 @@ public class JobAndVacancyController extends AbstractController {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		if (CollectionUtils.isEmpty(classpks))
 			return journalArticleList;
-		
+
 		String info = convertLongListToString(classpks, input);
 		String[] classpkList = info.split(",");
 		for (String classpk : classpkList) {
@@ -557,8 +576,27 @@ public class JobAndVacancyController extends AbstractController {
 	@RequestMapping(value = "topic", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString,@RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString, @RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
 		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
+		if (!isValidViewBy(viewby)) {
+			json.put("status", 0);
+			json.put("message", "Can't view by this order!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

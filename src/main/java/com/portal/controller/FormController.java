@@ -165,7 +165,7 @@ public class FormController extends AbstractController {
 			newJournalList.add(parseJournalArticle(journalArticle));
 		return newJournalList;
 	}
-	
+
 	public List<JournalArticle> setValue(long categoryId, String searchTerm) {
 		List<JournalArticle> journalArticleList = new ArrayList<JournalArticle>();
 		List<Object> objectList = journalArticleService.getFormByTopicAndSearchTerm(categoryId, searchTerm);
@@ -191,8 +191,26 @@ public class FormController extends AbstractController {
 	@RequestMapping(value = "searchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getDocumentsBySearchTerm(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
+	public JSONObject getDocumentsBySearchTerm(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic) {
 		JSONObject json = new JSONObject();
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
+		if (!isValidSearchTerm(searchTerm)) {
+			json.put("status", 0);
+			json.put("message", "Avoid too many keywords!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -348,8 +366,20 @@ public class FormController extends AbstractController {
 	@RequestMapping(value = "topic", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString,@RequestParam("topic") String topic, @RequestParam("input") String input) {
+	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString, @RequestParam("topic") String topic, @RequestParam("input") String input) {
 		JSONObject json = new JSONObject();
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -368,7 +398,8 @@ public class FormController extends AbstractController {
 			classPKs = assetEntryService.getClassPkList(85212);
 			lastPageNo = classPKs.size() % 10 == 0 ? classPKs.size() / 10 : classPKs.size() / 10 + 1;
 
-			List<JournalArticle> forms = getJournalArticles(convertLongListToString(classPKs, input)); 
+			List<JournalArticle> forms = getJournalArticles(convertLongListToString(classPKs, input));
+
 			Stack<JournalArticle> stackList = new Stack<JournalArticle>();
 			forms.forEach(article -> {
 				stackList.push(article);
@@ -384,6 +415,7 @@ public class FormController extends AbstractController {
 			json.put("totalCount", classPKs.size());
 			return json;
 		}
+
 		TopicEngName topicName = TopicEngName.valueOf(topic);
 		switch (topicName) {
 		case Health:

@@ -41,7 +41,9 @@ import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.PollsChoice;
 import com.portal.entity.Reply;
 import com.portal.entity.RequestVote;
+import com.portal.entity.TopicEngName;
 import com.portal.entity.User_;
+import com.portal.entity.ViewBy;
 import com.portal.entity.mobileuser;
 import com.portal.parsing.DocumentParsing;
 import com.portal.service.JournalArticleService;
@@ -66,6 +68,41 @@ public class AbstractController {
 
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;
+
+	public boolean isValidPaganation(String input) {
+		return input.length() < 6;
+	}
+
+	public boolean isValidTopic(String topicKey) {
+		for (TopicEngName topic : TopicEngName.values()) {
+			if (topic.toString().contains(topicKey) || topicKey.toString().equals("all")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isValidSearchTerm(String searchTerm) {
+		return searchTerm.length() < 100;
+	}
+	
+	public boolean isValidViewBy(String viewBy) {
+		try {
+			ViewBy viewByEnum = ViewBy.valueOf(viewBy.toUpperCase());
+			return ViewBy.CLOSINGDATE == viewByEnum || ViewBy.LATEST == viewByEnum || ViewBy.MOSTVIEW == viewByEnum;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public boolean isValidCategoryType(String categoryType) {
+		for(CategoryType eachCategory : CategoryType.values()) {
+			if(eachCategory.toString().equals(categoryType.toUpperCase())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public boolean isAuthorize(String decryptedString) {
 		return decryptedString.contains("Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
@@ -988,7 +1025,7 @@ public class AbstractController {
 		}
 		return response.getBody();
 	}
-	
+
 	public String saveUser(User_ user) {
 		mobileuser mbuser = new mobileuser();
 		mbuser = convertMobileUser(user);
@@ -1010,7 +1047,7 @@ public class AbstractController {
 		logger.info(res.get("message").toString());
 		return res.get("message").toString();
 	}
-	
+
 	public mobileuser convertMobileUser(User_ user) {
 		mobileuser mbuser = new mobileuser();
 		try {

@@ -39,13 +39,7 @@ public class DiscussionController extends AbstractController {
 	private AssetEntryService assetEntryService;
 
 	@Autowired
-	private JournalArticleService journalArticleService;
-
-	@Autowired
 	private JournalFolderService journalFolderService;
-
-	@Autowired
-	private MessageService messageService;
 
 	private static Logger logger = Logger.getLogger(DiscussionController.class);
 
@@ -67,15 +61,15 @@ public class DiscussionController extends AbstractController {
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
-		newJournal.setDisplaydate(resultDateString);		
+		newJournal.setDisplaydate(resultDateString);
 		newJournal.setContent(journalArticle.getContent());
-		
+
 		DocumentParsing dp = new DocumentParsing();
 		String engContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"en_US\">");
 		String myaContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">");
 
 		newJournal.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
-		newJournal.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));		
+		newJournal.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
 		newJournal.setpKString(journalArticle.getpKString());
 		newJournal.setMessageList(journalArticle.getMessageList());
@@ -98,7 +92,12 @@ public class DiscussionController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getBlogs(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
-		
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -136,6 +135,18 @@ public class DiscussionController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getDiscussion(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userId) {
 		JSONObject resultJson = new JSONObject();
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidSearchTerm(searchterm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Avoid too many keywords!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

@@ -178,7 +178,6 @@ public class UserController extends AbstractController {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		String email = request.get("email").toString();
-		logger.info("serviceUrl !!!!!!!!!!!!!!!!!!!!!!" + serviceUrl);
 
 		JSONObject json = new JSONObject();
 		json.put("name", request.get("name").toString());
@@ -267,7 +266,7 @@ public class UserController extends AbstractController {
 			resultJson.put("status", "1");
 			resultJson.put("user", mbresponse);
 			resultJson.put("message", "Login Success!");
-			resultJson.put("profilePicture", "");
+			resultJson.put("profilePicture", otherserviceResponse.get("portrait").toString());
 			resultJson.put("token", otherserviceResponse.get("access_token").toString());
 		} else {
 			resultJson.put("status", "0");

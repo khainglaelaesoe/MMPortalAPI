@@ -270,8 +270,21 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "latestNews", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getLatestNewsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
-		JSONObject json =new  JSONObject();
+	public JSONObject getLatestNewsByLimit(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidViewBy(viewby)) {
+			json.put("status", 0);
+			json.put("message", "Can't view by this order!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -299,8 +312,21 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "announcements", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
-		JSONObject json =new  JSONObject();
+	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidViewBy(viewby)) {
+			json.put("status", 0);
+			json.put("message", "Can't view by this order!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -328,8 +354,21 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "mediavideos", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getMediaVideosByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("viewby") String viewby) {
+	public JSONObject getMediaVideosByLimit(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("viewby") String viewby) {
 		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidViewBy(viewby)) {
+			json.put("status", 0);
+			json.put("message", "Can't view by this order!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -357,8 +396,15 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "newspapers", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getNewspaperByLimit(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input) {
+	public JSONObject getNewspaperByLimit(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input) {
 		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -467,8 +513,21 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "overallsearch", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject overallsearch(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchTerm, @RequestParam("input") String input) {
+	public JSONObject overallsearch(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchTerm, @RequestParam("input") String input) {
 		JSONObject resultJson = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidSearchTerm(searchTerm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Topic is not found!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -514,8 +573,27 @@ public class JournalArticleController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getJournals(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
+	public JSONObject getJournals(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("categorytype") String categorytype) {
 		JSONObject resultJson = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidSearchTerm(searchterm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Topic is not found!");
+			return resultJson;
+		}
+		
+		if(isValidCategoryType(categorytype)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Category Type is not valid!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
