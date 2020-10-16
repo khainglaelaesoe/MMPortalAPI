@@ -315,8 +315,21 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "bysearchTerms", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationBySearchTerms(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String searchTerm, @RequestParam("index") String index) {
+	public JSONObject getOrganizationBySearchTerms(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String searchTerm, @RequestParam("index") String index) {
 		JSONObject resultJson = new JSONObject();
+
+		if (!isValidPaganation(index)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidSearchTerm(searchTerm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Avoid too many keyword!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -351,8 +364,21 @@ public class OrganizationController extends AbstractController {
 	@RequestMapping(value = "byname", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getOrganizationByName(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
+	public JSONObject getOrganizationByName(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
+		
+		if (!isValidPaganation(index)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidOrgName(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Avoid too many keyword!");
+			return resultJson;
+		}
+		
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

@@ -154,7 +154,7 @@ public class UserController extends AbstractController {
 		return resultJson;
 	}
 
-	@RequestMapping(value = "register", method = RequestMethod.POST)
+	@RequestMapping(value = "register", method = RequestMethod.POST) /* password encrypted */
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject registration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
@@ -178,13 +178,15 @@ public class UserController extends AbstractController {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		String email = request.get("email").toString();
+		String encryptedPassword = request.get("password").toString();
+		String password = AES.decrypt(encryptedPassword, secretKey);
 
 		JSONObject json = new JSONObject();
 		json.put("name", request.get("name").toString());
 		json.put("displayName", request.get("screenname").toString());
 		json.put("emailAddress", email);
 		json.put("phone", request.get("phoneno").toString());
-		json.put("password", request.get("password").toString());
+		json.put("password", password);
 		json.put("confirmPassword", request.get("password").toString());
 		json.put("securityQuestion", request.get("reminderqueryquestion").toString());
 		json.put("securityAnswer", request.get("reminderqueryanswer").toString());
@@ -223,7 +225,7 @@ public class UserController extends AbstractController {
 		return userService.getMNPUserByEmail(json.get("email").toString());
 	}
 
-	@RequestMapping(value = "login", method = RequestMethod.POST)
+	@RequestMapping(value = "login", method = RequestMethod.POST) /* password encrypted */
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject login(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject req) {
@@ -243,7 +245,9 @@ public class UserController extends AbstractController {
 		}
 
 		String email = req.get("email").toString();
-		String password = req.get("password").toString();
+		String encryptedPassword = req.get("password").toString();
+		String password = AES.decrypt(encryptedPassword, secretKey);
+
 		HttpHeaders headers = new HttpHeaders();
 		JSONObject json = new JSONObject();
 		json.put("companyId", "20116");
@@ -332,26 +336,6 @@ public class UserController extends AbstractController {
 		return resultJson;
 	}
 
-//	@RequestMapping(value = "checkQuestion", method = RequestMethod.GET)
-//	@ResponseBody
-//	@JsonView(Views.Summary.class)
-//	public JSONObject checkQuestion(@RequestParam("email") String email) {
-//		JSONObject response = new JSONObject();
-//		User_ user = userService.getUserbyemail(email);
-//		if (user != null) {
-//			response.put("questions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-//			response.put("iosQuestions", user.getReminderqueryquestion() != null ? user.getReminderqueryquestion() : "");
-//			response.put("answer", user.getReminderqueryanswer() != null ? user.getReminderqueryanswer() : "");
-//			response.put("status", "1");
-//			response.put("message", "Success!");
-//		} else {
-//			response.put("status", "0");
-//			response.put("message", "Email Not Found!");
-//			return response;
-//		}
-//		return response;
-//	}
-
 	// 1
 	@RequestMapping(value = "resetpassword1", method = RequestMethod.GET)
 	@ResponseBody
@@ -392,7 +376,6 @@ public class UserController extends AbstractController {
 		response.put("status", "1");
 		response.put("message", "Success!");
 		response.put("securityQuestion", otherserviceResponse.getBody().get("securityQuestion").toString());
-
 		return response;
 	}
 
@@ -437,7 +420,6 @@ public class UserController extends AbstractController {
 		}
 		response.put("status", "0");
 		response.put("message", otherserviceResponse.getBody().get("message").toString());
-
 		return response;
 	}
 
@@ -460,8 +442,11 @@ public class UserController extends AbstractController {
 		}
 
 		JSONObject json = new JSONObject();
+		String encryptedCode = req.get("code").toString();
+		String code = AES.decrypt(encryptedCode, secretKey);
+
 		json.put("resetToken", req.get("token").toString());
-		json.put("code", req.get("code").toString());
+		json.put("code", code);
 		json.put("password", "");
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
@@ -504,9 +489,12 @@ public class UserController extends AbstractController {
 			return response;
 		}
 
+		String encryptedCode = req.get("code").toString();
+		String code = AES.decrypt(encryptedCode, secretKey);
+
 		JSONObject json = new JSONObject();
 		json.put("resetToken", req.get("token").toString());
-		json.put("code", req.get("code").toString());
+		json.put("code", code);
 		json.put("password", req.get("password").toString());
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);

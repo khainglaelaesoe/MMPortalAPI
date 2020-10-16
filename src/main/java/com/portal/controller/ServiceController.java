@@ -254,6 +254,24 @@ public class ServiceController extends AbstractController {
 	public JSONObject getServicesBySearchTerm(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchTerm, @RequestParam("input") String input, @RequestParam("topic") String topic, @RequestParam("userid") String userId) {
 		JSONObject json = new JSONObject();
 
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
+		if (!isValidSearchTerm(searchTerm)) {
+			json.put("status", 0);
+			json.put("message", "Avoid too many keywords!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -674,8 +692,26 @@ public class ServiceController extends AbstractController {
 	@ResponseBody
 	@JsonView(Views.Thin.class)
 	public JSONObject getServices(@RequestHeader("Authorization") String encryptedString, @RequestParam("topic") String topic, @RequestParam("input") String input, @RequestParam("viewby") String viewby, @RequestParam("userid") String userId) {
-
 		JSONObject json = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			json.put("status", 0);
+			json.put("message", "Page index out of range!");
+			return json;
+		}
+
+		if (!isValidTopic(topic)) {
+			json.put("status", 0);
+			json.put("message", "Topic is not found!");
+			return json;
+		}
+
+		if (!isValidViewBy(viewby)) {
+			json.put("status", 0);
+			json.put("message", "Can't view by this order!");
+			return json;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

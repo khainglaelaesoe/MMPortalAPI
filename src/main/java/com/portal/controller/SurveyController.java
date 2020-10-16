@@ -197,6 +197,12 @@ public class SurveyController extends AbstractController {
 	public JSONObject getSurvey(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
 
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -236,6 +242,17 @@ public class SurveyController extends AbstractController {
 	@JsonView(Views.Thin.class)
 	public JSONObject getSurerys(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
+		if (!isValidSearchTerm(searchterm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Avoid too many keywords!");
+			return resultJson;
+		}
 
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);

@@ -172,7 +172,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "count", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getCount(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid) {
+	public JSONObject getCount(@RequestHeader("Authorization") String encryptedString, @RequestHeader(value = "userid") String userid) {
 		JSONObject json = new JSONObject();
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
@@ -264,7 +264,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "comments", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getReplies(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid, @RequestHeader(value = "messageid") String messageid) {
+	public JSONObject getReplies(@RequestHeader("Authorization") String encryptedString, @RequestHeader(value = "userid") String userid, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
@@ -286,7 +286,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "blogs", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getComments(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk, @RequestHeader(value = "messageid") String messageid) {
+	public JSONObject getComments(@RequestHeader("Authorization") String encryptedString, @RequestHeader(value = "userid") String userid, @RequestHeader(value = "classpk") String classpk, @RequestHeader(value = "messageid") String messageid) {
 		JSONObject resultJson = new JSONObject();
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
@@ -308,7 +308,7 @@ public class NotiController extends AbstractController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString,@RequestHeader(value = "date") String date, @RequestHeader(value = "userid") String userid) {
+	public JSONObject getAnnouncementsByLimit(@RequestHeader("Authorization") String encryptedString, @RequestHeader(value = "date") String date, @RequestHeader(value = "userid") String userid) {
 		// 36208,
 		JSONObject resultJson = new JSONObject();
 		try {
@@ -323,6 +323,7 @@ public class NotiController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
+
 		RequestVote notidata = getReplyList(userid);
 		RequestVote blog = getBlogs(userid);
 		List<JournalArticle> announcements = getEntities(resultJson, Long.parseLong(36208 + ""), CategoryType.ANNOUNCEMENT); // announcements

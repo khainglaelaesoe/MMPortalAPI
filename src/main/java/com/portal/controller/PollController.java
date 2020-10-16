@@ -220,8 +220,15 @@ public class PollController extends AbstractController {
 	@RequestMapping(value = "all", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getAllPolls(@RequestHeader("Authorization") String encryptedString,@RequestParam("input") String input, @RequestParam("userid") String mbuserid) {
+	public JSONObject getAllPolls(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("userid") String mbuserid) {
 		JSONObject resultJson = new JSONObject();
+
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -234,6 +241,7 @@ public class PollController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
+
 		List<Long> classPKList = assetEntryService.getClassuuidListForPollAndSurvey(104266);
 		classPKList.addAll(assetEntryService.getClassuuidListForPollAndSurvey(104253));
 		List<JournalArticle> journalArticleList = parseJournalArticleListByuserid(getAllArticles(classPKList, input), mbuserid);
@@ -258,8 +266,21 @@ public class PollController extends AbstractController {
 	@RequestMapping(value = "bysearchterm", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Thin.class)
-	public JSONObject getPolls(@RequestHeader("Authorization") String encryptedString,@RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
+	public JSONObject getPolls(@RequestHeader("Authorization") String encryptedString, @RequestParam("searchterm") String searchterm, @RequestParam("input") String input, @RequestParam("userid") String userid) {
 		JSONObject resultJson = new JSONObject();
+		
+		if (!isValidPaganation(input)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Page index out of range!");
+			return resultJson;
+		}
+		
+		if (!isValidSearchTerm(searchterm)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Avoid too many keywords!");
+			return resultJson;
+		}
+		
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {

@@ -37,6 +37,7 @@ import com.portal.entity.DateUtil;
 import com.portal.entity.JournalArticle;
 import com.portal.entity.MBMessage;
 import com.portal.entity.MobileResult;
+import com.portal.entity.OrgEngName;
 import com.portal.entity.OrgMyanmarName;
 import com.portal.entity.PollsChoice;
 import com.portal.entity.Reply;
@@ -82,10 +83,18 @@ public class AbstractController {
 		return false;
 	}
 
+	public boolean isValidOrgName(String name) {
+		for (OrgEngName orgName : OrgEngName.values()) {
+			if (orgName.toString().equals(name))
+				return true;
+		}
+		return false;
+	}
+
 	public boolean isValidSearchTerm(String searchTerm) {
 		return searchTerm.length() < 100;
 	}
-	
+
 	public boolean isValidViewBy(String viewBy) {
 		try {
 			ViewBy viewByEnum = ViewBy.valueOf(viewBy.toUpperCase());
@@ -96,8 +105,8 @@ public class AbstractController {
 	}
 
 	public boolean isValidCategoryType(String categoryType) {
-		for(CategoryType eachCategory : CategoryType.values()) {
-			if(eachCategory.toString().equals(categoryType.toUpperCase())) {
+		for (CategoryType eachCategory : CategoryType.values()) {
+			if (eachCategory.toString().equals(categoryType.toUpperCase())) {
 				return true;
 			}
 		}
@@ -105,6 +114,8 @@ public class AbstractController {
 	}
 
 	public boolean isAuthorize(String decryptedString) {
+		/* Apple deviceID - 98F7A963-33DF-4C49-AC80-F35F870BFAAB
+		 *  Android DeviceID - 25f0cee94f08e5c2*/
 		return decryptedString.contains("Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 	}
 
