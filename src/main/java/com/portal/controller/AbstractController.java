@@ -65,7 +65,9 @@ public class AbstractController {
 	@Autowired
 	private MessageService messageService;
 
-	public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBOVWMMGIVA";
+	//public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBOVWMMGIVA";
+	
+	public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBO";
 
 	@Value("${SERVICEURL}")
 	private String SERVICEURL;

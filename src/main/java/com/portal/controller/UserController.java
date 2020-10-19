@@ -53,28 +53,6 @@ public class UserController extends AbstractController {
 
 	@PostMapping("encrypt")
 	public JSONObject encrypt(@RequestParam String originalString) throws Exception {
-//		JSONObject json = new JSONObject();
-//		encryptedString = encryptedString.replaceAll(" ", "+");
-//		String decryptedString = AES.decrypt(encryptedString, secretKey);
-//		json.put("encryptedString", encryptedString);
-//		json.put("decryptedString", decryptedString);
-//		if (isAuthorize(decryptedString))
-//			json.put("Authorization", "Authorization Success.");
-//		else
-//			json.put("Authorization", "Authorization Failure.");
-//		return json;
-
-		JSONObject json = new JSONObject();
-		originalString = originalString.replaceAll(" ", "+");
-		String encryptedString = AES.encrypt(originalString, secretKey);
-		String decryptedString = AES.decrypt(encryptedString, secretKey);
-		json.put("encryptedString", encryptedString);
-		json.put("decryptedString", decryptedString);
-		return json;
-	}
-
-	@PostMapping("encrypt2")
-	public JSONObject encrypt2(@RequestParam String originalString) throws Exception {
 		JSONObject json = new JSONObject();
 		originalString = originalString.replaceAll(" ", "+");
 		String encryptedString = AES.encrypt(originalString, secretKey);
@@ -199,8 +177,8 @@ public class UserController extends AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		String email = request.get("email").toString();
-		String encryptedPassword = request.get("password").toString();
+		String email = AES.decrypt(request.get("email").toString(), secretKey);
+		String encryptedPassword = AES.decrypt(request.get("password").toString(), secretKey);
 
 //		String password = AES.decrypt(encryptedPassword, secretKey);
 //		if (password == null) {
@@ -213,14 +191,14 @@ public class UserController extends AbstractController {
 //		logger.info("decrypted password: !!!!!!!!!!!!!!!!" + password);
 
 		JSONObject json = new JSONObject();
-		json.put("name", request.get("name").toString());
-		json.put("displayName", request.get("screenname").toString());
+		json.put("name", AES.decrypt(request.get("name").toString(), secretKey));
+		json.put("displayName", AES.decrypt(request.get("screenname").toString(), secretKey));
 		json.put("emailAddress", email);
-		json.put("phone", request.get("phoneno").toString());
+		json.put("phone", AES.decrypt(request.get("phoneno").toString(), secretKey));
 		json.put("password", encryptedPassword);
 		json.put("confirmPassword", encryptedPassword);
-		json.put("securityQuestion", request.get("reminderqueryquestion").toString());
-		json.put("securityAnswer", request.get("reminderqueryanswer").toString());
+		json.put("securityQuestion",AES.decrypt(request.get("reminderqueryquestion").toString(), secretKey));
+		json.put("securityAnswer", AES.decrypt(request.get("reminderqueryanswer").toString(), secretKey));
 
 		HttpEntity<String> entity = new HttpEntity<String>(json.toString(), headers);
 		RestTemplate restTemplate = new RestTemplate();
@@ -275,8 +253,8 @@ public class UserController extends AbstractController {
 			return resultJson;
 		}
 
-		String email = req.get("email").toString();
-		String encryptedPassword = req.get("password").toString();
+		String email = AES.decrypt(req.get("email").toString(), secretKey);
+		String encryptedPassword = AES.decrypt(req.get("password").toString(), secretKey);
 //		String password = AES.decrypt(encryptedPassword, secretKey);
 //
 //		if (password == null) {
@@ -338,47 +316,47 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String fbtoken, @RequestHeader("facebookID") String facebookID) {
-		JSONObject resultJson = new JSONObject();
+	public JSONObject facebookLogin(@RequestHeader("Authorization") String encryptedString,@RequestHeader("token") String fbtoken,@RequestHeader("email") String email) {
+		JSONObject response = new JSONObject();
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
-				resultJson.put("status", 0);
-				resultJson.put("message", "Authorization failure!");
-				return resultJson;
+				response.put("status", 0);
+				response.put("message", "Authorization failure!");
+				return response;
 			}
 		} catch (Exception e) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Authorization failure!");
-			return resultJson;
+			response.put("status", 0);
+			response.put("message", "Authorization failure!");
+			return response;
 		}
-
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", fbtoken);
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = OTHERSERVICEURL.trim() + "auth/login-with-facebook";
+		String url = OTHERSERVICEURL + "auth/login-with-facebook";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
+				HttpMethod.GET, entityHeader, JSONObject.class);
 		logger.info("Facebook Login Response : " + otherserviceResponse);
-
-		if (otherserviceResponse.getBody().get("errCode") != "") {
-			resultJson.put("status", "0");
-			resultJson.put("message", otherserviceResponse.getBody().get("message"));
-		} else {
-			User_ user = userService.getUserbyfacebookID(facebookID);
+		if (otherserviceResponse.getBody().get("access_token") != null) {
+			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
-			resultJson.put("status", "1");
-			resultJson.put("user", mbresponse);
-			resultJson.put("message", "Login Success!");
-			resultJson.put("profilePicture", "");
+			response.put("status", "1");
+			response.put("user", mbresponse);
+			response.put("message", "Login Success!");
+			response.put("profilePicture", "");
+			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
+		} else {
+			response.put("status", "0");
+			response.put("message", otherserviceResponse.getBody().get("message"));
 		}
-		return resultJson;
+		return response;
 	}
 
 	// 1

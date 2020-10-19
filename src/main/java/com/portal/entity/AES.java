@@ -1,8 +1,15 @@
 package com.portal.entity;
 
 import java.io.UnsupportedEncodingException;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.Base64;
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Hex;
@@ -53,5 +60,5 @@ public class AES {
 		}
 		return null;
 	}
-
+	
 }
