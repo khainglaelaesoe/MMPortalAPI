@@ -1,5 +1,8 @@
 package com.portal.controller;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.IntPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,16 +52,35 @@ public class UserController extends AbstractController {
 	private String OTHERSERVICEURL;
 
 	@PostMapping("encrypt")
-	public JSONObject encrypt(@RequestParam String encryptedString) throws Exception {
+	public JSONObject encrypt(@RequestParam String originalString) throws Exception {
+//		JSONObject json = new JSONObject();
+//		encryptedString = encryptedString.replaceAll(" ", "+");
+//		String decryptedString = AES.decrypt(encryptedString, secretKey);
+//		json.put("encryptedString", encryptedString);
+//		json.put("decryptedString", decryptedString);
+//		if (isAuthorize(decryptedString))
+//			json.put("Authorization", "Authorization Success.");
+//		else
+//			json.put("Authorization", "Authorization Failure.");
+//		return json;
+
 		JSONObject json = new JSONObject();
-		encryptedString = encryptedString.replaceAll(" ", "+");
+		originalString = originalString.replaceAll(" ", "+");
+		String encryptedString = AES.encrypt(originalString, secretKey);
 		String decryptedString = AES.decrypt(encryptedString, secretKey);
 		json.put("encryptedString", encryptedString);
 		json.put("decryptedString", decryptedString);
-		if (isAuthorize(decryptedString))
-			json.put("Authorization", "Authorization Success.");
-		else
-			json.put("Authorization", "Authorization Failure.");
+		return json;
+	}
+
+	@PostMapping("encrypt2")
+	public JSONObject encrypt2(@RequestParam String originalString) throws Exception {
+		JSONObject json = new JSONObject();
+		originalString = originalString.replaceAll(" ", "+");
+		String encryptedString = AES.encrypt(originalString, secretKey);
+		String decryptedString = AES.decrypt(encryptedString, secretKey);
+		json.put("encryptedString", encryptedString);
+		json.put("decryptedString", decryptedString);
 		return json;
 	}
 
@@ -179,15 +201,24 @@ public class UserController extends AbstractController {
 
 		String email = request.get("email").toString();
 		String encryptedPassword = request.get("password").toString();
-		String password = AES.decrypt(encryptedPassword, secretKey);
+
+//		String password = AES.decrypt(encryptedPassword, secretKey);
+//		if (password == null) {
+//			resultJson.put("status", 0);
+//			resultJson.put("message", "Password is not valid!");
+//			return resultJson;
+//		}
+
+//		logger.info("encryptedPassword: !!!!!!!!!!!!!!!!" + encryptedPassword);
+//		logger.info("decrypted password: !!!!!!!!!!!!!!!!" + password);
 
 		JSONObject json = new JSONObject();
 		json.put("name", request.get("name").toString());
 		json.put("displayName", request.get("screenname").toString());
 		json.put("emailAddress", email);
 		json.put("phone", request.get("phoneno").toString());
-		json.put("password", password);
-		json.put("confirmPassword", request.get("password").toString());
+		json.put("password", encryptedPassword);
+		json.put("confirmPassword", encryptedPassword);
 		json.put("securityQuestion", request.get("reminderqueryquestion").toString());
 		json.put("securityAnswer", request.get("reminderqueryanswer").toString());
 
@@ -246,13 +277,19 @@ public class UserController extends AbstractController {
 
 		String email = req.get("email").toString();
 		String encryptedPassword = req.get("password").toString();
-		String password = AES.decrypt(encryptedPassword, secretKey);
+//		String password = AES.decrypt(encryptedPassword, secretKey);
+//
+//		if (password == null) {
+//			resultJson.put("status", 0);
+//			resultJson.put("message", "Password is not valid!");
+//			return resultJson;
+//		}
 
 		HttpHeaders headers = new HttpHeaders();
 		JSONObject json = new JSONObject();
 		json.put("companyId", "20116");
 		json.put("email", email);
-		json.put("password", password);
+		json.put("password", encryptedPassword);
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
 
@@ -264,6 +301,11 @@ public class UserController extends AbstractController {
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject otherserviceResponse = restTemplate.postForObject(url, entityHeader, JSONObject.class);
 		logger.info("Login Response : " + otherserviceResponse);
+
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime expireTime = now.plusHours(24);
+
 		if (otherserviceResponse.get("access_token") != null) {
 			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
@@ -272,6 +314,9 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Login Success!");
 			resultJson.put("profilePicture", otherserviceResponse.get("portrait").toString());
 			resultJson.put("token", otherserviceResponse.get("access_token").toString());
+			resultJson.put("current time", dtf.format(now));
+			resultJson.put("expireTime", dtf.format(expireTime));
+
 		} else {
 			resultJson.put("status", "0");
 			resultJson.put("message", "Your email or password was incorrect. please try again");
@@ -445,6 +490,15 @@ public class UserController extends AbstractController {
 		String encryptedCode = req.get("code").toString();
 		String code = AES.decrypt(encryptedCode, secretKey);
 
+		if (code == null) {
+			json.put("status", 0);
+			json.put("message", "Password is not valid!");
+			return json;
+		}
+
+		logger.info("encrypted code: !!!!!!!!!!!!!!!!" + encryptedCode);
+		logger.info("decrypted code: !!!!!!!!!!!!!!!!" + code);
+
 		json.put("resetToken", req.get("token").toString());
 		json.put("code", code);
 		json.put("password", "");
@@ -491,11 +545,31 @@ public class UserController extends AbstractController {
 
 		String encryptedCode = req.get("code").toString();
 		String code = AES.decrypt(encryptedCode, secretKey);
+		String encryptedPassword = req.get("password").toString();
+		String password = AES.decrypt(encryptedPassword, secretKey);
+
+		if (code == null) {
+			response.put("status", 0);
+			response.put("message", "Code is not valid!");
+			return response;
+		}
+
+		if (password == null) {
+			response.put("status", 0);
+			response.put("message", "Password is not valid!");
+			return response;
+		}
+
+		logger.info("encrypted code: !!!!!!!!!!!!!!!!" + encryptedCode);
+		logger.info("decrypted code: !!!!!!!!!!!!!!!!" + code);
+
+		logger.info("encryptedPassword: !!!!!!!!!!!!!!!!" + encryptedPassword);
+		logger.info("decrypted password: !!!!!!!!!!!!!!!!" + password);
 
 		JSONObject json = new JSONObject();
 		json.put("resetToken", req.get("token").toString());
 		json.put("code", code);
-		json.put("password", req.get("password").toString());
+		json.put("password", password);
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
 		logger.info("Request is: " + entityHeader);
@@ -521,20 +595,8 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "ValidateRegistration", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject ValidateRegistration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
+	public JSONObject ValidateRegistration(@RequestBody JSONObject request) throws Exception {
 		JSONObject resultJson = new JSONObject();
-		try {
-			String decryptedString = AES.decrypt(encryptedString, secretKey);
-			if (!isAuthorize(decryptedString)) {
-				resultJson.put("status", 0);
-				resultJson.put("message", "Authorization failure!");
-				return resultJson;
-			}
-		} catch (Exception e) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Authorization failure!");
-			return resultJson;
-		}
 
 		if (request.get("name").toString().equals("") || request.get("name").toString().equals(null)) {
 			resultJson.put("status", 0);
