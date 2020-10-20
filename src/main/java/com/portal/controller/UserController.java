@@ -1,6 +1,5 @@
 package com.portal.controller;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.IntPredicate;
@@ -50,6 +49,9 @@ public class UserController extends AbstractController {
 
 	@Value("${OTHERSERVICEURL}")
 	private String OTHERSERVICEURL;
+
+	@Value("${SERVICEURL}")
+	private String SERVICEURL;
 
 	@PostMapping("encrypt")
 	public JSONObject encrypt(@RequestParam String originalString) throws Exception {
@@ -154,11 +156,46 @@ public class UserController extends AbstractController {
 		return resultJson;
 	}
 
+	private boolean hasEmailFromDB(String email) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("email", email);
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "user/hasEmailFromDB";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<Boolean> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, Boolean.class);
+		logger.info("response ................" + response.getBody());
+
+		return response.getBody();
+	}
+
 	@RequestMapping(value = "register", method = RequestMethod.POST) /* password encrypted */
 	@ResponseBody
 	@JsonView(Views.Summary.class)
 	public JSONObject registration(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
 		JSONObject resultJson = new JSONObject();
+
+		String token = AES.decrypt(request.get("token").toString(), secretKey);
+		if (token == null) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Token is not valid!");
+			return resultJson;
+		}
+		
+		String email = AES.decrypt(request.get("email").toString(), secretKey);
+		String emailFromToken = token.substring(0, token.length() - 6);
+		logger.info("Email !!!!!!!!!!!!!!!" + emailFromToken);
+		
+		if (!hasEmailFromDB(emailFromToken) || !emailFromToken.equals(email)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Verification Failure!");
+			return resultJson;
+		}
 
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
@@ -177,18 +214,7 @@ public class UserController extends AbstractController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		String email = AES.decrypt(request.get("email").toString(), secretKey);
 		String encryptedPassword = AES.decrypt(request.get("password").toString(), secretKey);
-
-//		String password = AES.decrypt(encryptedPassword, secretKey);
-//		if (password == null) {
-//			resultJson.put("status", 0);
-//			resultJson.put("message", "Password is not valid!");
-//			return resultJson;
-//		}
-
-//		logger.info("encryptedPassword: !!!!!!!!!!!!!!!!" + encryptedPassword);
-//		logger.info("decrypted password: !!!!!!!!!!!!!!!!" + password);
 
 		JSONObject json = new JSONObject();
 		json.put("name", AES.decrypt(request.get("name").toString(), secretKey));
@@ -197,7 +223,7 @@ public class UserController extends AbstractController {
 		json.put("phone", AES.decrypt(request.get("phoneno").toString(), secretKey));
 		json.put("password", encryptedPassword);
 		json.put("confirmPassword", encryptedPassword);
-		json.put("securityQuestion",AES.decrypt(request.get("reminderqueryquestion").toString(), secretKey));
+		json.put("securityQuestion", AES.decrypt(request.get("reminderqueryquestion").toString(), secretKey));
 		json.put("securityAnswer", AES.decrypt(request.get("reminderqueryanswer").toString(), secretKey));
 
 		HttpEntity<String> entity = new HttpEntity<String>(json.toString(), headers);
@@ -316,7 +342,7 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "facebookLogin", method = RequestMethod.GET)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject facebookLogin(@RequestHeader("Authorization") String encryptedString,@RequestHeader("token") String fbtoken,@RequestHeader("email") String email) {
+	public JSONObject facebookLogin(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String fbtoken, @RequestHeader("email") String email) {
 		JSONObject response = new JSONObject();
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
@@ -341,8 +367,7 @@ public class UserController extends AbstractController {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 		logger.info("calling webservice..." + builder);
 		RestTemplate restTemplate = new RestTemplate();
-		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(),
-				HttpMethod.GET, entityHeader, JSONObject.class);
+		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
 		logger.info("Facebook Login Response : " + otherserviceResponse);
 		if (otherserviceResponse.getBody().get("access_token") != null) {
 			User_ user = userService.getUserbyemail(email);
@@ -470,12 +495,9 @@ public class UserController extends AbstractController {
 
 		if (code == null) {
 			json.put("status", 0);
-			json.put("message", "Password is not valid!");
+			json.put("message", "Code is not valid!");
 			return json;
 		}
-
-		logger.info("encrypted code: !!!!!!!!!!!!!!!!" + encryptedCode);
-		logger.info("decrypted code: !!!!!!!!!!!!!!!!" + code);
 
 		json.put("resetToken", req.get("token").toString());
 		json.put("code", code);
@@ -649,20 +671,8 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "ValidateEmail", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject ValidateEmail(@RequestHeader("Authorization") String encryptedString, @RequestBody JSONObject request) throws Exception {
+	public JSONObject ValidateEmail(@RequestBody JSONObject request) throws Exception {
 		JSONObject resultJson = new JSONObject();
-		try {
-			String decryptedString = AES.decrypt(encryptedString, secretKey);
-			if (!isAuthorize(decryptedString)) {
-				resultJson.put("status", 0);
-				resultJson.put("message", "Authorization failure!");
-				return resultJson;
-			}
-		} catch (Exception e) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Authorization failure!");
-			return resultJson;
-		}
 
 		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
 			resultJson.put("status", 0);
