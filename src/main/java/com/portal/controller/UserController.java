@@ -54,6 +54,8 @@ public class UserController extends AbstractController {
 	private String SERVICEURL;
 
 	@PostMapping("encrypt")
+	@ResponseBody
+	@JsonView(Views.Summary.class)
 	public JSONObject encrypt(@RequestParam String originalString) throws Exception {
 		JSONObject json = new JSONObject();
 		originalString = originalString.replaceAll(" ", "+");
@@ -67,28 +69,28 @@ public class UserController extends AbstractController {
 	@RequestMapping(value = "update", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject update(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
+	public JSONObject update( @RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
 		JSONObject resultJson = new JSONObject();
-
-		try {
-			String decryptedString = AES.decrypt(encryptedString, secretKey);
-			if (!isAuthorize(decryptedString)) {
-				resultJson.put("status", 0);
-				resultJson.put("message", "Authorization failure!");
-				return resultJson;
-			}
-		} catch (Exception e) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Authorization failure!");
-			return resultJson;
-		}
+		//@RequestHeader("Authorization") String encryptedString,
+//		try {
+//			String decryptedString = AES.decrypt(encryptedString, secretKey);
+//			if (!isAuthorize(decryptedString)) {
+//				resultJson.put("status", 0);
+//				resultJson.put("message", "Authorization failure!");
+//				return resultJson;
+//			}
+//		} catch (Exception e) {
+//			resultJson.put("status", 0);
+//			resultJson.put("message", "Authorization failure!");
+//			return resultJson;
+//		}
 
 		Object userId = json.get("userId");
 		if (userId == null || userId.toString().isEmpty()) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "User Id must not be empty.");
 			return resultJson;
-		}
+		}else userId = AES.decrypt(userId.toString(), secretKey);
 
 		User_ mnpUser = userService.getMNPUserByUserId(userId.toString());
 		Object oldPasswordObject = json.get("oldPassword");
@@ -96,22 +98,31 @@ public class UserController extends AbstractController {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Please insert old password.");
 			return resultJson;
-		}
+		}else oldPasswordObject = AES.decrypt(oldPasswordObject.toString(), secretKey);
 
 		String oldPassword = oldPasswordObject.toString();
 		String newPassword = json.get("newPassword").toString();
-
-		if (oldPassword.equals(newPassword)) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Your new password cannot be the same as your old password. Please enter a different password.");
-			return resultJson;
+		if(!newPassword.equals(null) && !newPassword.equals("")) {
+			newPassword = AES.decrypt(newPassword, secretKey);
+			if (oldPassword.equals(newPassword)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Your new password cannot be the same as your old password. Please enter a different password.");
+				return resultJson;
+			}
 		}
 		String email = json.get("email").toString();
+		if(!email.equals(null) && !email.isEmpty()) {
+			 email = AES.decrypt(email, secretKey);
+		}
 		String phone = json.get("phone").toString();
+		if(!phone.equals(null) && !phone.isEmpty()) {
+			phone = AES.decrypt(phone, secretKey);
+		}
 		String userName = json.get("userName").toString();
+		if(!userName.equals(null) && !userName.isEmpty()) {
+			userName = AES.decrypt(userName, secretKey);
+		}
 		String portrait = json.get("portrait").toString();
-		String name = json.get("name").toString();
-
 		String phoneNo = userService.getPhoneByUserId(userId.toString());
 		JSONObject request = new JSONObject();
 		request.put("email", email.isEmpty() ? mnpUser.getEmailaddress() : email);
@@ -123,7 +134,7 @@ public class UserController extends AbstractController {
 		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
 
 		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getMiddlename() == null ? "" : " " + mnpUser.getMiddlename()) + (mnpUser.getLastname() == null ? "" : mnpUser.getLastname());
-		request.put("name", name.isEmpty() ? dbName : name);
+		request.put("name", userName.isEmpty() ? dbName : userName);
 
 		String serviceUrl = OTHERSERVICEURL.trim() + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
