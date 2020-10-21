@@ -173,7 +173,7 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
 		logger.info("Request is: " + entityHeader);
 
-		String url = SERVICEURL + "user/hasEmailFromDB";
+		String url = SERVICEURL + "/user/hasEmailFromDB";
 		logger.info("service url is: " + url);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

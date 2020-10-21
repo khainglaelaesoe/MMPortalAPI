@@ -65,8 +65,8 @@ public class AbstractController {
 	@Autowired
 	private MessageService messageService;
 
-	//public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBOVWMMGIVA";
-	
+	// public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBOVWMMGIVA";
+
 	public final String secretKey = "7M8N3SLQ8QIKDJOSEPXJKJDFOZIN1NBO";
 
 	@Value("${SERVICEURL}")
@@ -116,8 +116,10 @@ public class AbstractController {
 	}
 
 	public boolean isAuthorize(String decryptedString) {
-		/* Apple deviceID - 98F7A963-33DF-4C49-AC80-F35F870BFAAB
-		 *  Android DeviceID - 25f0cee94f08e5c2*/
+		/*
+		 * Apple deviceID - 98F7A963-33DF-4C49-AC80-F35F870BFAAB Android DeviceID -
+		 * 25f0cee94f08e5c2
+		 */
 		return decryptedString.contains("Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
 	}
 
@@ -635,8 +637,17 @@ public class AbstractController {
 		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
 		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
 
+		logger.info("engContent!!!!!!!!!!!!!!!!!!!!!!!!" + engContent);
+		logger.info("myaContent!!!!!!!!!!!!!!!!!!!!!!!!" + myaContent);
+
+		engContent = engContent.isEmpty() ? myaContent : engContent;
+		myaContent = myaContent.isEmpty() ? engContent : myaContent;
+
 		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
 		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
+
+		logger.info("engContent!!!!!!!!!!!!!!!!!!!!!!!!" + newArticle.getEngContent());
+		logger.info("myaContent!!!!!!!!!!!!!!!!!!!!!!!!" + newArticle.getMyanmarContent());
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
@@ -655,6 +666,7 @@ public class AbstractController {
 		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
 		newArticle.setCategoryType(CategoryType.ANNOUNCEMENT);
+		newArticle.setContent(journalArticle.getContent());
 		return newArticle;
 	}
 
