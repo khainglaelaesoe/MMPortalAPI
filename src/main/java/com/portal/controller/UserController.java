@@ -66,67 +66,66 @@ public class UserController extends AbstractController {
 		return json;
 	}
 
+	/*
+	 * {
+	 * 
+	 * "oldPassword" : "", "email" :
+	 * "4f7d4eca7e7254f2e97252f950931fdf279ceac757455396b7664a1d18c7528c", "phone" :
+	 * "", "portrait" : "", "userName" : "67e56c3c6a0d0a7145a37d486437f20e",
+	 * "securityQuestion" : "", "securityAnswer" : "", "userId" :
+	 * "d153764a379a89888c29b997014875c2" }
+	 *
+	 * 
+	 * { "email" : "nobody.93.vh@gmail.com", "phone" : "0368031140", "portrait" :
+	 * "", "userName" : "testpass202000", "securityQuestion" : "abc",
+	 * "securityAnswer" : "abc", "name" : "abc" }
+	 */
+
 	@RequestMapping(value = "update", method = RequestMethod.POST)
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject update( @RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
+	public JSONObject update(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String token, @RequestBody JSONObject json) throws Exception {
 		JSONObject resultJson = new JSONObject();
-		//@RequestHeader("Authorization") String encryptedString,
-//		try {
-//			String decryptedString = AES.decrypt(encryptedString, secretKey);
-//			if (!isAuthorize(decryptedString)) {
-//				resultJson.put("status", 0);
-//				resultJson.put("message", "Authorization failure!");
-//				return resultJson;
-//			}
-//		} catch (Exception e) {
-//			resultJson.put("status", 0);
-//			resultJson.put("message", "Authorization failure!");
-//			return resultJson;
-//		}
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
 
 		Object userId = json.get("userId");
 		if (userId == null || userId.toString().isEmpty()) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "User Id must not be empty.");
 			return resultJson;
-		}else userId = AES.decrypt(userId.toString(), secretKey);
+		} else
+			userId = AES.decrypt(userId.toString(), secretKey);
 
 		User_ mnpUser = userService.getMNPUserByUserId(userId.toString());
-		Object oldPasswordObject = json.get("oldPassword");
-		if (oldPasswordObject == null || oldPasswordObject.toString().isEmpty()) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Please insert old password.");
-			return resultJson;
-		}else oldPasswordObject = AES.decrypt(oldPasswordObject.toString(), secretKey);
-
-		String oldPassword = oldPasswordObject.toString();
-		String newPassword = json.get("newPassword").toString();
-		if(!newPassword.equals(null) && !newPassword.equals("")) {
-			newPassword = AES.decrypt(newPassword, secretKey);
-			if (oldPassword.equals(newPassword)) {
-				resultJson.put("status", 0);
-				resultJson.put("message", "Your new password cannot be the same as your old password. Please enter a different password.");
-				return resultJson;
-			}
-		}
 		String email = json.get("email").toString();
-		if(!email.equals(null) && !email.isEmpty()) {
-			 email = AES.decrypt(email, secretKey);
-		}
+		if (!email.equals(null) && !email.isEmpty())
+			email = AES.decrypt(email, secretKey);
+
 		String phone = json.get("phone").toString();
-		if(!phone.equals(null) && !phone.isEmpty()) {
+		if (!phone.equals(null) && !phone.isEmpty())
 			phone = AES.decrypt(phone, secretKey);
-		}
+
 		String userName = json.get("userName").toString();
-		if(!userName.equals(null) && !userName.isEmpty()) {
+		if (!userName.equals(null) && !userName.isEmpty())
 			userName = AES.decrypt(userName, secretKey);
-		}
+
 		String portrait = json.get("portrait").toString();
 		String phoneNo = userService.getPhoneByUserId(userId.toString());
 		JSONObject request = new JSONObject();
+
 		request.put("email", email.isEmpty() ? mnpUser.getEmailaddress() : email);
-		request.put("password", newPassword.isEmpty() ? oldPassword : newPassword);
 		request.put("phone", phone.isEmpty() ? phoneNo : phone);
 		request.put("portrait", portrait);
 		request.put("userName", userName.isEmpty() ? mnpUser.getScreenname() : userName);
@@ -157,6 +156,7 @@ public class UserController extends AbstractController {
 			resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
+
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
 		resultJson.put("name", j.get("name").toString());
 		resultJson.put("status", 1);
@@ -197,11 +197,11 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Token is not valid!");
 			return resultJson;
 		}
-		
+
 		String email = AES.decrypt(request.get("email").toString(), secretKey);
 		String emailFromToken = token.substring(0, token.length() - 6);
 		logger.info("Email !!!!!!!!!!!!!!!" + emailFromToken);
-		
+
 		if (!hasEmailFromDB(emailFromToken) || !emailFromToken.equals(email)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Verification Failure!");
