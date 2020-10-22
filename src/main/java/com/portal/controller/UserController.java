@@ -724,4 +724,81 @@ public class UserController extends AbstractController {
 		Matcher hasSpecial = special.matcher(value);
 		return hasSpecial.find();
 	}
+	
+	@RequestMapping(value = "changePassword", method = RequestMethod.POST) /* password encrypted */
+	@ResponseBody
+	@JsonView(Views.Summary.class)
+	public JSONObject changePassword(@RequestHeader("Authorization") String encryptedString,@RequestHeader("token") String token, @RequestBody JSONObject req) {
+		JSONObject resultJson = new JSONObject();
+
+		try {
+			String decryptedString = AES.decrypt(encryptedString, secretKey);
+			if (!isAuthorize(decryptedString)) {
+				resultJson.put("status", 0);
+				resultJson.put("message", "Authorization failure!");
+				return resultJson;
+			}
+		} catch (Exception e) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Authorization failure!");
+			return resultJson;
+		}
+		//oldPassword
+		String oldPassword = req.get("oldPassword").toString();
+		if(oldPassword.equals("") ||  oldPassword.equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Invalid email or password!");
+			return resultJson;
+		}else
+			oldPassword = AES.decrypt(oldPassword, secretKey);
+		//newPassword1
+		String newPassword1 = req.get("newPassword1").toString();
+		if(newPassword1.equals("") ||  newPassword1.equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "New Password cannot be null or empty");
+			return resultJson;
+		}else
+			newPassword1 = AES.decrypt(newPassword1, secretKey);
+		//newPassword2
+		String newPassword2 = req.get("newPassword2").toString();
+		if(newPassword2.equals("") ||  newPassword2.equals(null)) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "Confirm New Password cannot be null or empty");
+			return resultJson;
+		}else
+			newPassword2 = AES.decrypt(newPassword2, secretKey);
+
+		HttpHeaders headers = new HttpHeaders();
+		JSONObject json = new JSONObject();
+		json.put("oldPassword", oldPassword);
+		json.put("newPassword1", newPassword1);
+		json.put("newPassword2", newPassword2);
+		headers.add("Authorization", token);
+		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(json, headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = OTHERSERVICEURL.trim() + "auth/change-password";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject otherserviceResponse = restTemplate.postForObject(url, entityHeader, JSONObject.class);
+		logger.info("Login Response : " + otherserviceResponse);
+
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime expireTime = now.plusHours(24);
+
+		if (otherserviceResponse.get("status") != null) {
+			resultJson.put("status", "1");
+			resultJson.put("message", otherserviceResponse.get("message").toString());
+
+		} else {
+			resultJson.put("status", "0");
+			resultJson.put("message", otherserviceResponse.get("message").toString());
+		}
+
+		return resultJson;
+	}
 }
