@@ -367,6 +367,13 @@ public class UserController extends AbstractController {
 			response.put("message", "Authorization failure!");
 			return response;
 		}
+		if(email.equals("") || email.equals(null)) {
+			response.put("status", 0);
+			response.put("message", "email can't be null or empty");
+			return response;
+		}else
+			email = AES.decrypt(email, secretKey);
+		
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", fbtoken);
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
