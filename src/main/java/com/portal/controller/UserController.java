@@ -99,14 +99,10 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-
-		Object userId = json.get("userId");
-		if (userId == null || userId.toString().isEmpty()) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "User Id must not be empty.");
-			return resultJson;
-		} else
-			userId = AES.decrypt(userId.toString(), secretKey);
+		
+		String userId = json.get("userId").toString();
+		if (!userId.equals(null) && !userId.isEmpty())
+			userId = AES.decrypt(userId, secretKey);
 
 		User_ mnpUser = userService.getMNPUserByUserId(userId.toString());
 		String email = json.get("email").toString();
