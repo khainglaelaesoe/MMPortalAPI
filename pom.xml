@@ -103,6 +103,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>national-portal-uat</finalName>
+		<finalName>myanmar-portal-application</finalName>
 	</build>
 </project>

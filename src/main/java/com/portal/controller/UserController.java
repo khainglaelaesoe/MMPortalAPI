@@ -128,8 +128,8 @@ public class UserController extends AbstractController {
 		request.put("securityQuestion", mnpUser.getReminderqueryquestion());
 		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
 
-		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getMiddlename() == null ? "" : " " + mnpUser.getMiddlename()) + (mnpUser.getLastname() == null ? "" : mnpUser.getLastname());
-		request.put("name", userName.isEmpty() ? dbName : userName);
+		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getMiddlename() == null ? "" : " " + mnpUser.getMiddlename()) + (mnpUser.getLastname() == null ? "" : " " + mnpUser.getLastname());
+		request.put("name", userName.isEmpty() ? dbName: userName);
 
 		String serviceUrl = OTHERSERVICEURL.trim() + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
@@ -328,7 +328,6 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Login Success!");
 			resultJson.put("profilePicture", otherserviceResponse.get("portrait").toString().replace("user", "image/user"));
 			resultJson.put("token", otherserviceResponse.get("access_token").toString());
-			resultJson.put("current time", dtf.format(now));
 			resultJson.put("expireTime", dtf.format(expireTime));
 
 		} else {
@@ -387,6 +386,10 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entityHeader, JSONObject.class);
 		logger.info("Facebook Login Response : " + otherserviceResponse);
 		if (otherserviceResponse.getBody().get("access_token") != null) {
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			LocalDateTime expireTime = now.plusHours(24);
+			
 			User_ user = userService.getUserbyemail(email);
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
@@ -394,6 +397,7 @@ public class UserController extends AbstractController {
 			response.put("message", "Login Success!");
 			response.put("profilePicture", "");
 			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
+			response.put("expireTime", dtf.format(expireTime));
 		} else {
 			response.put("status", "0");
 			response.put("message", otherserviceResponse.getBody().get("message"));

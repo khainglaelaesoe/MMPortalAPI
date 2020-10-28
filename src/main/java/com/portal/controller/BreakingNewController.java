@@ -94,6 +94,8 @@ public class BreakingNewController extends AbstractController{
 			jrList = parseBreakingNews(jrList);
 		}else jrList = null;
 		resultJson.put("articles", jrList);
+		resultJson.put("myanmarContent", "အချက်လက်မရှိသေးပါ");
+		resultJson.put("englishContent", "No Data Available");
 		return resultJson;
 	}
 	
