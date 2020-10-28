@@ -735,11 +735,11 @@ public class UserController extends AbstractController {
 		Matcher hasSpecial = special.matcher(value);
 		return hasSpecial.find();
 	}
-	
+
 	@RequestMapping(value = "changePassword", method = RequestMethod.POST) /* password encrypted */
 	@ResponseBody
 	@JsonView(Views.Summary.class)
-	public JSONObject changePassword(@RequestHeader("Authorization") String encryptedString,@RequestHeader("token") String token, @RequestBody JSONObject req) {
+	public JSONObject changePassword(@RequestHeader("Authorization") String encryptedString, @RequestHeader("token") String token, @RequestBody JSONObject req) {
 		JSONObject resultJson = new JSONObject();
 
 		try {
@@ -754,29 +754,29 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-		//oldPassword
+		// oldPassword
 		String oldPassword = req.get("oldPassword").toString();
-		if(oldPassword.equals("") ||  oldPassword.equals(null)) {
+		if (oldPassword.equals("") || oldPassword.equals(null)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Invalid email or password!");
 			return resultJson;
-		}else
+		} else
 			oldPassword = AES.decrypt(oldPassword, secretKey);
-		//newPassword1
+		// newPassword1
 		String newPassword1 = req.get("newPassword1").toString();
-		if(newPassword1.equals("") ||  newPassword1.equals(null)) {
+		if (newPassword1.equals("") || newPassword1.equals(null)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "New Password cannot be null or empty");
 			return resultJson;
-		}else
+		} else
 			newPassword1 = AES.decrypt(newPassword1, secretKey);
-		//newPassword2
+		// newPassword2
 		String newPassword2 = req.get("newPassword2").toString();
-		if(newPassword2.equals("") ||  newPassword2.equals(null)) {
+		if (newPassword2.equals("") || newPassword2.equals(null)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Confirm New Password cannot be null or empty");
 			return resultJson;
-		}else
+		} else
 			newPassword2 = AES.decrypt(newPassword2, secretKey);
 
 		HttpHeaders headers = new HttpHeaders();
