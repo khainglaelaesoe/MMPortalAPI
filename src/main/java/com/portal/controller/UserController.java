@@ -601,9 +601,10 @@ public class UserController extends AbstractController {
 		if (otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
 			response.put("errCode", otherserviceResponse.getBody().get("errCode").toString());
-			if (otherserviceResponse.getBody().get("errCode").equals("E21")) 
-				response.put("message", "Invalid password reset token!.");
-			else response.put("message", otherserviceResponse.getBody().get("message").toString());
+			String message = otherserviceResponse.getBody().get("message").toString();
+			if(message.contains("."))
+			 response.put("message", message.substring(0,message.indexOf(".")));
+			else response.put("message", message);
 		} else {
 			response.put("status", "1");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
