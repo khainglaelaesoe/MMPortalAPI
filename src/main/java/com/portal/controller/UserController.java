@@ -601,6 +601,7 @@ public class UserController extends AbstractController {
 		if (otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
 			response.put("errCode", otherserviceResponse.getBody().get("errCode").toString());
+			//error message
 			String message = otherserviceResponse.getBody().get("message").toString();
 			if(message.contains("."))
 			 response.put("message", message.substring(0,message.indexOf(".")));
