@@ -124,7 +124,7 @@ public class UserController extends AbstractController {
 		request.put("email", email.isEmpty() ? mnpUser.getEmailaddress() : email);
 		request.put("phone", phone.isEmpty() ? phoneNo : phone);
 		request.put("portrait", portrait);
-		request.put("userName", userName.isEmpty() ? mnpUser.getScreenname() : userName);
+		request.put("userName", mnpUser.getScreenname());
 		request.put("securityQuestion", mnpUser.getReminderqueryquestion());
 		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
 
@@ -149,7 +149,10 @@ public class UserController extends AbstractController {
 
 		if (j.get("errCode") != null) {
 			resultJson.put("status", 0);
-			resultJson.put("message", j.get("message"));
+			if (j.get("errCode").equals("E13")) 
+				resultJson.put("message", "Can not update user! duplicate email address or screen name!");
+			else 
+				resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
 
@@ -323,7 +326,7 @@ public class UserController extends AbstractController {
 			resultJson.put("status", "1");
 			resultJson.put("user", mbresponse);
 			resultJson.put("message", "Login Success!");
-			resultJson.put("profilePicture", otherserviceResponse.get("portrait").toString());
+			resultJson.put("profilePicture", otherserviceResponse.get("portrait").toString().replace("user", "image/user"));
 			resultJson.put("token", otherserviceResponse.get("access_token").toString());
 			resultJson.put("current time", dtf.format(now));
 			resultJson.put("expireTime", dtf.format(expireTime));
@@ -597,7 +600,10 @@ public class UserController extends AbstractController {
 		HttpEntity<JSONObject> otherserviceResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, JSONObject.class);
 		if (otherserviceResponse.getBody().get("errCode") != null) {
 			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message").toString());
+			response.put("errCode", otherserviceResponse.getBody().get("errCode").toString());
+			if (otherserviceResponse.getBody().get("errCode").equals("E21")) 
+				response.put("message", "Invalid password reset token!.");
+			else response.put("message", otherserviceResponse.getBody().get("message").toString());
 		} else {
 			response.put("status", "1");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
