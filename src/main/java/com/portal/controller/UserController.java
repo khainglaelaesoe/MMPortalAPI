@@ -99,7 +99,7 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-		
+
 		String userId = json.get("userId").toString();
 		if (!userId.equals(null) && !userId.isEmpty())
 			userId = AES.decrypt(userId, secretKey);
@@ -149,9 +149,9 @@ public class UserController extends AbstractController {
 
 		if (j.get("errCode") != null) {
 			resultJson.put("status", 0);
-			if (j.get("errCode").equals("E13")) 
+			if (j.get("errCode").equals("E13"))
 				resultJson.put("message", "Can not update user! duplicate email address or screen name!");
-			else 
+			else
 				resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
@@ -365,13 +365,13 @@ public class UserController extends AbstractController {
 			response.put("message", "Authorization failure!");
 			return response;
 		}
-		if(email.equals("") || email.equals(null)) {
+		if (email.equals("") || email.equals(null)) {
 			response.put("status", 0);
 			response.put("message", "email can't be null or empty");
 			return response;
-		}else
+		} else
 			email = AES.decrypt(email, secretKey);
-		
+
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", fbtoken);
 		HttpEntity<JSONObject> entityHeader = new HttpEntity<>(headers);
@@ -606,9 +606,10 @@ public class UserController extends AbstractController {
 			response.put("status", "0");
 			response.put("errCode", otherserviceResponse.getBody().get("errCode").toString());
 			String message = otherserviceResponse.getBody().get("message").toString();
-			if(message.contains("."))
-			 response.put("message", message.substring(0,message.indexOf(".")));
-			else response.put("message", message);
+			if (message.contains("."))
+				response.put("message", message.substring(0, message.indexOf(".")));
+			else
+				response.put("message", message);
 		} else {
 			response.put("status", "1");
 			response.put("message", otherserviceResponse.getBody().get("message").toString());
