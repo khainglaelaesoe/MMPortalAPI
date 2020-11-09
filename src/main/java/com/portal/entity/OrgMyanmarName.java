@@ -60,6 +60,7 @@ public enum OrgMyanmarName {
 	Ayeyarwaddy_Region_Government("ဧရာဝတီတိုင်းဒေသကြီးအစိုးရအဖွဲ့"), 
 	
 	Central_Bank("မြန်မာနိုင်ငံတော်ဗဟိုဘဏ်"),
+	Revenue_Appellate_Tribunal("အခွန်အယူခံခုံအဖွဲ့"),
 	Anti_Corruption_Commission("အဂတိလိုက်စားမှုတိုက်ဖျက်ရေးကော်မရှင်"),
 	Myanmar_Nation_Human_Rights_Commission("မြန်မာနိုင်ငံအမျိုးသားလူ့အခွင့်အရေးကော်မရှင်"),
 	Napyitaw_City_Development_Committee("နေပြည်တော်စည်ပင်သာယာရေးကော်မတီ"), 

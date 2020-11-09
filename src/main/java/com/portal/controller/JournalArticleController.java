@@ -588,11 +588,12 @@ public class JournalArticleController extends AbstractController {
 			return resultJson;
 		}
 		
-		if(isValidCategoryType(categorytype)) {
+		if(!isValidCategoryType(categorytype)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Category Type is not valid!");
 			return resultJson;
 		}
+
 
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);

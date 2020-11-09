@@ -108,7 +108,12 @@ public class AbstractController {
 
 	public boolean isValidCategoryType(String categoryType) {
 		for (CategoryType eachCategory : CategoryType.values()) {
-			if (eachCategory.toString().equals(categoryType.toUpperCase())) {
+			logger.info("categoryType: " + categoryType);
+			if (eachCategory.toString().equals(categoryType.trim().toUpperCase())) {
+				logger.info("categoryType: " + categoryType.trim().toUpperCase());
+				logger.info("categoryType: " + eachCategory);
+
+
 				return true;
 			}
 		}
@@ -658,8 +663,11 @@ public class AbstractController {
 		if (name.equals("News and Media"))
 			name = "Ministry of Information";
 		newArticle.setEngDepartmentTitle(name);
-		newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
-
+		try {
+			newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
+		} catch (Exception e) {
+			newArticle.setMyanmarDepartmentTitle(name);
+		}
 		String con = journalArticle.getContent();
 		int index = con.indexOf("location");
 		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
