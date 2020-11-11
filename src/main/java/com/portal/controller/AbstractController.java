@@ -165,7 +165,7 @@ public class AbstractController {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
 
-				if (!imgsrc.startsWith("http")) {
+				if (!imgsrc.startsWith("http") && !imgsrc.contains("data:image/png;base64")) {
 					String imgreplace = imgsrc.startsWith("http") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
 					img.attr("src", imgreplace);
 				}
