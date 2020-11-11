@@ -152,10 +152,62 @@ public class FormController extends AbstractController {
 			end = remainString.indexOf("]]");
 		}
 		newJournal.setImageUrl("https://myanmar.gov.mm" + remainString.substring(0, end));
-		newJournal.setEngDownloadLink(getLink(content, "en_US"));
-		newJournal.setMyanamrDownloadLink(getLink(content, "my_MM"));
+		// newJournal.setEngDownloadLink(getLink(content, "en_US"));
+		// newJournal.setMyanamrDownloadLink(getLink(content, "my_MM"));
 		newJournal.setMyanmarOnlineForm(getOnlineForm(content, "my_MM"));
 		newJournal.setEngOnlineForm(getOnlineForm(content, "en_US"));
+
+		String englishForm = "";
+		String myanmarForm = "";
+
+		String engForm = getEngElement(journalArticle.getContent(), "Form", "<dynamic-content language-id=\"en_US\">");
+		String myaForm = "";
+		try {
+			myaForm = getMyanmarElement(journalArticle.getContent(), "Form", "<dynamic-content language-id=\"my_MM\">");
+		} catch (Exception e) {
+			myaForm = getEngElement(journalArticle.getContent(), "Form", "<dynamic-content language-id=\"my_MM\">");
+		}
+
+		String enguploadForm = getEngElement(journalArticle.getContent(), "uploadForm", "<dynamic-content language-id=\"en_US\">");
+		String myauploadForm = "";
+		try {
+			myauploadForm = getMyanmarElement(journalArticle.getContent(), "uploadForm", "<dynamic-content language-id=\"my_MM\">");
+		} catch (Exception e) {
+			myauploadForm = getEngElement(journalArticle.getContent(), "uploadForm", "<dynamic-content language-id=\"my_MM\">");
+		}
+
+		String engFormType = getEngElement(journalArticle.getContent(), "formType", "<dynamic-content language-id=\"en_US\">");
+		String myaFormType = "";
+		try {
+			myaFormType = getMyanmarElement(journalArticle.getContent(), "formType", "<dynamic-content language-id=\"my_MM\">");
+		} catch (Exception e) {
+			myaFormType = getEngElement(journalArticle.getContent(), "formType", "<dynamic-content language-id=\"my_MM\">");
+		}
+
+		englishForm = !engForm.contains("/") ? !enguploadForm.contains("/") ? engFormType : enguploadForm : engForm;
+		myanmarForm = !myaForm.contains("/") ? !myauploadForm.contains("/") ? myaFormType : myauploadForm : myaForm;
+
+		englishForm = englishForm.startsWith("/") ? "https://myanmar.gov.mm" + englishForm : englishForm;
+		myanmarForm = myanmarForm.startsWith("/") ? "https://myanmar.gov.mm" + myanmarForm : myanmarForm;
+
+		logger.info("resource primary key!!!!!!!!!!!!!!!!" + journalArticle.getResourceprimkey());
+
+		logger.info("content!!!!!!!!!!" + journalArticle.getContent());
+
+		logger.info("engForm!!!!!!!!!!" + engForm);
+		logger.info("myaForm!!!!!!!!!!" + myaForm);
+
+		logger.info("enguploadForm!!!!!!!!!!" + enguploadForm);
+		logger.info("myauploadForm!!!!!!!!!!" + myauploadForm);
+
+		logger.info("engFormType!!!!!!!!!!" + engFormType);
+		logger.info("myaFormType!!!!!!!!!!" + myaFormType);
+
+		logger.info("english Form!!!!!!!!!!" + englishForm);
+		logger.info("myanmar Form!!!!!!!!!!" + myanmarForm);
+
+		newJournal.setEngDownloadLink(englishForm);
+		newJournal.setMyanamrDownloadLink(myanmarForm);
 		return newJournal;
 	}
 

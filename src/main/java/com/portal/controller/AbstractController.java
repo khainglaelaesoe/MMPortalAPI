@@ -113,7 +113,6 @@ public class AbstractController {
 				logger.info("categoryType: " + categoryType.trim().toUpperCase());
 				logger.info("categoryType: " + eachCategory);
 
-
 				return true;
 			}
 		}
