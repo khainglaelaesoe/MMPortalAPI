@@ -137,7 +137,7 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setContent(journalArticle.getContent());
 		newArticle.setCategoryType(CategoryType.NEW);
 		return newArticle;
-	}
+	} 
 
 	public void replaceTag(Elements els) {
 		ListIterator<Element> iter = els.listIterator();

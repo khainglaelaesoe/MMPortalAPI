@@ -180,8 +180,10 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-				String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
-				img.attr("src", imgreplace);
+				if (!imgsrc.startsWith("http") && !imgsrc.contains("data:image/png;base64")) {
+					String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+					img.attr("src", imgreplace);
+				}
 			}
 		}
 
@@ -189,8 +191,10 @@ public class AbstractController {
 		if (links.size() > 0) {
 			for (Element link : links) {
 				String imgsrc = link.attr("href");
-				String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
-				link.attr("href", imgreplace);
+				if (!imgsrc.startsWith("http") && !imgsrc.contains("data:image/png;base64")) {
+					String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+					link.attr("href", imgreplace);
+				}
 			}
 		}
 		return docimage.html();

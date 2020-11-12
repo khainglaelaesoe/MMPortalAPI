@@ -634,6 +634,19 @@ public class UserController extends AbstractController {
 			resultJson.put("message", "Can not create user!Screen Name cannot be null or empty");
 			return resultJson;
 		}
+		
+		if(containsSpecial1(request.get("screenname").toString())){
+			resultJson.put("status", 0);
+			resultJson.put("message", "The Screen Name must not contain special characters.It must contain only alphanumeric "
+					+ "or the following specal characters:-_");
+			return resultJson;
+		}
+		if(request.get("screenname").toString().contains(" ")) {
+			resultJson.put("status", 0);
+			resultJson.put("message", "The Screen Name must not contain space.It must contain only alphanumeric " + 
+					"or the following specal characters:-_");
+			return resultJson;
+		}
 
 		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
 			resultJson.put("status", 0);
@@ -736,6 +749,11 @@ public class UserController extends AbstractController {
 
 	private boolean containsSpecial(String value) {
 		Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+		Matcher hasSpecial = special.matcher(value);
+		return hasSpecial.find();
+	}
+	private boolean containsSpecial1(String value) {
+		Pattern special = Pattern.compile("[!@#$%&*()+=|<>?{}\\[\\]~]");
 		Matcher hasSpecial = special.matcher(value);
 		return hasSpecial.find();
 	}
