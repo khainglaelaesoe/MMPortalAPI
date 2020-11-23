@@ -178,8 +178,7 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-
-				String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? "https://myanmar.gov.mm" + imgsrc : imgsrc;
+				String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc : "https://myanmar.gov.mm" + imgsrc : imgsrc;
 				img.attr("src", imgreplace);
 
 				if (imgsrc.contains("base64")) {
@@ -195,7 +194,7 @@ public class AbstractController {
 			for (Element link : links) {
 				String imgsrc = link.attr("href");
 				if (!imgsrc.startsWith("http") && !imgsrc.contains("base64")) {
-					String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
+					String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc : "https://myanmar.gov.mm" + imgsrc : imgsrc;
 					link.attr("href", imgreplace);
 				}
 			}
@@ -648,17 +647,20 @@ public class AbstractController {
 		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
 		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
 
-		logger.info("engContent!!!!!!!!!!!!!!!!!!!!!!!!" + engContent);
-		logger.info("myaContent!!!!!!!!!!!!!!!!!!!!!!!!" + myaContent);
-
 		engContent = engContent.isEmpty() ? myaContent : engContent;
 		myaContent = myaContent.isEmpty() ? engContent : myaContent;
 
+		if (newArticle.getImageUrl() != null && !newArticle.getImageUrl().isEmpty() && newArticle.getImageUrl().contains("moi")) {
+			String[] imageUrls = newArticle.getImageUrl().split(",");
+			for (String image : imageUrls) {
+				logger.info("image: " + image);
+				engContent = engContent + "<img src=" + image + ">";
+				myaContent = myaContent + "<img src=" + image + ">";
+			}
+		}
+
 		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
 		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
-
-		logger.info("engContent!!!!!!!!!!!!!!!!!!!!!!!!" + newArticle.getEngContent());
-		logger.info("myaContent!!!!!!!!!!!!!!!!!!!!!!!!" + newArticle.getMyanmarContent());
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
