@@ -521,8 +521,11 @@ public class OrganizationController extends AbstractController {
 		object1.put("banner", IMAGEURL + "banner01.jpg");
 		JSONObject object2 = new JSONObject();
 		object2.put("banner", IMAGEURL + "banner02.jpg");
+		JSONObject object3 = new JSONObject();
+		object3.put("banner", IMAGEURL + "banner04.jpg");
 		array[0] = object1;
 		array[1] = object2;
+		array[2] = object3;
 		resultJson.put("bannerObjects", array);
 		return resultJson;
 	}
