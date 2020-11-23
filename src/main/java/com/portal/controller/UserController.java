@@ -399,8 +399,12 @@ public class UserController extends AbstractController {
 			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
 			response.put("expireTime", dtf.format(expireTime));
 		} else {
+			if(otherserviceResponse.getBody().get("errCode").equals("E23")) {
+				response.put("message", "Please check your email and click the verification Link");
+			}else 
+				response.put("message", otherserviceResponse.getBody().get("message"));
 			response.put("status", "0");
-			response.put("message", otherserviceResponse.getBody().get("message"));
+			
 		}
 		return response;
 	}
@@ -635,7 +639,7 @@ public class UserController extends AbstractController {
 			return resultJson;
 		}
 		
-		if(containsSpecial1(request.get("screenname").toString())){
+		if(containsSpecial1(request.get("screenname").toString()) || !isAlphaNumeric(request.get("screenname").toString())){
 			resultJson.put("status", 0);
 			resultJson.put("message", "The Screen Name must not contain special characters.It must contain only alphanumeric "
 					+ "or the following specal characters:-_");
@@ -746,6 +750,10 @@ public class UserController extends AbstractController {
 	private boolean containsNumber(String value) {
 		return contains(value, Character::isDigit);
 	}
+	
+	 public static boolean isAlphaNumeric(String s) {
+        return s.matches("^[a-zA-Z0-9]*$");
+    }
 
 	private boolean containsSpecial(String value) {
 		Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
