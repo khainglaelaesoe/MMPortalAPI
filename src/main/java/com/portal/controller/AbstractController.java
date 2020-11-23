@@ -164,10 +164,8 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-				if (!imgsrc.startsWith("http") && !imgsrc.contains("base64")) {
-					String imgreplace = imgsrc.startsWith("http") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
-					img.attr("src", imgreplace);
-				}
+				String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") ? "https://myanmar.gov.mm" + imgsrc : imgsrc;
+				img.attr("src", imgreplace);
 			}
 		}
 		return docimage.html();
@@ -180,14 +178,15 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-				if (!imgsrc.startsWith("http") && !imgsrc.contains("base64")) {
-					String imgreplace = imgsrc.startsWith("http") || imgsrc.startsWith("www") ? imgsrc : "https://myanmar.gov.mm" + imgsrc;
-					img.attr("src", imgreplace);
-				}
-				if(imgsrc.contains("base64")) {
+
+				String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? "https://myanmar.gov.mm" + imgsrc : imgsrc;
+				img.attr("src", imgreplace);
+
+				if (imgsrc.contains("base64")) {
 					byte[] decode = Base64.getDecoder().decode(imgsrc);
 					imgsrc = decode.toString();
 				}
+
 			}
 		}
 
