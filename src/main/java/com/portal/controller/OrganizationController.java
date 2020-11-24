@@ -254,8 +254,6 @@ public class OrganizationController extends AbstractController {
 			return resultJson;
 		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
-		//organizationList.add(parseTerms(journalArticleService.getTermsbyVersion()));
-		//Organization_
 		Organization_ organization = new Organization_();
 		organization.setMmContent(terms);
 		organization.setEngContent(terms);

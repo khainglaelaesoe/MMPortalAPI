@@ -272,7 +272,7 @@ public class AbstractController {
 		if (start < 0)
 			return "";
 		String remainString = content.substring(start, content.length());
-		int end = remainString.indexOf("\"");
+		int end = remainString.indexOf("]]");
 		return remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
 	}
 
@@ -650,7 +650,8 @@ public class AbstractController {
 		engContent = engContent.isEmpty() ? myaContent : engContent;
 		myaContent = myaContent.isEmpty() ? engContent : myaContent;
 
-		if (newArticle.getImageUrl() != null && !newArticle.getImageUrl().isEmpty() && newArticle.getImageUrl().contains("moi")) {
+		//&& !newArticle.getImageUrl().isEmpty() && newArticle.getImageUrl().contains("moi")
+		if (newArticle.getImageUrl() != null) {
 			String[] imageUrls = newArticle.getImageUrl().split(",");
 			for (String image : imageUrls) {
 				logger.info("image: " + image);
@@ -676,10 +677,17 @@ public class AbstractController {
 		} catch (Exception e) {
 			newArticle.setMyanmarDepartmentTitle(name);
 		}
-		String con = journalArticle.getContent();
-		int index = con.indexOf("location");
-		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
-		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
+//		String con = journalArticle.getContent();
+//		int index = con.indexOf("location");
+//		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
+//		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
+
+		String engLocation = getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"en_US\">");
+		String myaLocation = getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">");
+
+		newArticle.setEngLocation(engLocation);
+		newArticle.setMyanmarLocation(myaLocation);
+
 		newArticle.setShareLink(getShareLinkForAnnouncements(journalArticle.getUrltitle()));
 		newArticle.setCategoryType(CategoryType.ANNOUNCEMENT);
 		newArticle.setContent(journalArticle.getContent());
