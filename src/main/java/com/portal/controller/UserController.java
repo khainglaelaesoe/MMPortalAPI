@@ -391,6 +391,7 @@ public class UserController extends AbstractController {
 			LocalDateTime expireTime = now.plusHours(24);
 			
 			User_ user = userService.getUserbyemail(email);
+			logger.info("Facebook Login Response FacebookId By Email :"+ user.getFacebookid() + "");
 			MobileResponse mbresponse = convertoMobileResponse(user);
 			response.put("status", "1");
 			response.put("user", mbresponse);
@@ -399,12 +400,8 @@ public class UserController extends AbstractController {
 			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
 			response.put("expireTime", dtf.format(expireTime));
 		} else {
-			if(otherserviceResponse.getBody().get("errCode").equals("E23")) {
-				response.put("message", "Please check your email and click the verification Link");
-			}else 
-				response.put("message", otherserviceResponse.getBody().get("message"));
+			response.put("message", otherserviceResponse.getBody().get("message"));
 			response.put("status", "0");
-			
 		}
 		return response;
 	}
