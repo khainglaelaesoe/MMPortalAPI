@@ -82,6 +82,7 @@ public class SurveyController extends AbstractController {
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
 		newJournal.setDisplaydate(resultDateString);
 		String pollOrSurveyId = getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">").isEmpty() ? getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "PollOrSurveyId", "<dynamic-content language-id=\"en_US\">");
+
 		RequestVote res = getMobileSurveyCount(userid, pollOrSurveyId);
 		long count = ddlRecordService.getCountOfVoteOrSurvey(Long.parseLong(pollOrSurveyId));
 		String definition = ddmStructureService.getDefinition(Long.parseLong(pollOrSurveyId));
@@ -121,7 +122,7 @@ public class SurveyController extends AbstractController {
 		long totalcount = count + Long.parseLong(res.getTotalVoteCount());
 		newJournal.setQuestionid(pollOrSurveyId);
 		newJournal.setMyanmarQuestions(myanmarQues);
-		newJournal.setEngQuestions(engQues);
+		newJournal.setEngQuestions(CollectionUtils.isEmpty(engQues) ? myanmarQues : engQues);
 		newJournal.setPollOrSurveyCount(totalcount);
 		newJournal.setShareLink(getShareLink(pollOrSurveyId));
 		newJournal.setId_(journalArticle.getId_());

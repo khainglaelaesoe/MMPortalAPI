@@ -395,7 +395,7 @@ public class UserController extends AbstractController {
 			response.put("status", "1");
 			response.put("user", mbresponse);
 			response.put("message", "Login Success!");
-			response.put("profilePicture", "");
+			response.put("profilePicture",otherserviceResponse.getBody().get("portrait").toString().replace("user", "image/user"));
 			response.put("token", otherserviceResponse.getBody().get("access_token").toString());
 			response.put("expireTime", dtf.format(expireTime));
 		} else {

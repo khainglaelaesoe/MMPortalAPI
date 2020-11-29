@@ -369,7 +369,7 @@ public class OrganizationController extends AbstractController {
 	@JsonView(Views.Summary.class)
 	public JSONObject getOrganizationByName(@RequestHeader("Authorization") String encryptedString, @RequestParam("input") String input, @RequestParam("index") String index) throws UnsupportedEncodingException {
 		JSONObject resultJson = new JSONObject();
-		
+
 		if (!isValidPaganation(index)) {
 			resultJson.put("status", 0);
 			resultJson.put("message", "Page index out of range!");
@@ -381,7 +381,7 @@ public class OrganizationController extends AbstractController {
 			resultJson.put("message", "Avoid too many keyword!");
 			return resultJson;
 		}
-		
+
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
@@ -432,8 +432,23 @@ public class OrganizationController extends AbstractController {
 				classpks = assetEntryService.getAssetEntryListByKeyword(91234, value);
 				break;
 			case State_Regional_Hluttaws:
-				List<String> names = assetCategoryService.getStateNames();
+				List<String> names = assetCategoryService.getHluttaws();
 				for (String name : names)
+					classpks.addAll(assetEntryService.getAssetEntryListByKeyword(91234, name));
+				break;
+			case Region_and_State_Government:
+				List<String> states = assetCategoryService.getGovs();
+				for (String name : states)
+					classpks.addAll(assetEntryService.getAssetEntryListByKeyword(91234, name));
+				break;
+			case Government_Organizations:
+				List<String> govs = assetCategoryService.getGovOrgs();
+				for (String name : govs) {
+					if (!name.equals("ဝန်ကြီးဌာနများ"))
+						classpks.addAll(assetEntryService.getAssetEntryListByKeyword(91234, name));
+				}
+				List<String> govs2 = assetCategoryService.getGovOrgs2();
+				for (String name : govs2)
 					classpks.addAll(assetEntryService.getAssetEntryListByKeyword(91234, name));
 				break;
 			case Chin_State_Government:
@@ -481,7 +496,8 @@ public class OrganizationController extends AbstractController {
 		}
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
-			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance) {
+			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance && name != OrgMyanmarName.Kachin_State_Government && name != OrgMyanmarName.Kayah_State_Government && name != OrgMyanmarName.Chin_State_Government && name != OrgMyanmarName.Sagaing_Region_Government && name != OrgMyanmarName.Tanintaryi_Region_Government && name != OrgMyanmarName.Bago_Region_Government
+					 && name != OrgMyanmarName.Government_Organizations && name != OrgMyanmarName.Kayin_State_Government && name != OrgMyanmarName.Magway_Region_Government && name != OrgMyanmarName.Mandalay_Region_Government && name != OrgMyanmarName.Mon_State_Government && name != OrgMyanmarName.Rakhine_State_Government && name != OrgMyanmarName.Yangon_Region_Government && name != OrgMyanmarName.Shan_State_Government && name != OrgMyanmarName.Ayeyarwaddy_Region_Government) {
 				Organization_ org = new Organization_();
 				org.setMyanmarName(name.getValue());
 				org.setEngName(OrgEngName.valueOf(name.toString()).getValue());
@@ -511,7 +527,7 @@ public class OrganizationController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg"};//,IMAGEURL + "banner04.jpg"};
+		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg" };// ,IMAGEURL + "banner04.jpg"};
 		resultJson.put("bannerList", bannerList);
 
 		JSONObject[] array = new JSONObject[2];
@@ -519,21 +535,21 @@ public class OrganizationController extends AbstractController {
 		object1.put("banner", IMAGEURL + "banner01.jpg");
 		JSONObject object2 = new JSONObject();
 		object2.put("banner", IMAGEURL + "banner02.jpg");
-		//JSONObject object3 = new JSONObject();
-		//object3.put("banner", IMAGEURL + "banner04.jpg");
+		// JSONObject object3 = new JSONObject();
+		// object3.put("banner", IMAGEURL + "banner04.jpg");
 		array[0] = object1;
 		array[1] = object2;
-		//array[2] = object3;
+		// array[2] = object3;
 		resultJson.put("bannerObjects", array);
 		return resultJson;
 	}
-	
+
 	String terms = "<p><span>Thank you for visiting   Myanmar National Portal mobile application. By accessing and using this mobile application, you shall be deemed to have accepted to be legally bound by these Terms of Use. Please read them carefully. </span></p><p><b><span>General</span></b></p><p><span>1. These Terms of Use may be changed from time to time and your use of this mobile application after such changes have been posted will constitute your agreement to the modified Terms of Use and all of the changes.</span></p><p><b><span>Proprietary Rights</span></b></p><p><span>2. This mobile application is maintained by the Government of the Republic of the Union of Myanmar, Ministry of Transport and Communications.</span></p><p><span>"
-			+ "3. The materials that assessed in this mobile application including the information and software programs are protected by copyright and other forms of proprietary rights. All rights, title and interest in the Contents are owned by, licensed to or controlled by Government on behalf of the Republic of the Union of Myanmar.</span></p><p><b><span>Restrictions on use of Materials</span></b></p><p><span>4. Materials featured on this  application may be reproduced FOC after taking proper permission by sending a mail to us. However, the material has to be reproduced accurately and not to be used in derogatory manner or in a misleading context. Wherever the material is being published or issued to others, the source must be prominently acknowledged. However, "
-			+ "the permission to reproduce this material shall not extend to any material which is identified as being copyright of a third party. Authorizations to reproduce such material must be obtained from the departments/copyright holders concerned.</span></p><p><span>5. Modification of any of the Contents or use of the Contents for any other purpose will be a violation of copyright and other intellectual property rights. Graphics and images on this mobile application are protected by copyright and may not be reproduced or appropriated in any manner without written permission of government. </span></p><p><span>6. The Content on this application is for your personal use only and not for commercial exploitation.  "
-			+ "Any unauthorized use of Myanmar National Mobile Application is prohibited.</span></p><p><b><span>Disclaimer of Warranties and Liability</span></b></p><p><span>7. The Contents of this mobile application are provided based on Myanmar National web portal. Though all efforts have been made to ensure the accuracy and currency of the content on this mobile application, the same should not be construed as a statement of law or used for any legal purposes. MOTC accepts no responsibility in relation to the accuracy, completeness, usefulness or otherwise, of the contents. Users are advised to verify/check any information with the relevant Government department(s) and/or other source(s), and to obtain any appropriate professional advice before acting on the information provided in the application."
-			+ "</span></p><p><span>8. Government shall also not be liable for any damage or loss of any kind caused as a result (direct or indirect) of the use of the mobile application including but not limited to any damage or loss suffered as a result of reliance on the Contents contained in or available from the mobile application.</span></p><p><b><span>Right of Access</span></b></p><p><span>9. Government reserves all rights to deny or restrict access to this mobile application to any particular person, or to block access from a particular Internet address at any time, without ascribing any reasons whatsoever.</span></p><p><b><span>Links to other websites and Portal</span></b></p><p><span>10. This mobile application contains hyperlinks to websites which are not maintained by Government. Government is not responsible for the contents of those websites and shall not be liable for any damages or loss arising from access to those websites. "
-			+ "Use of the hyperlinks and access to such websites are entirely at your own risk. </span></p><p><span>11. Hyperlinks to other websites are provided as a convenience. In no circumstances shall Government be considered to be associated or affiliated with any trade or service marks, logos, insignia or other devices used or appearing on websites to which this mobile application is linked. </span></p><p><b><span>Links to this mobile application from other websites</span></b></p><p><span>12. Caching and links to, and the framing of this mobile application or any of the Contents are prohibited. </span></p><p><span>13. You must secure permission from Government prior to hyperlinking to, or framing, this mobile application or any of the Contents, or engaging in similar activities. Government reserves the right to impose conditions when permitting any hyperlinking to, or framing of this mobile application or any of the Contents."
-			+ " </span></p><p><span>14. You are linking to, or framing any part of this mobile application or its Contents constitute acceptance of these Terms of Use. This is deemed to be the case even after the posting of any changes or modifications to these Terms of Use. If you do not accept these Terms of Use, you must discontinue linking to, or framing of this application or any of the Contents.</span></p><p><span>15. In no circumstances shall be considered to be associated or affiliated in whatever manner with any trade or service marks, logos, insignia or other devices used or appearing on web the Contents. </span></p><p><span>16. Government reserves all rights to disable any links to, or frames of any site containing inappropriate, profane, defamatory, infringing, obscene, indecent or unlawful topics, names, material or information, or material or information that violates any written law, any applicable intellectual property, proprietary, privacy or publicity rights. "
-			+ "</span></p><p><span>17. Government reserves the right to disable any unauthorized links or frames and disclaims any responsibility for the content available on any other site reached by links to or from this mobile application or any of the Contents. </span></p><p><b><span>Governing Law</span></b></p><p><span>18. These Terms of Use shall be governed and construed in accordance with laws of the Union of the Republic of Myanmar. Any dispute arising under these terms and conditions shall be subject to the exclusive jurisdiction of the courts of Myanmar. </span></p><p><span>If you’re not satisfied with our response to any privacy-related concern you may have, you can contact the Feedback. </span></p>";
+	        + "3. The materials that assessed in this mobile application including the information and software programs are protected by copyright and other forms of proprietary rights. All rights, title and interest in the Contents are owned by, licensed to or controlled by Government on behalf of the Republic of the Union of Myanmar.</span></p><p><b><span>Restrictions on use of Materials</span></b></p><p><span>4. Materials featured on this  application may be reproduced FOC after taking proper permission by sending a mail to us. However, the material has to be reproduced accurately and not to be used in derogatory manner or in a misleading context. Wherever the material is being published or issued to others, the source must be prominently acknowledged. However, "
+	        + "the permission to reproduce this material shall not extend to any material which is identified as being copyright of a third party. Authorizations to reproduce such material must be obtained from the departments/copyright holders concerned.</span></p><p><span>5. Modification of any of the Contents or use of the Contents for any other purpose will be a violation of copyright and other intellectual property rights. Graphics and images on this mobile application are protected by copyright and may not be reproduced or appropriated in any manner without written permission of government. </span></p><p><span>6. The Content on this application is for your personal use only and not for commercial exploitation.  "
+	        + "Any unauthorized use of Myanmar National Mobile Application is prohibited.</span></p><p><b><span>Disclaimer of Warranties and Liability</span></b></p><p><span>7. The Contents of this mobile application are provided based on Myanmar National web portal. Though all efforts have been made to ensure the accuracy and currency of the content on this mobile application, the same should not be construed as a statement of law or used for any legal purposes. MOTC accepts no responsibility in relation to the accuracy, completeness, usefulness or otherwise, of the contents. Users are advised to verify/check any information with the relevant Government department(s) and/or other source(s), and to obtain any appropriate professional advice before acting on the information provided in the application."
+	        + "</span></p><p><span>8. Government shall also not be liable for any damage or loss of any kind caused as a result (direct or indirect) of the use of the mobile application including but not limited to any damage or loss suffered as a result of reliance on the Contents contained in or available from the mobile application.</span></p><p><b><span>Right of Access</span></b></p><p><span>9. Government reserves all rights to deny or restrict access to this mobile application to any particular person, or to block access from a particular Internet address at any time, without ascribing any reasons whatsoever.</span></p><p><b><span>Links to other websites and Portal</span></b></p><p><span>10. This mobile application contains hyperlinks to websites which are not maintained by Government. Government is not responsible for the contents of those websites and shall not be liable for any damages or loss arising from access to those websites. "
+	        + "Use of the hyperlinks and access to such websites are entirely at your own risk. </span></p><p><span>11. Hyperlinks to other websites are provided as a convenience. In no circumstances shall Government be considered to be associated or affiliated with any trade or service marks, logos, insignia or other devices used or appearing on websites to which this mobile application is linked. </span></p><p><b><span>Links to this mobile application from other websites</span></b></p><p><span>12. Caching and links to, and the framing of this mobile application or any of the Contents are prohibited. </span></p><p><span>13. You must secure permission from Government prior to hyperlinking to, or framing, this mobile application or any of the Contents, or engaging in similar activities. Government reserves the right to impose conditions when permitting any hyperlinking to, or framing of this mobile application or any of the Contents."
+	        + " </span></p><p><span>14. You are linking to, or framing any part of this mobile application or its Contents constitute acceptance of these Terms of Use. This is deemed to be the case even after the posting of any changes or modifications to these Terms of Use. If you do not accept these Terms of Use, you must discontinue linking to, or framing of this application or any of the Contents.</span></p><p><span>15. In no circumstances shall be considered to be associated or affiliated in whatever manner with any trade or service marks, logos, insignia or other devices used or appearing on web the Contents. </span></p><p><span>16. Government reserves all rights to disable any links to, or frames of any site containing inappropriate, profane, defamatory, infringing, obscene, indecent or unlawful topics, names, material or information, or material or information that violates any written law, any applicable intellectual property, proprietary, privacy or publicity rights. "
+	        + "</span></p><p><span>17. Government reserves the right to disable any unauthorized links or frames and disclaims any responsibility for the content available on any other site reached by links to or from this mobile application or any of the Contents. </span></p><p><b><span>Governing Law</span></b></p><p><span>18. These Terms of Use shall be governed and construed in accordance with laws of the Union of the Republic of Myanmar. Any dispute arising under these terms and conditions shall be subject to the exclusive jurisdiction of the courts of Myanmar. </span></p><p><span>If you’re not satisfied with our response to any privacy-related concern you may have, you can contact the Feedback. </span></p>";
 }

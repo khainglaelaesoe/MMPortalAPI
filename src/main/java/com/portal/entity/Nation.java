@@ -32,9 +32,7 @@ public enum Nation {
 	CIVIL_SERVICE("Union Civil Service Board","ပြည်ထောင်စုရာထူးဝန်အဖွဲ့", 80624),
 	NAYPYITAW_COUNSIL("Naypyitaw Council","နေပြည်တော်ကောင်စီ", 80624),
 	CENTRAL_BANK("Central Bank","မြန်မာနိုင်ငံတော်ဗဟိုဘဏ်", 80624),
-	Revenue_Appellate_Tribunal("Revenue Appellate Tribunal","အခွန်အယူခံခုံအဖွဲ့", 80624),
-
-	
+	Revenue_Appellate_Tribunal("Revenue Appellate Tribunal","အခွန်အယူခံခုံအဖွဲ့", 80624),	
 	
 	MOFA("Ministry of Foreign Affairs","နိုင်ငံခြားရေးဝန်ကြီးဌာန", 87166),
 	MOPO("Ministry of President Office","သမ္မတရုံးဝန်ကြီးဌာန", 87166),

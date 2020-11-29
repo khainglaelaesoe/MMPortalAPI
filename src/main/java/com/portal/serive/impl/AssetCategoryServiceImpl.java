@@ -62,8 +62,25 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
 		return assetCategoryDao.findLongByQueryString(queryStr);
 	}
 
-	public List<String> getStateNames() {
+	public List<String> getHluttaws() {
 		String queryStr = "Select name from AssetCategory where vocabularyId=80291 and parentCategoryId=8249564 order by leftCategoryId desc";
+		return assetCategoryDao.findByQuery(queryStr);
+	}
+
+	public List<String> getGovs() {
+		String queryStr = "Select name from AssetCategory where vocabularyId=80291 and parentCategoryId=87195 order by leftCategoryId";
+		List<String> names = assetCategoryDao.findByQuery(queryStr);
+		names.add("Yangon Region Government");
+		return names;
+	}
+
+	public List<String> getGovOrgs() {
+		String queryStr = "Select name from AssetCategory where vocabularyId=80291 and parentCategoryId=80624 order by leftCategoryId";
+		return assetCategoryDao.findByQuery(queryStr);
+	}
+
+	public List<String> getGovOrgs2() {
+		String queryStr = "Select name from AssetCategory where vocabularyId=80291 and parentCategoryId=87166 order by leftCategoryId";
 		return assetCategoryDao.findByQuery(queryStr);
 	}
 }

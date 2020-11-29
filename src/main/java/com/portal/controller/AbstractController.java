@@ -276,6 +276,15 @@ public class AbstractController {
 		return remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
 	}
 
+	public String getJournalImage(String content) {
+		int start = content.indexOf("/image");
+		if (start < 0)
+			return "";
+		String remainString = content.substring(start, content.length());
+		int end = remainString.indexOf("<");
+		return remainString.substring(0, end).startsWith("/") ? "https://myanmar.gov.mm" + remainString.substring(0, end) : remainString.substring(0, end);
+	}
+
 	public String getHttpImage(String content) {
 		int start = content.indexOf("http");
 		if (start < 0)
@@ -643,6 +652,7 @@ public class AbstractController {
 		String imageUrl = "";
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
+		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getJournalImage(journalArticle.getContent()) : newArticle.getImageUrl());
 
 		String engContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"en_US\">");
 		String myaContent = getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "Content", "<dynamic-content language-id=\"my_MM\">");
@@ -650,7 +660,6 @@ public class AbstractController {
 		engContent = engContent.isEmpty() ? myaContent : engContent;
 		myaContent = myaContent.isEmpty() ? engContent : myaContent;
 
-		//&& !newArticle.getImageUrl().isEmpty() && newArticle.getImageUrl().contains("moi")
 		if (newArticle.getImageUrl() != null) {
 			String[] imageUrls = newArticle.getImageUrl().split(",");
 			for (String image : imageUrls) {
@@ -677,10 +686,6 @@ public class AbstractController {
 		} catch (Exception e) {
 			newArticle.setMyanmarDepartmentTitle(name);
 		}
-//		String con = journalArticle.getContent();
-//		int index = con.indexOf("location");
-//		newArticle.setEngLocation(getAttribute(index, con, "en_US"));
-//		newArticle.setMyanmarLocation(getAttribute(index, con, "my_MM"));
 
 		String engLocation = getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"en_US\">");
 		String myaLocation = getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "location", "<dynamic-content language-id=\"my_MM\">");
