@@ -101,6 +101,9 @@ public class ServiceController extends AbstractController {
 		newJournal.setMyanmarContent(!myanmarContent.isEmpty() ? myanmarContent : engContent);
 		newJournal.setEngContent(!engContent.isEmpty() ? engContent : myanmarContent);
 
+		newJournal.setEngContent(ImageSourceChangeforanouncement(dp.ParsingSpan(newJournal.getEngContent())));
+		newJournal.setMyanmarContent(ImageSourceChangeforanouncement(dp.ParsingSpan(newJournal.getMyanmarContent())));
+
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
