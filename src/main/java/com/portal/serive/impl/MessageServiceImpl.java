@@ -31,7 +31,7 @@ public class MessageServiceImpl implements MessageService {
 
 	public List<MBMessage> byClassPK(Long classPK) {
 		List<MBMessage> msgList = new ArrayList<MBMessage>();
-		String query = "from MBMessage message where classpk=" + classPK;
+		String query = "from MBMessage message where classpk=" + classPK + " And parentMessageId<>0";
 		msgList = messageDao.byQuery(query);
 		for (MBMessage msg : msgList) {
 			String querycount = "Select count(*) from RatingsEntry where classPk=" + msg.getMessageid() + " order by createdate";
