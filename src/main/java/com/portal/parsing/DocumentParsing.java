@@ -205,6 +205,11 @@ public class DocumentParsing {
 			}
 		}
 
+		Elements elements4 = doc.select("a");
+		for (Element element : elements4) {
+			element.removeAttr("style");
+		}
+
 		Elements elements3 = doc.select("br");
 		for (Element element : elements3) {
 			if (element.attr("style").startsWith("color")) {
