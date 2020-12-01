@@ -31,7 +31,7 @@ public class MessageServiceImpl implements MessageService {
 
 	public List<MBMessage> byClassPK(Long classPK) {
 		List<MBMessage> msgList = new ArrayList<MBMessage>();
-		String query = "from MBMessage message where classpk=" + classPK + " And parentMessageId<>0";
+		String query = "from MBMessage message where classpk=" + classPK + " And parentMessageId<>0 And parentMessageId=rootMessageId";
 		msgList = messageDao.byQuery(query);
 		for (MBMessage msg : msgList) {
 			String querycount = "Select count(*) from RatingsEntry where classPk=" + msg.getMessageid() + " order by createdate";
@@ -42,7 +42,7 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	public List<MBMessage> getReplyListByCommentId(Long messageId) {
-		String query = "from MBMessage message where parentmessageid=" + messageId;
+		String query = "from MBMessage message where rootMessageId=" + messageId + "And parentMessageId<>rootMessageId And parentMessageId<>0";
 		return messageDao.byQuery(query);
 	}
 
