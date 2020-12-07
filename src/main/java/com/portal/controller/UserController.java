@@ -124,13 +124,13 @@ public class UserController extends AbstractController {
 		request.put("email", email.isEmpty() ? mnpUser.getEmailaddress() : email);
 		request.put("phone", phone.isEmpty() ? phoneNo : phone);
 		request.put("portrait", portrait);
-		request.put("userName", mnpUser.getScreenname());
+		request.put("screenName", mnpUser.getScreenname());
 		request.put("securityQuestion", mnpUser.getReminderqueryquestion());
 		request.put("securityAnswer", mnpUser.getReminderqueryanswer());
 
-		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getMiddlename() == null ? "" : " " + mnpUser.getMiddlename()) + (mnpUser.getLastname() == null ? "" : " " + mnpUser.getLastname());
-		request.put("name", userName.isEmpty() ? dbName: userName);
-
+		String dbName = (mnpUser.getFirstname() == null ? "" : mnpUser.getFirstname()) + (mnpUser.getLastname() == null ? "" : " " + mnpUser.getLastname());
+		request.put("firstName", userName.isEmpty() ? dbName: userName);
+		request.put("lastName", "");
 		String serviceUrl = OTHERSERVICEURL.trim() + "user/update-user-info";
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -150,18 +150,18 @@ public class UserController extends AbstractController {
 		if (j.get("errCode") != null) {
 			resultJson.put("status", 0);
 			if (j.get("errCode").equals("E13"))
-				resultJson.put("message", "Can not update user! duplicate email address or screen name!");
+				resultJson.put("message", "Cannot update user! Duplicate email address or Display name!");
 			else
 				resultJson.put("message", j.get("message"));
 			return resultJson;
 		}
 
 		resultJson.put("profilePicture", j.get("portrait").toString().replace("user", "image/user"));
-		resultJson.put("name", j.get("name").toString());
+		resultJson.put("name", j.get("firstName").toString());
 		resultJson.put("status", 1);
 		resultJson.put("message", "success");
 		resultJson.put("phone", request.get("phone"));
-		resultJson.put("userName", request.get("userName"));
+		resultJson.put("userName", request.get("screenName"));
 		resultJson.put("email", request.get("email"));
 		return resultJson;
 	}
@@ -332,7 +332,7 @@ public class UserController extends AbstractController {
 
 		} else {
 			resultJson.put("status", "0");
-			resultJson.put("message", "Your email or password was incorrect. please try again");
+			resultJson.put("message", "Your email or password is incorrect. Please try again.");
 		}
 
 		return resultJson;
@@ -343,7 +343,7 @@ public class UserController extends AbstractController {
 		mbresponse.setUserid(user.getUserid());
 		mbresponse.setScreenname(user.getScreenname());
 		mbresponse.setEmailaddress(user.getEmailaddress());
-		mbresponse.setName(user.getFirstname() + (user.getLastname() == null ? "" : user.getLastname()));
+		mbresponse.setName(user.getFirstname() + (user.getLastname() == null ? "" : " " + user.getLastname()));
 		mbresponse.setPhoneno(user.getPhone());
 		return mbresponse;
 	}
@@ -367,7 +367,7 @@ public class UserController extends AbstractController {
 		}
 		if (email.equals("") || email.equals(null)) {
 			response.put("status", 0);
-			response.put("message", "email can't be null or empty");
+			response.put("message", "Email address cannot be blank.");
 			return response;
 		} else
 			email = AES.decrypt(email, secretKey);
@@ -517,7 +517,7 @@ public class UserController extends AbstractController {
 
 		if (code == null) {
 			json.put("status", 0);
-			json.put("message", "Code is not valid!");
+			json.put("message", "Code is invalid!");
 			return json;
 		}
 
@@ -572,13 +572,13 @@ public class UserController extends AbstractController {
 
 		if (code == null) {
 			response.put("status", 0);
-			response.put("message", "Code is not valid!");
+			response.put("message", "Code is invalid!");
 			return response;
 		}
 
 		if (password == null) {
 			response.put("status", 0);
-			response.put("message", "Password is not valid!");
+			response.put("message", "Password is invalid!");
 			return response;
 		}
 
@@ -627,79 +627,79 @@ public class UserController extends AbstractController {
 
 		if (request.get("name").toString().equals("") || request.get("name").toString().equals(null)) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! Name cannot be null or empty");
+			resultJson.put("message", "Cannot create user! Name cannot be empty!");
 			return resultJson;
 		}
 		if (request.get("screenname").toString().equals("") || request.get("screenname").toString().equals(null)) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user!Screen Name cannot be null or empty");
+			resultJson.put("message", "Cannot create user! Display Name cannot be empty!");
 			return resultJson;
 		}
 		
 		if(containsSpecial1(request.get("screenname").toString()) || !isAlphaNumeric(request.get("screenname").toString())){
 			resultJson.put("status", 0);
-			resultJson.put("message", "The Screen Name must not contain special characters.It must contain only alphanumeric "
-					+ "or the following specal characters:-_");
+			resultJson.put("message", "Display Name must not contain special characters. It must contain only alphanumeric or special characters"
+					+ " '-' and '_'");
 			return resultJson;
 		}
 		if(request.get("screenname").toString().contains(" ")) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "The Screen Name must not contain space.It must contain only alphanumeric " + 
-					"or the following specal characters:-_");
+			resultJson.put("message", "Display Name must not contain special characters. It must contain only alphanumeric or special characters"
+					+ " '-' and '_'");
 			return resultJson;
 		}
 
 		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! emailAddress cannot be null or empty");
+			resultJson.put("message", "Cannot create user! Email address cannot be empty!");
 			return resultJson;
 		}
 
 		if (request.get("password").toString().equals("") || request.get("password").toString().equals(null)) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! password cannot be null or empty");
+			resultJson.put("message", "Cannot create user! Password cannot be empty.");
 			return resultJson;
 		}
 
 		User_ user = userService.getUserbyemail(request.get("email").toString());
 		if (user != null) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! This email is already registered!");
+			resultJson.put("message", "Cannot create user! This email address is already registered!");
 			return resultJson;
 		}
 
 		User_ user1 = userService.getScreenName(request.get("screenname").toString());
 		if (user1 != null) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! Screen name " + request.get("screenname").toString() + " must not be duplicate but is already used.");
+			resultJson.put("message", "Cannot create user! Display name must not be duplicated.");
 			return resultJson;
 		}
 		String password = request.get("password").toString();
 		if (password.length() < 8) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! Password for user must be at least 8 characters");
+			resultJson.put("message", "Cannot create user! Password must be at least 8 characters in length.");
 			return resultJson;
 		} else {
 
 			if (!containsUpperCase(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message", "Can not create user! Password must have at least 1 uppercase characters");
+				resultJson.put("message", "Cannot create user! Password must be at least 1 uppercase character.");
 				return resultJson;
 			}
 			if (!containsLowerCase(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message", "Can not create user! Password must have at least 1 lowercase characters");
+				resultJson.put("message", "Cannot create user! Password must be at least 1 lowercase character.");
 				return resultJson;
 			}
 
 			if (!containsNumber(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message", "Can not create user! Password must have at least 1 numbers");
+				resultJson.put("message", "Cannot create user! Password must be at least 1 number.");
 				return resultJson;
 			}
 			if (!containsSpecial(password)) {
 				resultJson.put("status", 0);
-				resultJson.put("message", "Can not create user! Password must have at least 1 specital characters");
+				resultJson.put("message", "Cannot create user! Password must be at least 1 special character.");
 				return resultJson;
 			}
 		}
@@ -716,14 +716,14 @@ public class UserController extends AbstractController {
 
 		if (request.get("email").toString().equals("") || request.get("email").toString().equals(null)) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! emailAddress cannot be null or empty");
+			resultJson.put("message", "Can not create user!Email Address can not be empty.");
 			return resultJson;
 		}
 
 		User_ user = userService.getUserbyemail(request.get("email").toString());
 		if (user != null) {
 			resultJson.put("status", 0);
-			resultJson.put("message", "Can not create user! This email is already registered!");
+			resultJson.put("message", "Can not create user!This email is already registered.");
 			return resultJson;
 		}
 
@@ -772,40 +772,45 @@ public class UserController extends AbstractController {
 		try {
 			String decryptedString = AES.decrypt(encryptedString, secretKey);
 			if (!isAuthorize(decryptedString)) {
-				resultJson.put("status", 0);
+				resultJson.put("status", "0");
 				resultJson.put("message", "Authorization failure!");
 				return resultJson;
 			}
 		} catch (Exception e) {
-			resultJson.put("status", 0);
+			resultJson.put("status", "0");
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
 		// oldPassword
 		String oldPassword = req.get("oldPassword").toString();
 		if (oldPassword.equals("") || oldPassword.equals(null)) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Invalid email or password!");
+			resultJson.put("status", "0");
+			resultJson.put("message", "Invalid Password!");
 			return resultJson;
-		} else
-			oldPassword = AES.decrypt(oldPassword, secretKey);
+		} 			
 		// newPassword1
 		String newPassword1 = req.get("newPassword1").toString();
 		if (newPassword1.equals("") || newPassword1.equals(null)) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "New Password cannot be null or empty");
+			resultJson.put("status", "0");
+			resultJson.put("message", "New Password cannot be empty.");
 			return resultJson;
-		} else
-			newPassword1 = AES.decrypt(newPassword1, secretKey);
+		}
+		if(oldPassword.equals(newPassword1)) {
+			resultJson.put("status", "0");
+			resultJson.put("message", "Can not update user's password!Password must not be equal to their current password");
+			return resultJson;
+		}
 		// newPassword2
 		String newPassword2 = req.get("newPassword2").toString();
 		if (newPassword2.equals("") || newPassword2.equals(null)) {
-			resultJson.put("status", 0);
-			resultJson.put("message", "Confirm New Password cannot be null or empty");
+			resultJson.put("status", "0");
+			resultJson.put("message", "Confirm New Password cannot be empty.");
 			return resultJson;
-		} else
-			newPassword2 = AES.decrypt(newPassword2, secretKey);
-
+		}
+			
+		oldPassword = AES.decrypt(oldPassword, secretKey);
+		newPassword1 = AES.decrypt(newPassword1, secretKey);
+		newPassword2 = AES.decrypt(newPassword2, secretKey);
 		HttpHeaders headers = new HttpHeaders();
 		JSONObject json = new JSONObject();
 		json.put("oldPassword", oldPassword);
