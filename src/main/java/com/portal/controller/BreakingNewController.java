@@ -120,8 +120,11 @@ public class BreakingNewController extends AbstractController{
 			newArticle.setDisplaydate(resultDateString);
 
 			String name = journalFolderService.getNameByFolderId(Long.parseLong(journalArticle.getTreepath().split("/")[1]));
+			System.out.println("Beaking News Name________________________" + name);
 			if (name.equals("News and Media"))
 				name = "Ministry of Information";
+			if (name.equals("Union Attonery General's Office"))
+				name = "Union Attonery Generals Office";
 			newArticle.setEngDepartmentTitle(name);
 			newArticle.setMyanmarDepartmentTitle(OrgMyanmarName.valueOf(name.replaceAll(" ", "_").replaceAll(",", "").replaceAll("-", "_")).getValue());
 

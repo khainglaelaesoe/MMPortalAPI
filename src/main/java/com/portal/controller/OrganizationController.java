@@ -52,6 +52,24 @@ public class OrganizationController extends AbstractController {
 
 	@Value("${IMAGEURL}")
 	private String IMAGEURL;
+	
+	@Value("${ios_version}")
+	private String ios_version;
+	
+	@Value("${android_version}")
+	private String android_version;
+	
+	@Value("${ios_link}")
+	private String ios_link;
+	
+	@Value("${android_link}")
+	private String android_link;
+	
+	@Value("${is_android_force_update}")
+	private String is_android_force_update;
+	
+	@Value("${is_ios_force_update}")
+	private String is_ios_force_update;
 
 	private static Logger logger = Logger.getLogger(OrganizationController.class);
 
@@ -531,15 +549,18 @@ public class OrganizationController extends AbstractController {
 		resultJson.put("bannerList", bannerList);
 
 		JSONObject[] array = new JSONObject[3];
-		JSONObject object1 = new JSONObject();
-		object1.put("banner", IMAGEURL + "banner01.jpg");
+		//JSONObject object1 = new JSONObject();
+		//object1.put("banner", IMAGEURL + "banner10.jpg");
 		JSONObject object2 = new JSONObject();
-		object2.put("banner", IMAGEURL + "banner02.jpg");
+		object2.put("banner", IMAGEURL + "banner01.jpg");
 		JSONObject object3 = new JSONObject();
-		object3.put("banner", IMAGEURL + "banner05.png");
-		array[0] = object1;
-		array[1] = object2;
-		array[2] = object3;
+		object3.put("banner", IMAGEURL + "banner02.jpg");
+		JSONObject object4 = new JSONObject();
+		object4.put("banner", IMAGEURL + "banner05.png");
+		array[0] = object2;
+		array[1] = object3;
+		array[2] = object4;
+		//array[3] = object4;
 		resultJson.put("bannerObjects", array);
 		return resultJson;
 	}
@@ -552,4 +573,18 @@ public class OrganizationController extends AbstractController {
 	        + "Use of the hyperlinks and access to such websites are entirely at your own risk. </span></p><p><span>11. Hyperlinks to other websites are provided as a convenience. In no circumstances shall Government be considered to be associated or affiliated with any trade or service marks, logos, insignia or other devices used or appearing on websites to which this mobile application is linked. </span></p><p><b><span>Links to this mobile application from other websites</span></b></p><p><span>12. Caching and links to, and the framing of this mobile application or any of the Contents are prohibited. </span></p><p><span>13. You must secure permission from Government prior to hyperlinking to, or framing, this mobile application or any of the Contents, or engaging in similar activities. Government reserves the right to impose conditions when permitting any hyperlinking to, or framing of this mobile application or any of the Contents."
 	        + " </span></p><p><span>14. You are linking to, or framing any part of this mobile application or its Contents constitute acceptance of these Terms of Use. This is deemed to be the case even after the posting of any changes or modifications to these Terms of Use. If you do not accept these Terms of Use, you must discontinue linking to, or framing of this application or any of the Contents.</span></p><p><span>15. In no circumstances shall be considered to be associated or affiliated in whatever manner with any trade or service marks, logos, insignia or other devices used or appearing on web the Contents. </span></p><p><span>16. Government reserves all rights to disable any links to, or frames of any site containing inappropriate, profane, defamatory, infringing, obscene, indecent or unlawful topics, names, material or information, or material or information that violates any written law, any applicable intellectual property, proprietary, privacy or publicity rights. "
 	        + "</span></p><p><span>17. Government reserves the right to disable any unauthorized links or frames and disclaims any responsibility for the content available on any other site reached by links to or from this mobile application or any of the Contents. </span></p><p><b><span>Governing Law</span></b></p><p><span>18. These Terms of Use shall be governed and construed in accordance with laws of the Union of the Republic of Myanmar. Any dispute arising under these terms and conditions shall be subject to the exclusive jurisdiction of the courts of Myanmar. </span></p><p><span>If you’re not satisfied with our response to any privacy-related concern you may have, you can contact the Feedback. </span></p>";
+
+	@RequestMapping(value = "version", method = RequestMethod.POST)
+	@ResponseBody
+	@JsonView(Views.Thin.class)
+	private JSONObject getVersion() {
+		JSONObject resultJson = new JSONObject();
+		resultJson.put("ios_version", ios_version);
+		resultJson.put("android_version", android_version);
+		resultJson.put("ios_link", ios_link);
+		resultJson.put("android_link", android_link);
+		resultJson.put("is_ios_force_update", is_ios_force_update);
+		resultJson.put("is_android_force_update", is_android_force_update);
+		return resultJson;
+	}
 }

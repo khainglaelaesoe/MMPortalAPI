@@ -61,13 +61,18 @@ public class BlogController extends AbstractController {
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
 		newJournal.setDisplaydate(resultDateString);
-
+		
 		String engContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"en_US\">");
 		String myaContent = getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">").isEmpty() ? getMyanmarElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">") : getEngElement(journalArticle.getContent(), "htmlContent", "<dynamic-content language-id=\"my_MM\">");
-
-		newJournal.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
-		newJournal.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
-
+		logger.info("Blog engContent >> " + engContent );
+		String engContentByImageSource = "";
+		if(!engContent.isEmpty())
+		 engContentByImageSource = ImageSourceChange2(dp.ParsingSpan(engContent));
+		String myanContentByImageSource = ImageSourceChange2(dp.ParsingSpan(myaContent));
+		newJournal.setEngContent(engContentByImageSource.isEmpty() ? myanContentByImageSource : engContentByImageSource);
+		newJournal.setMyanmarContent(myanContentByImageSource.isEmpty()? engContentByImageSource : myanContentByImageSource);
+		logger.info("Blog engContentByImageSource >> " + engContentByImageSource );
+		logger.info("Blog Final English Content >> " + newJournal.getEngContent());
 		newJournal.setShareLink(getShareLink(journalArticle.getUrltitle()));
 		newJournal.setMessageList(journalArticle.getMessageList());
 		newJournal.setpKString(journalArticle.getpKString());

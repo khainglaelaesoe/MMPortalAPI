@@ -240,7 +240,6 @@ public class JournalArticleController extends AbstractController {
 		for (int i = 0; i < articles.size(); i++) {
 			newArticles.add(stackList.pop());
 		}
-
 		resultJson.put("articles", newArticles);
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("totalCount", classPKs.size());
@@ -303,6 +302,7 @@ public class JournalArticleController extends AbstractController {
 		ViewBy viewBy = ViewBy.valueOf(viewby.toUpperCase().trim());
 		switch (viewBy) {
 		case LATEST:
+			goViewCount();
 			return getJournalArticleByClassTypeIdAndLatest(input, 36205, CategoryType.NEW);
 		case MOSTVIEW:
 			return getJournalArticleByClassTypeIdAndMostView(input, 36205, CategoryType.NEW);

@@ -151,8 +151,12 @@ public class AbstractController {
 			int mEnd = remainString.indexOf("]]");
 			if (remainString.isEmpty() || mEnd < 0 || mStart < 0 || mEnd < mStart)
 				return "";
-
-			return Jsoup.parse(remainString.substring(mStart, mEnd)).text();
+			String finalString  = Jsoup.parse(remainString.substring(mStart, mEnd)).text();
+			logger.info("Final String >>>>" + finalString);
+			if(finalString.isEmpty()) {
+				return "";
+			}
+			return finalString;
 		}
 		return "";
 	}
@@ -650,6 +654,8 @@ public class AbstractController {
 		newArticle.setMynamrTitle(title[1]);
 
 		String imageUrl = "";
+		if(journalArticle.getContent().contains("#"))
+			journalArticle.setContent(journalArticle.getContent().replace("#", ""));
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getJournalImage(journalArticle.getContent()) : newArticle.getImageUrl());
@@ -1120,6 +1126,33 @@ public class AbstractController {
 		}
 		return mbuser;
 
+	}
+	
+	public void goViewCount() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic bXlhbnBvcnRhbDptWUBubWFAcnAwcnRhbA==");
+
+		HttpEntity<String> entityHeader = new HttpEntity<String>(headers);
+		logger.info("Request is: " + entityHeader);
+
+		String url = SERVICEURL + "/user/goViewCount";
+		logger.info("service url is: " + url);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		logger.info("calling webservice..." + builder);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<RequestVote> response = null;
+		try {
+
+			response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, entityHeader, RequestVote.class);
+			logger.info("response.getBody()!!!!!!!!!!!!!!:" + response.getBody());
+			RequestVote userScores = response.getBody();
+
+		} catch (Exception e) {
+			logger.error("ERRROR is - " + e.getMessage() + ", " + response);
+		}
 	}
 
 }
