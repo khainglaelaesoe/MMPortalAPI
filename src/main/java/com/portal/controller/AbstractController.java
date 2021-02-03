@@ -840,7 +840,8 @@ public class AbstractController {
 				else
 					msg.setEditPermission("No");
 
-				//msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
+				// msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()),
+				// userId));
 				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getParentmessageid()), userId));
 
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {

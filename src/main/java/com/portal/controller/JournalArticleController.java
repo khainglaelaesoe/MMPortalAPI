@@ -241,6 +241,8 @@ public class JournalArticleController extends AbstractController {
 			newArticles.add(stackList.pop());
 		}
 
+		
+		
 		resultJson.put("articles", newArticles);
 		resultJson.put("lastPageNo", lastPageNo);
 		resultJson.put("totalCount", classPKs.size());

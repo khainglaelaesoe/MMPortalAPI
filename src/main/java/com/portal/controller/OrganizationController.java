@@ -497,7 +497,7 @@ public class OrganizationController extends AbstractController {
 		List<Organization_> organizationList = new ArrayList<Organization_>();
 		for (OrgMyanmarName name : OrgMyanmarName.values()) {
 			if (name != OrgMyanmarName.Myanmar_Computer_Federation && name != OrgMyanmarName.Topics && name != OrgMyanmarName.Ministry_of_Planning_and_Finance && name != OrgMyanmarName.Kachin_State_Government && name != OrgMyanmarName.Kayah_State_Government && name != OrgMyanmarName.Chin_State_Government && name != OrgMyanmarName.Sagaing_Region_Government && name != OrgMyanmarName.Tanintaryi_Region_Government && name != OrgMyanmarName.Bago_Region_Government
-					 && name != OrgMyanmarName.Government_Organizations && name != OrgMyanmarName.Kayin_State_Government && name != OrgMyanmarName.Magway_Region_Government && name != OrgMyanmarName.Mandalay_Region_Government && name != OrgMyanmarName.Mon_State_Government && name != OrgMyanmarName.Rakhine_State_Government && name != OrgMyanmarName.Yangon_Region_Government && name != OrgMyanmarName.Shan_State_Government && name != OrgMyanmarName.Ayeyarwaddy_Region_Government) {
+			        && name != OrgMyanmarName.Government_Organizations && name != OrgMyanmarName.Kayin_State_Government && name != OrgMyanmarName.Magway_Region_Government && name != OrgMyanmarName.Mandalay_Region_Government && name != OrgMyanmarName.Mon_State_Government && name != OrgMyanmarName.Rakhine_State_Government && name != OrgMyanmarName.Yangon_Region_Government && name != OrgMyanmarName.Shan_State_Government && name != OrgMyanmarName.Ayeyarwaddy_Region_Government) {
 				Organization_ org = new Organization_();
 				org.setMyanmarName(name.getValue());
 				org.setEngName(OrgEngName.valueOf(name.toString()).getValue());
@@ -527,7 +527,7 @@ public class OrganizationController extends AbstractController {
 			resultJson.put("message", "Authorization failure!");
 			return resultJson;
 		}
-		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg",IMAGEURL + "banner05.png"};
+		String[] bannerList = new String[] { IMAGEURL + "banner01.jpg", IMAGEURL + "banner02.jpg", IMAGEURL + "banner05.png" };
 		resultJson.put("bannerList", bannerList);
 
 		JSONObject[] array = new JSONObject[3];
@@ -537,9 +537,13 @@ public class OrganizationController extends AbstractController {
 		object2.put("banner", IMAGEURL + "banner02.jpg");
 		JSONObject object3 = new JSONObject();
 		object3.put("banner", IMAGEURL + "banner05.png");
+//		JSONObject object4 = new JSONObject();
+//		object4.put("banner", IMAGEURL + "banner09.jpg");
+
 		array[0] = object1;
 		array[1] = object2;
 		array[2] = object3;
+		// array[3] = object4;
 		resultJson.put("bannerObjects", array);
 		return resultJson;
 	}
