@@ -654,8 +654,6 @@ public class AbstractController {
 		newArticle.setMynamrTitle(title[1]);
 
 		String imageUrl = "";
-		if(journalArticle.getContent().contains("#"))
-			journalArticle.setContent(journalArticle.getContent().replace("#", ""));
 		imageUrl = imageUrl.isEmpty() ? getDocumentImage2(journalArticle.getContent()) : imageUrl;
 		newArticle.setImageUrl(imageUrl.isEmpty() ? getHttpImage(journalArticle.getContent()) : imageUrl);
 		newArticle.setImageUrl(newArticle.getImageUrl().isEmpty() ? getJournalImage(journalArticle.getContent()) : newArticle.getImageUrl());
@@ -677,6 +675,12 @@ public class AbstractController {
 
 		newArticle.setEngContent(ImageSourceChange2(dp.ParsingSpan(engContent)));
 		newArticle.setMyanmarContent(ImageSourceChange2(dp.ParsingSpan(myaContent)));
+		
+		
+		if(newArticle.getEngContent().contains("#"))
+			newArticle.setEngContent(newArticle.getEngContent().replace("#", ""));
+		if(newArticle.getMyanmarContent().contains("#"))
+			newArticle.setMyanmarContent(newArticle.getMyanmarContent().replace("#", ""));
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
@@ -846,7 +850,8 @@ public class AbstractController {
 				else
 					msg.setEditPermission("No");
 
-				//msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()), userId));
+				// msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getMessageid()),
+				// userId));
 				msg.getReplyList().addAll(parse(messageService.getReplyListByCommentId(msg.getParentmessageid()), userId));
 
 				List<MBMessage> replyList = mapper.convertValue(getMobileReplyList(msg.getMessageid() + ""), new TypeReference<List<MBMessage>>() {

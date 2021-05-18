@@ -562,17 +562,32 @@ public class DocumentParsing {
 		String[] engmyan = new String[2];
 		Document doc = Jsoup.parse(input, "", Parser.xmlParser());
 
+//		Elements elements = doc.select("dynamic-element");
+//		for (Element element : elements) {
+//			if (element.attr("type").equals("document_library")) {
+//				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
+//					String enginput = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
+//					engmyan[0] = "https://myanmar.gov.mm" + enginput;
+//				}
+//
+//				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
+//					String myaninput = element.getElementsByAttributeValueContaining("language-id", "my_MM").text();
+//					engmyan[1] = "https://myanmar.gov.mm" + myaninput;
+//
+//				}
+//			}
+//		}
 		Elements elements = doc.select("dynamic-element");
 		for (Element element : elements) {
-			if (element.attr("type").equals("document_library")) {
+			if (element.attr("name").equals("externalURL")) {
 				if (element.getElementsByAttributeValueContaining("language-id", "en_US").size() > 0) {
 					String enginput = element.getElementsByAttributeValueContaining("language-id", "en_US").text();
-					engmyan[0] = "https://myanmar.gov.mm" + enginput;
+					engmyan[0] =  enginput;
 				}
 
 				if (element.getElementsByAttributeValueContaining("language-id", "my_MM").size() > 0) {
 					String myaninput = element.getElementsByAttributeValueContaining("language-id", "my_MM").text();
-					engmyan[1] = "https://myanmar.gov.mm" + myaninput;
+					engmyan[1] =  myaninput;
 
 				}
 			}
