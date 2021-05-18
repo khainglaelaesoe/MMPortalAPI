@@ -71,6 +71,7 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMynamrTitle(title[1]);
 
 		String image = dp.parseImageForLatestNews(journalArticle.getContent());
+		logger.info("image!!!!!!!!" + image);
 		newArticle.setImageUrl(image);
 
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
@@ -108,6 +109,8 @@ public class JournalArticleController extends AbstractController {
 
 		newArticle.setContent(journalArticle.getContent());
 		newArticle.setCategoryType(CategoryType.NEW);
+		logger.info("image!!!!!!!!" + newArticle.getImageUrl());
+
 		return newArticle;
 	}
 

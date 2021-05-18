@@ -182,9 +182,25 @@ public class AbstractController {
 		if (images.size() > 0) {
 			for (Element img : images) {
 				String imgsrc = img.attr("src");
-				String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc : "https://myanmar.gov.mm" + imgsrc : imgsrc;
-				img.attr("src", imgreplace);
 
+//				
+//				String imgreplace = !imgsrc.contains("http") && 
+//						!imgsrc.contains("base64") &&
+//						!imgsrc.startsWith("www") ? 
+//						imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc :
+//							"https://myanmar.gov.mm" + imgsrc : imgsrc; 
+//				
+
+				String imgreplace = "";
+				if (imgsrc.startsWith("/sites")) {
+					imgreplace = "https://www.moi.gov.mm" + imgsrc;
+				} else if (!imgsrc.contains("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www")) {
+					imgreplace = "https://myanmar.gov.mm" + imgsrc;
+				}
+
+				logger.info("imgreplace !!!!!!!!!!!!!" + imgreplace);
+
+				img.attr("src", imgreplace);
 				if (imgsrc.contains("base64")) {
 					byte[] decode = Base64.getDecoder().decode(imgsrc);
 					imgsrc = decode.toString();
@@ -198,7 +214,17 @@ public class AbstractController {
 			for (Element link : links) {
 				String imgsrc = link.attr("href");
 				if (!imgsrc.startsWith("http") && !imgsrc.contains("base64")) {
-					String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc : "https://myanmar.gov.mm" + imgsrc : imgsrc;
+//					String imgreplace = !imgsrc.startsWith("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www") ? imgsrc.startsWith("/sites") ? "https://www.moi.gov.mm" + imgsrc : "https://myanmar.gov.mm" + imgsrc : imgsrc;
+
+					String imgreplace = "";
+					if (imgsrc.startsWith("/sites")) {
+						imgreplace = "https://www.moi.gov.mm" + imgsrc;
+					} else if (!imgsrc.contains("http") && !imgsrc.contains("base64") && !imgsrc.startsWith("www")) {
+						imgreplace = "https://myanmar.gov.mm" + imgsrc;
+					}
+
+					logger.info("imgreplace222 !!!!!!!!!!!!!" + imgreplace);
+
 					link.attr("href", imgreplace);
 				}
 			}

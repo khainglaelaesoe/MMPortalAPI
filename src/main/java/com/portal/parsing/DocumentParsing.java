@@ -352,7 +352,10 @@ public class DocumentParsing {
 	}
 
 	public String SourceChange2(String content) {
+		logger.info("content !!!!!!!!!" + content);
 		content = !content.contains("http") ? "https://myanmar.gov.mm" + content : content;
+		logger.info("content 2222!!!!!!!!!" + content);
+
 		return content;
 	}
 
