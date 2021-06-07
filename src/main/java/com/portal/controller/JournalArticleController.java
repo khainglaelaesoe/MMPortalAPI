@@ -71,9 +71,8 @@ public class JournalArticleController extends AbstractController {
 		newArticle.setMynamrTitle(title[1]);
 
 		String image = dp.parseImageForLatestNews(journalArticle.getContent());
-		logger.info("image!!!!!!!!" + image);
+		image = image.replace("https://www.moi.gov.mm/http://www.moi.gov.mm/", "https://www.moi.gov.mm/");		
 		newArticle.setImageUrl(image);
-
 		String dateString = journalArticle.getDisplaydate().split(" ")[0];
 		String[] dateStr = dateString.split("-");
 		String resultDateString = DateUtil.getCalendarMonthName(Integer.parseInt(dateStr[1]) - 1) + " " + dateStr[2] + " " + dateStr[0];
@@ -109,8 +108,6 @@ public class JournalArticleController extends AbstractController {
 
 		newArticle.setContent(journalArticle.getContent());
 		newArticle.setCategoryType(CategoryType.NEW);
-		logger.info("image!!!!!!!!" + newArticle.getImageUrl());
-
 		return newArticle;
 	}
 

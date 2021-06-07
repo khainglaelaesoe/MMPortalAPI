@@ -1,10 +1,12 @@
 package com.portal.serive.impl;
 
 import java.util.List;
+import java.util.Locale.Category;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.portal.dao.AssetCategoryDao;
 import com.portal.entity.AssetCategory;
@@ -42,7 +44,11 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
 	@Override
 	public AssetCategory getAssetCategoryByParentCategoryIdandName(long id, String name) {
 		String queryStr = "select assetCategory from AssetCategory assetCategory where vocabularyid=80291 and parentcategoryid=" + id + " and name like '%" + name + "%'";
-		return assetCategoryDao.byQuery(queryStr).get(0);
+		logger.info("queryStr !!" + queryStr);
+		List<AssetCategory> categories = assetCategoryDao.byQuery(queryStr);
+		if (CollectionUtils.isEmpty(categories))
+			return null;
+		return categories.get(0);
 	}
 
 	@Override

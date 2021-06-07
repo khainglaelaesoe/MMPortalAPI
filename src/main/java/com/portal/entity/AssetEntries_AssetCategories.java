@@ -1,9 +1,15 @@
 package com.portal.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
+import java.io.Serializable;
 
-public class AssetEntries_AssetCategories {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "AssetEntries_AssetCategories")
+public class AssetEntries_AssetCategories implements Serializable  {
 
 	@Id
 	@Column(name = "entryid", unique = true, nullable = false)

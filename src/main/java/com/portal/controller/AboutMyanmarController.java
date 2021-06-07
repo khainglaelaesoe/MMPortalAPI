@@ -420,7 +420,8 @@ public class AboutMyanmarController extends AbstractController {
 					ae = assetEntryService.getAssetEntryByClassTypeCategoryIdTitle(category.getCategoryid(), 36196, category.getMyantitle());
 				}
 
-				journal = journalArticleService.byClassPK(ae.getClasspk());
+				if (ae != null)
+					journal = journalArticleService.byClassPK(ae.getClasspk());
 
 				List<String> engimage = dp.ParsingEngImage(journal.getContent());
 				List<String> myanimage = dp.ParsingMyanImage(journal.getContent());

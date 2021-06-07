@@ -241,6 +241,8 @@ public class AssetCategory implements Serializable {
 	}
 
 	public String getEngcontent() {
+		if(engcontent == null)
+			engcontent = "";
 		return engcontent;
 	}
 
@@ -249,6 +251,8 @@ public class AssetCategory implements Serializable {
 	}
 
 	public String getMyancontent() {
+		if(myancontent == null)
+			myancontent = "";
 		return myancontent;
 	}
 

@@ -26,24 +26,22 @@ public class AssetEntryServiceImpl implements AssetEntryService {
 	// KLLS
 	@Override
 	public AssetEntry getAssetEntryByClassTypeCategoryIdTitle(long cid, long ctid, String title) {
-		List<AssetEntry> entryList;
-		AssetEntry entry = new AssetEntry();
-		String queryStr = "select entry from AssetEntry entry where entry.classtypeid=" + ctid + " and visible=1 and entry.entryid in " + "(Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + cid + ")";
-		System.out.println("categoryid..............." + cid + ".........title..........." + title);
-		entryList = assetEntryDao.byQuery(queryStr);
+		//AssetEntry entry = new AssetEntry();
+		String queryStr = "select entry from AssetEntry entry where entry.classtypeid=" + ctid + " and visible=1 and entry.entryid in (Select aeac.entryid from AssetEntries_AssetCategories aeac where aeac.categoryid=" + cid + ")";
+		List<AssetEntry> entryList = assetEntryDao.byQuery(queryStr);
 
 		if (cid == 80321) {
 			for (AssetEntry ae : entryList) {
 				if (ae.getViewcount() > 0)
-					entry = ae;
+					return ae;
 			}
 		} else {
 			for (AssetEntry ae : entryList)
-				entry = ae;
+				return ae;
 
 		}
 
-		return entry;
+		return null;
 	}
 
 	@Override
